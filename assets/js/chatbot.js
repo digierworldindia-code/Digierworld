@@ -2,7 +2,16 @@
    DIGIE 'R' WORLD — chatbot.js
    "Digie Assistant": scripted conversational widget. Answers questions,
    suggests packages, captures leads and routes hot leads to WhatsApp.
+
+   OPTIONAL true-AI upgrade:
+   This is a fast, reliable rule-based assistant that needs no server. A real
+   LLM chatbot (ChatGPT/Claude/Gemini) must go through a server or serverless
+   proxy — an API key must NEVER sit in this client-side file. To add one
+   later, host a small proxy (e.g. a Cloudflare/Netlify function that holds the
+   key) and set its URL here; wire it into handleText() with the rule-based
+   flow below kept as the offline fallback.
    ========================================================================== */
+var DRW_CHAT_API_URL = ""; // e.g. "https://your-proxy.example.com/chat" (optional)
 
 (function ($) {
   "use strict";

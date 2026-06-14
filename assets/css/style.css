@@ -1097,6 +1097,31 @@ a.card-drw { color: inherit; display: block; cursor: pointer; }
 ::-webkit-scrollbar-thumb { background: var(--scroll-thumb, #2a2a32); border-radius: 8px; border: 2px solid var(--bg-deep); }
 ::-webkit-scrollbar-thumb:hover { background: rgba(212, 175, 55, 0.5); }
 
+/* ============================== Service visuals (inline SVG) ============================== */
+.svc-visual {
+  border: 1px solid var(--line-soft);
+  border-radius: 14px;
+  background: linear-gradient(165deg, var(--card-2), var(--card));
+  overflow: hidden;
+  margin-bottom: 1.3rem;
+}
+.svc-visual svg { display: block; width: 100%; height: auto; }
+.svc-visual .s-surface { fill: var(--surface); stroke: var(--line-soft); stroke-width: 1.2; }
+.svc-visual .s-card { fill: var(--card-2); stroke: var(--line-soft); stroke-width: 1.2; }
+.svc-visual .s-track { fill: var(--fill-track); }
+.svc-visual .s-gold { fill: var(--gold); }
+.svc-visual .s-gold-soft { fill: var(--gold); opacity: 0.28; }
+.svc-visual .s-muted { fill: var(--muted-2); }
+.svc-visual .s-stroke { fill: none; stroke: var(--line-soft); stroke-width: 1.5; }
+.svc-visual .s-stroke-gold { fill: none; stroke: var(--gold); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+.svc-lead { color: var(--cream); font-weight: 600; font-size: 0.97rem; margin-bottom: 0.6rem; }
+
+/* draw-in animation for the gold accent stroke (respects reduced-motion globally) */
+.svc-visual .s-draw { stroke-dasharray: 320; stroke-dashoffset: 320; }
+.reveal.in .svc-visual .s-draw { animation: svcDraw 1.4s ease forwards; }
+@keyframes svcDraw { to { stroke-dashoffset: 0; } }
+
 /* ============================== Theme toggle ============================== */
 .theme-toggle {
   width: 42px; height: 42px;

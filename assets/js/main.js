@@ -22,7 +22,15 @@ window.DRW = {
     youtube: null,
     twitter: null,
     google: "https://share.google/YpFadDgL5Pwh9icAh"
-  }
+  },
+
+  /* OPTIONAL email/CRM capture for every lead (forms, audit tool, chatbot).
+     A static site cannot email an admin on its own, so WhatsApp remains the
+     default. To also receive leads by email/CRM, paste a Formspree, Google
+     Apps Script, or Netlify Forms endpoint URL below — it will be POSTed as
+     JSON automatically. Leave "" to keep WhatsApp-only (no fake backend).
+     e.g. leadEndpoint: "https://formspree.io/f/xxxxxxx"  */
+  leadEndpoint: ""
 };
 
 /* WhatsApp deep link with prefilled message */
@@ -39,6 +47,17 @@ window.DRW.saveLead = function (lead) {
     leads.push(lead);
     localStorage.setItem("drw_leads", JSON.stringify(leads));
   } catch (e) { /* storage unavailable — ignore */ }
+
+  /* Fire-and-forget POST to the optional email/CRM endpoint, if configured. */
+  if (DRW.leadEndpoint) {
+    try {
+      fetch(DRW.leadEndpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Accept": "application/json" },
+        body: JSON.stringify(lead)
+      }).catch(function () { /* never block the WhatsApp handoff */ });
+    } catch (e) { /* ignore */ }
+  }
 };
 
 (function ($) {
