@@ -48,6 +48,32 @@ window.DRW.saveLead = function (lead) {
 
   $(function () {
 
+    /* ---------------- Theme: light (default) / dark, auto + manual ---------------- */
+    var root = document.documentElement;
+    var mq = window.matchMedia("(prefers-color-scheme: dark)");
+    function applyTheme(t) {
+      root.setAttribute("data-bs-theme", t);
+      $(".theme-toggle").attr("aria-label", t === "dark" ? "Switch to light theme" : "Switch to dark theme");
+      window.dispatchEvent(new CustomEvent("drw:themechange", { detail: t }));
+    }
+    // Honour the no-flash inline value already on <html>; default to light.
+    if (!root.getAttribute("data-bs-theme")) {
+      var saved0 = null;
+      try { saved0 = localStorage.getItem("drw-theme"); } catch (e) {}
+      applyTheme(saved0 || (mq.matches ? "dark" : "light"));
+    }
+    $(".theme-toggle").on("click", function () {
+      var next = root.getAttribute("data-bs-theme") === "dark" ? "light" : "dark";
+      applyTheme(next);
+      try { localStorage.setItem("drw-theme", next); } catch (e) {}
+    });
+    // Follow OS changes only while the visitor hasn't set a manual preference.
+    mq.addEventListener("change", function (e) {
+      var saved = null;
+      try { saved = localStorage.getItem("drw-theme"); } catch (err) {}
+      if (!saved) applyTheme(e.matches ? "dark" : "light");
+    });
+
     /* ---------------- Navbar scrolled state ---------------- */
     var $nav = $(".navbar-drw");
     function onScroll() {
@@ -162,6 +188,16 @@ window.DRW.saveLead = function (lead) {
       var P = [], W, H, raf;
       var DENSITY = 16000, MAXLINK = 130;
 
+      /* Particle colour is read from the active theme so dots stay visible
+         on both the white and dark backgrounds. */
+      var particleRGB = "212,175,55";
+      function refreshParticleColor() {
+        var v = getComputedStyle(document.documentElement).getPropertyValue("--particle-rgb").trim();
+        if (v) particleRGB = v;
+      }
+      refreshParticleColor();
+      window.addEventListener("drw:themechange", refreshParticleColor);
+
       function size() {
         W = canvas.width = canvas.offsetWidth;
         H = canvas.height = canvas.offsetHeight;
@@ -187,7 +223,7 @@ window.DRW.saveLead = function (lead) {
           if (p.y < 0 || p.y > H) p.vy *= -1;
           ctx.beginPath();
           ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-          ctx.fillStyle = "rgba(212,175,55,0.55)";
+          ctx.fillStyle = "rgba(" + particleRGB + ",0.55)";
           ctx.fill();
           for (var j = i + 1; j < P.length; j++) {
             var q = P[j], dx = p.x - q.x, dy = p.y - q.y;
@@ -196,7 +232,7 @@ window.DRW.saveLead = function (lead) {
               ctx.beginPath();
               ctx.moveTo(p.x, p.y);
               ctx.lineTo(q.x, q.y);
-              ctx.strokeStyle = "rgba(212,175,55," + (0.16 * (1 - d / MAXLINK)) + ")";
+              ctx.strokeStyle = "rgba(" + particleRGB + "," + (0.16 * (1 - d / MAXLINK)) + ")";
               ctx.lineWidth = 1;
               ctx.stroke();
             }
