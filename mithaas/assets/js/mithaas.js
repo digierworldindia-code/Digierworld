@@ -150,9 +150,34 @@
      we show an unmistakable placeholder naming the file to drop in —
      deliberately NOT a stand-in logo.
      --------------------------------------------------------------------- */
+  /* Accept the logo under any common name or format, so it works wherever
+     the file happens to land. Tried in order; the placeholder only appears
+     once every candidate has failed. */
+  var LOGO_CANDIDATES = [
+    "assets/img/brand/mithaas-logo.png",
+    "assets/img/brand/mithaas-logo.svg",
+    "assets/img/brand/mithaas-logo.jpg",
+    "assets/img/brand/mithaas-logo.jpeg",
+    "assets/img/brand/mithaas-logo.webp",
+    "assets/img/brand/logo.png",
+    "assets/img/brand/logo.jpg",
+    "assets/img/brand/logo.svg"
+  ];
+
   function initLogo() {
     $$("img[data-logo]").forEach(function (img) {
+      var tried = 0;
+
+      function next() {
+        if (tried < LOGO_CANDIDATES.length) {
+          img.src = LOGO_CANDIDATES[tried++];
+          return true;
+        }
+        return false;
+      }
+
       function swap() {
+        if (next()) return;          /* another filename left to try */
         if (!img.parentNode) return;
         var slot = img.getAttribute("data-logo") || "nav";
         var box = document.createElement("span");
@@ -164,8 +189,8 @@
           '<small>assets/img/brand/mithaas-logo.png</small>';
         img.parentNode.replaceChild(box, img);
       }
-      if (img.complete && img.naturalWidth === 0) { swap(); return; }
-      img.addEventListener("error", swap, { once: true });
+      img.addEventListener("error", swap);
+      if (img.complete && img.naturalWidth === 0) swap();
     });
   }
 

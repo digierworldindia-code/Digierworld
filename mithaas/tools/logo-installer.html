@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Mithaas — logo installer</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root{
+    --ivory:#FBF7EF; --cream:#F1E6D2; --gold:#C3A15A; --gold-deep:#7F6023;
+    --wine:#6E1F2B; --espresso:#2B1A12; --ink:#23150F;
+    --ink-70:rgba(35,21,15,.72); --ink-45:rgba(35,21,15,.5); --ink-12:rgba(35,21,15,.12);
+    --display:"Cormorant Garamond",Georgia,serif;
+    --body:"Jost",system-ui,-apple-system,"Segoe UI",Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;background:var(--ivory);color:var(--ink);
+    font-family:var(--body);font-weight:300;line-height:1.7;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:760px;margin:0 auto;padding:clamp(2rem,6vw,4.5rem) clamp(1.25rem,5vw,2rem) 5rem}
+  .eyebrow{
+    font-size:.7rem;letter-spacing:.34em;text-transform:uppercase;
+    color:var(--gold-deep);margin:0 0 1rem;display:flex;align-items:center;gap:.7rem;
+  }
+  .eyebrow::before{content:"";width:30px;height:1px;background:currentColor;opacity:.6}
+  h1{font-family:var(--display);font-weight:400;font-size:clamp(2.2rem,6vw,3.4rem);line-height:1.05;margin:0 0 1rem}
+  .lead{font-size:1.08rem;color:var(--ink-70);max-width:56ch;margin:0 0 2.5rem}
+
+  .drop{
+    border:1.5px dashed var(--gold);border-radius:3px;background:var(--cream);
+    padding:clamp(2.5rem,8vw,4rem) 1.5rem;text-align:center;cursor:pointer;
+    transition:background .25s,border-color .25s;
+  }
+  .drop:hover,.drop.over{background:#EBDCC1;border-color:var(--gold-deep)}
+  .drop:focus-visible{outline:2px solid var(--gold-deep);outline-offset:3px}
+  .drop b{display:block;font-family:var(--display);font-size:1.6rem;font-weight:400;margin-bottom:.4rem}
+  .drop span{font-size:.9rem;color:var(--ink-45)}
+  input[type=file]{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+
+  .out{margin-top:2.5rem}
+  .out[hidden]{display:none}
+  .preview{
+    background:var(--ivory);border:1px solid var(--ink-12);padding:1.5rem;
+    text-align:center;margin-bottom:1.75rem;
+  }
+  .preview img{max-width:100%;max-height:220px;height:auto}
+  .row{
+    display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+    padding:1rem 0;border-bottom:1px solid var(--ink-12);
+  }
+  .row:first-of-type{border-top:1px solid var(--ink-12)}
+  .row h3{margin:0;font-family:var(--display);font-weight:400;font-size:1.25rem}
+  .row p{margin:.15rem 0 0;font-size:.82rem;color:var(--ink-45)}
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;min-height:46px;
+    padding:.7rem 1.5rem;border:1px solid var(--wine);background:var(--wine);color:var(--ivory);
+    font:inherit;font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;
+    border-radius:2px;cursor:pointer;text-decoration:none;transition:background .3s,border-color .3s;
+  }
+  .btn:hover{background:var(--gold-deep);border-color:var(--gold-deep)}
+  .btn.ghost{background:transparent;color:var(--ink);border-color:var(--ink-12)}
+  .btn.ghost:hover{color:var(--ivory);background:var(--gold-deep);border-color:var(--gold-deep)}
+  .btn-all{margin-top:1.75rem;width:100%}
+
+  .note{
+    margin-top:2.5rem;padding:1.25rem 1.4rem;background:var(--espresso);color:#F6EDDF;
+    font-size:.9rem;line-height:1.65;
+  }
+  .note b{color:#E2CB95;font-weight:400}
+  .note code{
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.85em;
+    background:rgba(246,237,223,.12);padding:.1em .4em;border-radius:2px;
+  }
+  .err{color:var(--wine);font-size:.9rem;margin-top:1rem}
+  .err:empty{display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <p class="eyebrow">Mithaas</p>
+  <h1>Install the logo</h1>
+  <p class="lead">
+    Drop your logo below. This page renames and resizes it into the four files the
+    website needs, then hands them to you to download. Everything happens on your
+    own machine — nothing is uploaded anywhere.
+  </p>
+
+  <div class="drop" id="drop" role="button" tabindex="0" aria-describedby="hint">
+    <b>Drop the logo here</b>
+    <span id="hint">or click to choose a file &middot; PNG, JPG, WebP or SVG</span>
+  </div>
+  <input type="file" id="file" accept="image/png,image/jpeg,image/webp,image/svg+xml">
+  <p class="err" id="err" role="alert"></p>
+
+  <div class="out" id="out" hidden>
+    <div class="preview"><img id="preview" alt="Your logo"></div>
+
+    <div class="row">
+      <div>
+        <h3>mithaas-logo.png</h3>
+        <p>The master file &middot; goes in <code>assets/img/brand/</code></p>
+      </div>
+      <a class="btn" id="d-logo" download="mithaas-logo.png">Download</a>
+    </div>
+    <div class="row">
+      <div>
+        <h3>favicon.png</h3>
+        <p>512 &times; 512 &middot; the browser-tab icon</p>
+      </div>
+      <a class="btn ghost" id="d-fav" download="favicon.png">Download</a>
+    </div>
+    <div class="row">
+      <div>
+        <h3>apple-touch-icon.png</h3>
+        <p>180 &times; 180 &middot; iPhone home-screen icon</p>
+      </div>
+      <a class="btn ghost" id="d-touch" download="apple-touch-icon.png">Download</a>
+    </div>
+    <div class="row">
+      <div>
+        <h3>og-mithaas.jpg</h3>
+        <p>1200 &times; 630 &middot; shown when the link is shared</p>
+      </div>
+      <a class="btn ghost" id="d-og" download="og-mithaas.jpg">Download</a>
+    </div>
+
+    <button class="btn btn-all" id="all" type="button">Download all four</button>
+
+    <div class="note">
+      <b>Last step.</b> Put all four files into the website folder at
+      <code>mithaas/assets/img/brand/</code>, replacing anything already there.
+      Refresh the site and the logo appears in the header, the menu drawer, the
+      hero and the footer.
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function () {
+  var IVORY = "#FBF7EF";
+  var drop = document.getElementById("drop");
+  var file = document.getElementById("file");
+  var out = document.getElementById("out");
+  var err = document.getElementById("err");
+  var preview = document.getElementById("preview");
+
+  function fail(msg) { err.textContent = msg; out.hidden = true; }
+
+  drop.addEventListener("click", function () { file.click(); });
+  drop.addEventListener("keydown", function (e) {
+    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); file.click(); }
+  });
+  ["dragenter", "dragover"].forEach(function (t) {
+    drop.addEventListener(t, function (e) { e.preventDefault(); drop.classList.add("over"); });
+  });
+  ["dragleave", "drop"].forEach(function (t) {
+    drop.addEventListener(t, function (e) { e.preventDefault(); drop.classList.remove("over"); });
+  });
+  drop.addEventListener("drop", function (e) {
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) handle(e.dataTransfer.files[0]);
+  });
+  file.addEventListener("change", function () { if (file.files[0]) handle(file.files[0]); });
+
+  function handle(f) {
+    err.textContent = "";
+    if (!/^image\//.test(f.type)) return fail("That is not an image file. Please choose a PNG, JPG, WebP or SVG.");
+    var reader = new FileReader();
+    reader.onerror = function () { fail("The file could not be read. Try saving it again and re-adding it."); };
+    reader.onload = function () { load(reader.result, f); };
+    reader.readAsDataURL(f);
+  }
+
+  function load(dataUrl, f) {
+    var img = new Image();
+    img.onerror = function () { fail("That image could not be opened. It may be damaged — try re-saving it."); };
+    img.onload = function () {
+      if (!img.naturalWidth) return fail("That image has no dimensions the browser can read.");
+      preview.src = dataUrl;
+      build(img, dataUrl, f);
+      out.hidden = false;
+      out.scrollIntoView({ behavior: "smooth", block: "start" });
+    };
+    img.src = dataUrl;
+  }
+
+  /* Draw the logo centred on the brand ivory, scaled to fit without cropping. */
+  function fit(img, w, h, pad, mime, quality) {
+    var c = document.createElement("canvas");
+    c.width = w; c.height = h;
+    var x = c.getContext("2d");
+    x.fillStyle = IVORY;
+    x.fillRect(0, 0, w, h);
+    var scale = Math.min((w * pad) / img.naturalWidth, (h * pad) / img.naturalHeight);
+    var dw = img.naturalWidth * scale, dh = img.naturalHeight * scale;
+    x.imageSmoothingQuality = "high";
+    x.drawImage(img, (w - dw) / 2, (h - dh) / 2, dw, dh);
+    return c.toDataURL(mime, quality);
+  }
+
+  /* Master: keep the original pixels and any transparency, just normalise to PNG. */
+  function master(img) {
+    var c = document.createElement("canvas");
+    c.width = img.naturalWidth; c.height = img.naturalHeight;
+    c.getContext("2d").drawImage(img, 0, 0);
+    return c.toDataURL("image/png");
+  }
+
+  function build(img, dataUrl, f) {
+    var isSvg = /svg/.test(f.type);
+    var logo = isSvg ? dataUrl : master(img);
+    var a = {
+      "d-logo":  [logo, isSvg ? "mithaas-logo.svg" : "mithaas-logo.png"],
+      "d-fav":   [fit(img, 512, 512, 0.88, "image/png"), "favicon.png"],
+      "d-touch": [fit(img, 180, 180, 0.88, "image/png"), "apple-touch-icon.png"],
+      "d-og":    [fit(img, 1200, 630, 0.72, "image/jpeg", 0.92), "og-mithaas.jpg"]
+    };
+    Object.keys(a).forEach(function (id) {
+      var el = document.getElementById(id);
+      el.href = a[id][0];
+      el.setAttribute("download", a[id][1]);
+    });
+    document.getElementById("all").onclick = function () {
+      Object.keys(a).forEach(function (id, i) {
+        setTimeout(function () { document.getElementById(id).click(); }, i * 350);
+      });
+    };
+  }
+})();
+</script>
+</body>
+</html>

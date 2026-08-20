@@ -78,12 +78,20 @@ Put the **exact, unmodified** Mithaas logo file at:
 assets/img/brand/mithaas-logo.png
 ```
 
-Or let the helper do it, which also generates the favicon, the apple-touch
-icon and the social share card from the same artwork:
+**Easiest — no command line.** Open `tools/logo-installer.html` in any browser,
+drag the logo onto it, and download the four files it produces. Everything runs
+on your own machine; nothing is uploaded. Then drop those files into
+`assets/img/brand/`.
+
+**Or from a terminal**, which does the same thing in one step:
 
 ```bash
 python3 tools/add-logo.py ~/Downloads/mithaas-logo.png
 ```
+
+Either way the site also accepts the logo as `.png`, `.svg`, `.jpg`, `.jpeg`
+or `.webp`, and under the name `logo.*` as well as `mithaas-logo.*` — so
+whatever the file ends up being called, it will be found.
 
 The logo has deliberately **not** been recreated, redrawn or substituted anywhere in this
 build. Until the real file is present, the browser shows the image's alt text.

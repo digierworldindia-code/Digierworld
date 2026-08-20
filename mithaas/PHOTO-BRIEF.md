@@ -170,11 +170,10 @@ Exported from the **official logo artwork**, not redrawn.
 | `brand/apple-touch-icon.png` | 180 × 180 | Square. iPhone home-screen icon. |
 | `brand/og-mithaas.jpg` | 1200 × 630 | The card shown when the link is shared on WhatsApp or Facebook. |
 
-Once you have the master PNG, the other three are generated for you:
-
-```bash
-python3 tools/add-logo.py ~/Downloads/mithaas-logo.png
-```
+You only need the master. Open **`tools/logo-installer.html`** in a browser,
+drop the logo on it, and it produces the other three at the right sizes for you
+to download. No software to install. (Or run
+`python3 tools/add-logo.py ~/Downloads/mithaas-logo.png` from a terminal.)
 
 ---
 
