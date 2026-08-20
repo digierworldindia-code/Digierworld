@@ -13,6 +13,44 @@ cPanel, shared hosting.
 - `assets/css/mithaas.css` — the brand theme layer, loaded after Bootstrap
 - Vanilla JS, ~28 KB unminified, no jQuery
 
+## Run it locally
+
+**Option 1 — local server (recommended)**
+
+```bash
+cd mithaas
+python3 serve.py          # -> http://localhost:8000
+python3 serve.py 3000     # or pick your own port
+```
+
+No dependencies; it uses only the Python standard library. It serves the site's
+own `404.html`, sets correct MIME types, and disables caching so a refresh
+always shows your latest edit. Stop it with Ctrl+C.
+
+Any other static server works just as well:
+
+```bash
+npx serve mithaas          # Node
+php -S localhost:8000 -t mithaas
+```
+
+**Option 2 — just open the file**
+
+Double-click `mithaas/index.html`. Everything works from `file://` — the menu,
+gallery and forms included — because there is no build step and no backend.
+You need an internet connection for this option, since Bootstrap and the fonts
+load from a CDN.
+
+**Option 3 — the single-file offline build**
+
+`mithaas-offline.html` is the whole site in one file: all 11 pages, with
+Bootstrap, the icons and both typefaces embedded. It makes **zero** network
+requests, so it works on a plane, on a locked-down machine, or emailed to
+someone. Good for showing the design to a client. Regenerate it any time with
+`tools/build-standalone.py` (see that file's header).
+
+---
+
 ## Pages
 
 | File | Purpose |
