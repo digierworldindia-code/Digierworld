@@ -24,9 +24,9 @@ window.MITHAAS = {
 
   /* ---- Contact ---------------------------------------------------------- */
   // Store phone numbers in full international form: "+919999999999"
-  phone: null,
-  phoneDisplay: null,            // e.g. "+91 99999 99999"
-  whatsapp: null,                // digits only, with country code: "919999999999"
+  phone: "+918278370085",
+  phoneDisplay: "+91 82783 70085",
+  whatsapp: "918278370085",      // assumed same as the phone — change if WhatsApp differs
   email: null,
 
   /* ---- Location --------------------------------------------------------- */
@@ -57,8 +57,8 @@ window.MITHAAS = {
 
   /* ---- Social ----------------------------------------------------------- */
   social: {
-    instagram: null,             // full URL
-    instagramHandle: null,       // e.g. "@mithaas"
+    instagram: "https://www.instagram.com/mithaas_sweetss/",
+    instagramHandle: "@mithaas_sweetss",
     facebook: null,
     // WhatsApp link is generated from `whatsapp` above
     google: null                 // Google Business profile / reviews link

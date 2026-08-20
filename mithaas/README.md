@@ -78,6 +78,13 @@ Put the **exact, unmodified** Mithaas logo file at:
 assets/img/brand/mithaas-logo.png
 ```
 
+Or let the helper do it, which also generates the favicon, the apple-touch
+icon and the social share card from the same artwork:
+
+```bash
+python3 tools/add-logo.py ~/Downloads/mithaas-logo.png
+```
+
 The logo has deliberately **not** been recreated, redrawn or substituted anywhere in this
 build. Until the real file is present, the browser shows the image's alt text.
 See `assets/img/README.md` for the favicon and social-card exports from the same artwork.
