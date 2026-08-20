@@ -62,7 +62,7 @@
   --maxw:      1400px;
   --ease:      cubic-bezier(0.22, 0.61, 0.36, 1);
   --ease-soft: cubic-bezier(0.33, 0, 0.15, 1);
-  --nav-h:     84px;
+  --nav-h:     92px;
   --radius:    2px;
 
   /* ---- Bootstrap variable overrides ---- */
@@ -87,7 +87,7 @@
   --bs-focus-ring-width: 3px;
 }
 
-@media (max-width: 991.98px) { :root { --nav-h: 68px; } }
+@media (max-width: 991.98px) { :root { --nav-h: 74px; } }
 
 /* --------------------------------------------------------------------------
    2. Base refinements over Bootstrap Reboot
@@ -375,10 +375,10 @@ img, svg { max-width: 100%; }
 
 .brand { display: inline-flex; align-items: center; flex: 0 0 auto; }
 .brand__logo {
-  height: clamp(40px, 4.6vw, 56px); width: auto;
+  height: clamp(48px, 5.4vw, 68px); width: auto;
   transition: height 0.45s var(--ease);
 }
-.nav-mithaas[data-solid="true"] .brand__logo { height: clamp(34px, 3.6vw, 44px); }
+.nav-mithaas[data-solid="true"] .brand__logo { height: clamp(40px, 4.4vw, 54px); }
 
 /* Over a dark hero, before the bar solidifies */
 .nav-mithaas[data-solid="false"][data-over-dark="true"] .nav-link-m { color: var(--on-dark-70); }
@@ -513,6 +513,9 @@ img, svg { max-width: 100%; }
 }
 .hero__media .plate::before { inset: clamp(14px, 3vw, 40px); border-color: rgba(226, 203, 149, 0.16); }
 .hero__media .plate::after { opacity: 0.5; }
+/* The hero already carries the logo and the headline — a placeholder caption
+   behind them just competes. Keep the ground, drop the label. */
+.hero__media .plate__inner { display: none; }
 
 .hero__scrim {
   position: absolute; inset: 0; z-index: -1;

@@ -13,13 +13,30 @@ landscape frame is needed.
 
     pip install pillow      # only needed for the derived icons
 """
+import glob
 import os
+import re
 import shutil
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 BRAND = os.path.join(os.path.dirname(HERE), "assets", "img", "brand")
 IVORY = (251, 247, 239)
+
+
+def repoint(ext):
+    """Point every page at the logo file that is actually present."""
+    site = os.path.dirname(HERE)
+    pat = re.compile(r"assets/img/brand/mithaas-logo\.(png|svg|jpg|jpeg|webp)")
+    changed = 0
+    for page in sorted(glob.glob(os.path.join(site, "*.html"))):
+        s = open(page, encoding="utf-8").read()
+        new = pat.sub("assets/img/brand/mithaas-logo" + ext, s)
+        if new != s:
+            open(page, "w", encoding="utf-8").write(new)
+            changed += 1
+    if changed:
+        print("  pages     -> repointed %d HTML file(s) to mithaas-logo%s" % (changed, ext))
 
 
 def main():
@@ -34,13 +51,23 @@ def main():
     if ext not in (".png", ".svg", ".jpg", ".jpeg", ".webp"):
         sys.exit("Expected a .png, .svg, .jpg or .webp — got " + (ext or "no extension"))
 
-    dest = os.path.join(BRAND, "mithaas-logo" + (".svg" if ext == ".svg" else ".png"))
+    keep = ".svg" if ext == ".svg" else ".png"
+    dest = os.path.join(BRAND, "mithaas-logo" + keep)
     shutil.copyfile(src, dest)
     print("  logo      -> %s" % os.path.relpath(dest, os.path.dirname(HERE)))
 
+    # Remove any previous logo in a different format, then repoint the pages,
+    # so swapping formats never leaves the site referencing a stale file.
+    for old in glob.glob(os.path.join(BRAND, "mithaas-logo.*")):
+        if os.path.abspath(old) != os.path.abspath(dest):
+            os.remove(old)
+            print("  removed   -> %s" % os.path.relpath(old, os.path.dirname(HERE)))
+    repoint(keep)
+
     if ext == ".svg":
-        print("\n  SVG copied. Update the three <img src> values in the pages from\n"
-              "  mithaas-logo.png to mithaas-logo.svg, then generate the icons by hand.")
+        print("\n  SVG installed. Icons are not derived from SVG here — export\n"
+              "  favicon.png (512), apple-touch-icon.png (180) and og-mithaas.jpg\n"
+              "  (1200x630) from the same artwork, or supply a PNG instead.")
         return
 
     try:
