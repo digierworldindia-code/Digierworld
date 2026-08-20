@@ -70,15 +70,7 @@ someone. Good for showing the design to a client. Regenerate it any time with
 
 ## ⚠️ Before this goes live — three things
 
-### 1. Replace the drawn stand-in logo
-
-> **The logo currently on the site is a hand-drawn stand-in, not your official
-> artwork.** It was vector-drawn to match the cartouche, medallion, wordmark and
-> lotus of the supplied design, but the monogram, the filigree and the typeface
-> are approximations. Do not treat it as the brand mark — replace it before launch.
->
-> It lives at `assets/img/brand/mithaas-logo.svg` and was produced by
-> `tools/draw-logo.py`.
+### 1. Add the official logo
 
 Put the **exact, unmodified** Mithaas logo file at:
 
