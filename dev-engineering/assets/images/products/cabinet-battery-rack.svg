@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600" role="img" aria-label="Cabinet type battery rack">
+  <defs>
+    <pattern id="g" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M40 0H0v40" fill="none" stroke="#ffffff" stroke-opacity=".055" stroke-width="1"/>
+    </pattern>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0E3057"/><stop offset="1" stop-color="#0A2540"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="600" fill="url(#bg)"/>
+  <rect width="800" height="600" fill="url(#g)"/>
+  <g fill="none" stroke="#F2B705" stroke-width="2" stroke-opacity=".85">
+    <path d="M28 52V28h24"/><path d="M772 548v24h-24"/>
+  </g>
+  <g fill="none" stroke="#8FB4D9" stroke-width="1" stroke-opacity=".35">
+    <path d="M748 28h24v24"/><path d="M52 572H28v-24"/>
+  </g>
+  <g stroke-linecap="round" stroke-linejoin="round">
+    <path d="M200 140h400v420H200z" fill="none" stroke="#EAF2FA" stroke-width="3"/>
+    <path d="M200 140h400" fill="none" stroke="#F2B705" stroke-width="3"/>
+    <path d="M400 140v420" fill="none" stroke="#EAF2FA" stroke-width="2.4"/>
+    <path d="M378 330v56M414 330v56" fill="none" stroke="#F2B705" stroke-width="4"/>
+    <path d="M230 230h140M430 230h140M230 300h140M430 300h140M230 370h140M430 370h140" fill="none" stroke="#8FB4D9" stroke-width="1.4" stroke-opacity=".55" stroke-dasharray="7 6"/>
+    <path d="M600 140l46-36v420l-46 36" fill="none" stroke="#EAF2FA" stroke-width="2.4"/>
+    <path d="M200 140l46-36h400" fill="none" stroke="#EAF2FA" stroke-width="2.4"/>
+    <path d="M240 200h30v-30h-30z" fill="none" stroke="#EAF2FA" stroke-width="2.2"/>
+  </g>
+  <text x="28" y="584" font-family="'Barlow Condensed',Arial,sans-serif" font-size="17" letter-spacing="3"
+        fill="#8FB4D9" fill-opacity=".8">CABINET TYPE BATTERY RACK</text>
+</svg>

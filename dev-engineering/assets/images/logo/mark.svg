@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Dev Engineering">
+  <rect width="64" height="64" fill="#0A2540"/>
+  <path d="M12 14h26l12 18-12 18H12z" fill="none" stroke="#F2B705" stroke-width="3"/>
+  <path d="M21 25h12l6 7-6 7H21z" fill="#ffffff"/>
+</svg>

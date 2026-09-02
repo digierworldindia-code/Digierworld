@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600" role="img" aria-label="Fabrication and material handling shop floor">
+  <defs>
+    <pattern id="g" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M40 0H0v40" fill="none" stroke="#ffffff" stroke-opacity=".055" stroke-width="1"/>
+    </pattern>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0E3057"/><stop offset="1" stop-color="#0A2540"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="600" fill="url(#bg)"/>
+  <rect width="800" height="600" fill="url(#g)"/>
+  <g fill="none" stroke="#F2B705" stroke-width="2" stroke-opacity=".85">
+    <path d="M28 52V28h24"/><path d="M772 548v24h-24"/>
+  </g>
+  <g fill="none" stroke="#8FB4D9" stroke-width="1" stroke-opacity=".35">
+    <path d="M748 28h24v24"/><path d="M52 572H28v-24"/>
+  </g>
+  <g stroke-linecap="round" stroke-linejoin="round">
+    <path d="M40 500h720" fill="none" stroke="#EAF2FA" stroke-width="3"/>
+    <path d="M40 500h180" fill="none" stroke="#F2B705" stroke-width="3"/>
+    <path d="M70 190v310" fill="none" stroke="#EAF2FA" stroke-width="2.6"/>
+    <path d="M320 190v310" fill="none" stroke="#EAF2FA" stroke-width="2.6"/>
+    <path d="M70 190h250" fill="none" stroke="#F2B705" stroke-width="2.6"/>
+    <path d="M70 293h250" fill="none" stroke="#EAF2FA" stroke-width="2.2"/>
+    <path d="M70 396h250" fill="none" stroke="#EAF2FA" stroke-width="2.2"/>
+    <path d="M70 500h250" fill="none" stroke="#EAF2FA" stroke-width="2.2"/>
+    <path d="M153 190v310" fill="none" stroke="#8FB4D9" stroke-width="1.4" stroke-opacity=".55" stroke-dasharray="7 6"/>
+    <path d="M236 190v310" fill="none" stroke="#8FB4D9" stroke-width="1.4" stroke-opacity=".55" stroke-dasharray="7 6"/>
+    <path d="M80 202h63v79h-63z" fill="none" stroke="#8FB4D9" stroke-width="1.8"/>
+    <path d="M163 202h63v79h-63z" fill="none" stroke="#8FB4D9" stroke-width="1.8"/>
+    <path d="M246 202h63v79h-63z" fill="none" stroke="#8FB4D9" stroke-width="1.8"/>
+    <path d="M80 305h63v79h-63z" fill="none" stroke="#8FB4D9" stroke-width="1.8"/>
+    <path d="M163 305h63v79h-63z" fill="none" stroke="#8FB4D9" stroke-width="1.8"/>
+    <path d="M246 305h63v79h-63z" fill="none" stroke="#8FB4D9" stroke-width="1.8"/>
+    <path d="M80 408h63v79h-63z" fill="none" stroke="#8FB4D9" stroke-width="1.8"/>
+    <path d="M163 408h63v79h-63z" fill="none" stroke="#8FB4D9" stroke-width="1.8"/>
+    <path d="M246 408h63v79h-63z" fill="none" stroke="#8FB4D9" stroke-width="1.8"/>
+    <path d="M70 160L320 160" fill="none" stroke="#8FB4D9" stroke-width="1.2" stroke-opacity=".5"/>
+    <path d="M70 154v12" fill="none" stroke="#8FB4D9" stroke-width="1.2" stroke-opacity=".5"/>
+    <path d="M320 154v12" fill="none" stroke="#8FB4D9" stroke-width="1.2" stroke-opacity=".5"/>
+    <text x="195" y="151" text-anchor="middle" font-family="'Barlow Condensed',Arial,sans-serif" font-size="15" letter-spacing="1.5" fill="#8FB4D9" fill-opacity=".55">STORAGE BAY</text>
+    <path d="M360 500V300h160v200" fill="none" stroke="#EAF2FA" stroke-width="2.8"/>
+    <path d="M360 300h160v-46H360z" fill="none" stroke="#EAF2FA" stroke-width="2.4"/>
+    <path d="M400 254v-40h80v40" fill="none" stroke="#EAF2FA" stroke-width="2.2"/>
+    <path d="M390 340h100M390 380h100M390 420h100" fill="none" stroke="#8FB4D9" stroke-width="1.4" stroke-opacity=".55" stroke-dasharray="7 6"/>
+    <circle cx="440" cy="460" r="20" fill="none" stroke="#8FB4D9" stroke-width="2"/>
+    <path d="M520 300h34v200h-34z" fill="none" stroke="#F2B705" stroke-width="2.4"/>
+    <path d="M580 330h150v70h-150z" fill="none" stroke="#EAF2FA" stroke-width="2.6"/>
+    <path d="M580 330h150" fill="none" stroke="#F2B705" stroke-width="2.6"/>
+    <path d="M580 365h150" fill="none" stroke="#8FB4D9" stroke-width="1.4" stroke-opacity=".55" stroke-dasharray="7 6"/>
+    <circle cx="604" cy="418" r="15" fill="none" stroke="#EAF2FA" stroke-width="3"/>
+    <circle cx="604" cy="418" r="5.769230769230769" fill="none" stroke="#EAF2FA" stroke-width="2"/>
+    <path d="M595 389h18v14h-18z" fill="none" stroke="#EAF2FA" stroke-width="2.4"/>
+    <circle cx="706" cy="418" r="15" fill="none" stroke="#EAF2FA" stroke-width="3"/>
+    <circle cx="706" cy="418" r="5.769230769230769" fill="none" stroke="#EAF2FA" stroke-width="2"/>
+    <path d="M697 389h18v14h-18z" fill="none" stroke="#EAF2FA" stroke-width="2.4"/>
+    <path d="M730 330l26-20v70l-26 20" fill="none" stroke="#8FB4D9" stroke-width="2"/>
+    <path d="M580 500h130v18h-130z" fill="none" stroke="#EAF2FA" stroke-width="2.2"/>
+    <path d="M710 500l22-16v18l-22 16" fill="none" stroke="#8FB4D9" stroke-width="1.6"/>
+    <path d="M580 470h130v18h-130z" fill="none" stroke="#EAF2FA" stroke-width="2.2"/>
+    <path d="M710 470l22-16v18l-22 16" fill="none" stroke="#8FB4D9" stroke-width="1.6"/>
+    <path d="M580 440h130v18h-130z" fill="none" stroke="#EAF2FA" stroke-width="2.2"/>
+    <path d="M710 440l22-16v18l-22 16" fill="none" stroke="#8FB4D9" stroke-width="1.6"/>
+    <path d="M580 440h130" fill="none" stroke="#F2B705" stroke-width="2.4"/>
+    <path d="M40 120h720" fill="none" stroke="#8FB4D9" stroke-width="1.6"/>
+    <path d="M120 120v70M360 120v134M580 120v210M700 120v180" fill="none" stroke="#8FB4D9" stroke-width="1.4" stroke-opacity=".55" stroke-dasharray="7 6"/>
+  </g>
+  <text x="28" y="584" font-family="'Barlow Condensed',Arial,sans-serif" font-size="17" letter-spacing="3"
+        fill="#8FB4D9" fill-opacity=".8">FABRICATION AND MATERIAL HANDLING SHOP FLOOR</text>
+</svg>

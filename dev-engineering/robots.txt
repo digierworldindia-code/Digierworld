@@ -1,0 +1,8 @@
+# Dev Engineering — https://www.devengineeringworks.in
+# TODO: update the Sitemap host below once the live domain is confirmed.
+
+User-agent: *
+Allow: /
+Disallow: /assets/vendor/
+
+Sitemap: https://www.devengineeringworks.in/sitemap.xml
