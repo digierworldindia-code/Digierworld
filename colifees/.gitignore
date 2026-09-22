@@ -1,0 +1,36 @@
+# dependencies
+node_modules/
+.pnpm-store/
+
+# secrets — never commit real environment files
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+!public/**/*.key
+
+# build output
+dist/
+build/
+.next/
+out/
+*.tsbuildinfo
+
+# runtime / local data
+storage/
+uploads/
+backups/
+logs/
+*.log
+pgdata/
+
+# prisma local artifacts
+packages/database/generated/
+
+# editors / os
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
+coverage/
