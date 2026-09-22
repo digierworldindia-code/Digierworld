@@ -213,11 +213,31 @@ export async function assessClaimRisk(tx: TransactionClient, claimId: string): P
   }
 
   // --- 8. an impossible timeline ---------------------------------------------
+  // Compared by DAY, not by clock time. A sale carries the date from the
+  // invoice, which arrives as midnight, while the receipt carries the moment
+  // the consignment was confirmed. Comparing the two directly would flag every
+  // ordinary same-day sale — stock received at 09:40 and sold at 16:20 — as an
+  // impossible timeline, and an indicator that fires on normal trading is worse
+  // than no indicator at all.
   const m = claim.mattress;
   const timelineProblems: string[] = [];
-  if (m.soldAt && m.receivedAt && m.soldAt < m.receivedAt) timelineProblems.push('sold before the dealer received it');
-  if (m.receivedAt && m.dispatchedAt && m.receivedAt < m.dispatchedAt) timelineProblems.push('received before it was dispatched');
-  if (m.soldAt && submittedAt < m.soldAt.getTime()) timelineProblems.push('claim raised before the sale date');
+  const day = (value: Date | null): number | null =>
+    value ? Date.UTC(value.getUTCFullYear(), value.getUTCMonth(), value.getUTCDate()) : null;
+
+  const soldDay = day(m.soldAt);
+  const receivedDay = day(m.receivedAt);
+  const dispatchedDay = day(m.dispatchedAt);
+  const submittedDay = day(claim.submittedAt);
+
+  if (soldDay !== null && receivedDay !== null && soldDay < receivedDay) {
+    timelineProblems.push('sold before the dealer received it');
+  }
+  if (receivedDay !== null && dispatchedDay !== null && receivedDay < dispatchedDay) {
+    timelineProblems.push('received before it was dispatched');
+  }
+  if (soldDay !== null && submittedDay !== null && submittedDay < soldDay) {
+    timelineProblems.push('claim raised before the sale date');
+  }
   if (timelineProblems.length > 0) {
     signals.push({
       code: 'TIMELINE_INCONSISTENT',

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="COLIFEES">
+  <rect width="512" height="512" rx="96" fill="#16120e"/>
+  <g fill="none" stroke="#8a6a3d" stroke-width="18" stroke-linecap="round">
+    <path d="M120 206h272"/>
+    <path d="M120 256h272"/>
+    <path d="M120 306h272"/>
+  </g>
+  <rect x="104" y="170" width="304" height="172" rx="28" fill="none" stroke="#fbf9f5" stroke-width="20"/>
+</svg>

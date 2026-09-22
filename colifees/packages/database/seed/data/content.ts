@@ -324,9 +324,9 @@ export const GENERAL_FAQS = [
 
 export const SYSTEM_SETTINGS = [
   { key: 'company.legal_name', value: 'COLIFEES', category: 'company', description: 'Registered business name shown on documents' },
-  { key: 'company.support_email', value: 'support@colifees.com', category: 'company', description: 'Public support email address' },
-  { key: 'company.support_phone', value: '+91 00000 00000', category: 'company', description: 'Public support phone number' },
-  { key: 'company.address', value: 'Update this address from Admin → Settings', category: 'company', description: 'Registered address shown in the website footer' },
+  { key: 'company.support_email', value: '', category: 'company', description: 'Public support email address. Blank hides it from the website footer.' },
+  { key: 'company.support_phone', value: '', category: 'company', description: 'Public support phone number. Blank hides it from the website footer.' },
+  { key: 'company.address', value: '', category: 'company', description: 'Registered address shown in the website footer. Blank hides it.' },
   { key: 'company.gst_number', value: '', category: 'company', description: 'Company GST number, shown on invoices when set' },
   { key: 'warranty.terms_version', value: 'v1.0', category: 'warranty', description: 'Version of the warranty terms applied to new sales' },
   { key: 'warranty.claim_window_days', value: 0, category: 'warranty', description: 'Minimum days after sale before a claim may be raised. 0 disables the restriction.' },

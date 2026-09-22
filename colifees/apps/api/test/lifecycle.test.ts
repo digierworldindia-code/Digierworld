@@ -310,6 +310,13 @@ describe('mattress lifecycle', () => {
     // An early claim is flagged, since the sale was recorded moments ago.
     const codes = response.body.risk.signals.map((s: any) => s.code);
     expect(codes).toContain('EARLY_CLAIM');
+
+    // But a same-day receive-and-sell is ordinary trading, not an impossible
+    // timeline. The sale carries a date (midnight) while the receipt carries a
+    // timestamp, so a naive comparison flags every one of them — which would
+    // make the indicator fire on normal business and be worth nothing.
+    expect(codes).not.toContain('TIMELINE_INCONSISTENT');
+
     expect(response.body.risk.disclaimer).toMatch(/not a decision/i);
     expect(response.body.media.length).toBe(2);
   });

@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" role="img" aria-label="COLIFEES production floor with mattress assembly in progress">
+  <rect width="1600" height="1000" fill="#f1ece3"/>
+  <g fill="#ded5c6">
+    <rect x="0" y="720" width="1600" height="280"/>
+  </g>
+  <!-- roof trusses -->
+  <g stroke="#cabfad" stroke-width="8" fill="none">
+    <path d="M100 180h1400M100 180l180 120M1500 180l-180 120M640 180v120M960 180v120"/>
+  </g>
+  <!-- production line -->
+  <rect x="120" y="560" width="1360" height="34" rx="17" fill="#8a6a3d" opacity="0.65"/>
+  <g fill="#fdfbf7" stroke="#e0d8cb" stroke-width="4">
+    <rect x="180" y="470" width="300" height="86" rx="22"/>
+    <rect x="560" y="470" width="300" height="86" rx="22"/>
+    <rect x="940" y="470" width="300" height="86" rx="22"/>
+  </g>
+  <!-- inspection station -->
+  <g fill="#16120e" opacity="0.12">
+    <circle cx="1380" cy="500" r="54"/>
+    <rect x="1340" y="560" width="80" height="140" rx="26"/>
+  </g>
+  <g fill="#16120e" fill-opacity="0.32" font-family="Georgia, serif" font-size="30" letter-spacing="8">
+    <text x="120" y="880">SERIALISED AT INSPECTION</text>
+  </g>
+</svg>
