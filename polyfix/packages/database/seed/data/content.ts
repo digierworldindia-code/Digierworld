@@ -325,7 +325,7 @@ export const GENERAL_FAQS = [
 ];
 
 export const SYSTEM_SETTINGS = [
-  { key: 'company.legal_name', value: `${BRAND.shortName}`, category: 'company', description: 'Registered business name shown on documents' },
+  { key: 'company.legal_name', value: BRAND.legalName, category: 'company', description: 'Registered business name shown on documents' },
   { key: 'company.support_email', value: '', category: 'company', description: 'Public support email address. Blank hides it from the website footer.' },
   { key: 'company.support_phone', value: '', category: 'company', description: 'Public support phone number. Blank hides it from the website footer.' },
   { key: 'company.address', value: '', category: 'company', description: 'Registered address shown in the website footer. Blank hides it.' },

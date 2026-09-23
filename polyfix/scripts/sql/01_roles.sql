@@ -1,5 +1,5 @@
 -- =============================================================================
--- COLIFEES — PostgreSQL role separation and least privilege
+-- POLYFIX MATTRESS — PostgreSQL role separation and least privilege
 -- -----------------------------------------------------------------------------
 -- Run ONCE per environment as a PostgreSQL superuser, before the first
 -- migration:

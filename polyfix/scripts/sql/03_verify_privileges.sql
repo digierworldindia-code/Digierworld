@@ -1,5 +1,5 @@
 -- =============================================================================
--- COLIFEES — privilege verification
+-- POLYFIX MATTRESS — privilege verification
 -- Run after every deployment and after any manual database change:
 --   psql "$DIRECT_DATABASE_URL" -f scripts/sql/03_verify_privileges.sql
 -- Every row returned is a finding that needs attention.

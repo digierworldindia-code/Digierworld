@@ -1,5 +1,5 @@
 -- =============================================================================
--- COLIFEES — identifier sequence synchronisation
+-- POLYFIX MATTRESS — identifier sequence synchronisation
 -- -----------------------------------------------------------------------------
 -- Run as the SCHEMA OWNER after any operation that inserts rows carrying
 -- explicit identifiers:

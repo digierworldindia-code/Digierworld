@@ -1,3 +1,4 @@
+import path from 'node:path';
 import type { NextConfig } from 'next';
 
 /**
@@ -10,6 +11,13 @@ import type { NextConfig } from 'next';
  */
 const config: NextConfig = {
   reactStrictMode: true,
+  // Emits .next/standalone: a self-contained server with only the
+  // dependencies this app actually imports. It is what the container
+  // image copies, and it keeps `next start` working unchanged locally.
+  output: 'standalone',
+  // The workspace root, so the standalone tracer follows symlinked
+  // pnpm dependencies out of the app directory instead of stopping at it.
+  outputFileTracingRoot: path.join(import.meta.dirname, '../..'),
   poweredByHeader: false,
 
   async headers() {

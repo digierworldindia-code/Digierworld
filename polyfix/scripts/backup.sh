@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
 # =============================================================================
-# COLIFEES — database backup
+# POLYFIX MATTRESS — database backup
 # -----------------------------------------------------------------------------
 # One script, used by both the nightly cron job and the "Run a backup now"
 # button in the console, so there is a single procedure to test and to trust.
 #
 #   ./scripts/backup.sh --kind daily
-#   ./scripts/backup.sh --kind manual --out /var/backups/colifees
+#   ./scripts/backup.sh --kind manual --out /var/backups/polyfix
 #
 # What it produces
-#   colifees-<kind>-<timestamp>.dump.enc   encrypted custom-format dump
-#   colifees-<kind>-<timestamp>.sha256     checksum of the encrypted file
+#   polyfix-<kind>-<timestamp>.dump.enc   encrypted custom-format dump
+#   polyfix-<kind>-<timestamp>.sha256     checksum of the encrypted file
 #
 # Why custom format (-Fc): it restores selectively with pg_restore, compresses,
 # and is version-tolerant. A plain SQL file is also produced on request with
@@ -62,8 +62,33 @@ fail() { printf 'backup failed: %s\n' "$*" >&2; exit 1; }
 
 command -v pg_dump >/dev/null 2>&1 || fail "pg_dump is not on PATH"
 
+# -----------------------------------------------------------------------------
+# libpq does not understand the query parameters Prisma adds to a connection
+# string (`schema`, `connection_limit`, `pool_timeout`, `pgbouncer`, …). Handed
+# one, psql/pg_dump/pg_restore abort with "invalid URI query parameter", which
+# the preflight below would otherwise report as a permissions problem. Since
+# every URL in .env carries them, strip the Prisma-only ones here and keep the
+# rest (sslmode, sslrootcert and friends are real libpq parameters and matter).
+# -----------------------------------------------------------------------------
+pg_url() {
+  local url="$1" base query kept=""
+  base="${url%%\?*}"
+  [[ "$url" == *"?"* ]] || { printf '%s' "$url"; return; }
+  query="${url#*\?}"
+  local IFS='&' param
+  for param in $query; do
+    case "${param%%=*}" in
+      schema|connection_limit|pool_timeout|pgbouncer|socket_timeout|statement_cache_size) continue ;;
+      '') continue ;;
+      *) kept="${kept:+${kept}&}${param}" ;;
+    esac
+  done
+  printf '%s%s' "$base" "${kept:+?${kept}}"
+}
+
 DB_URL="${BACKUP_DATABASE_URL:-${PGDATABASE_URL:-${DIRECT_DATABASE_URL:-${DATABASE_URL:-}}}}"
 [[ -n "$DB_URL" ]] || fail "no database URL (set BACKUP_DATABASE_URL)"
+DB_URL="$(pg_url "$DB_URL")"
 
 # -----------------------------------------------------------------------------
 # Preflight: the connecting role must be able to read past Row Level Security.
@@ -89,18 +114,15 @@ mkdir -p "$OUT_DIR"
 chmod 700 "$OUT_DIR" 2>/dev/null || true
 
 TIMESTAMP="$(date -u +%Y%m%dT%H%M%SZ)"
-BASENAME="colifees-${KIND}-${TIMESTAMP}"
+BASENAME="polyfix-${KIND}-${TIMESTAMP}"
 DUMP_PATH="${OUT_DIR}/${BASENAME}.dump"
 
 log "Dumping database (${KIND})…"
-pg_dump \
-  --dbname="$DB_URL" \
-  --format=custom \
-  --compress=9 \
-  --no-owner \
-  --no-privileges \
-  --verbose \
-  --file="$DUMP_PATH" 2> >(grep -v '^pg_dump: dumping contents' >&2 || true)
+# --verbose only when we are allowed to talk: --quiet promises the artifact path
+# and nothing else, and pg_dump's progress goes to stderr.
+DUMP_ARGS=(--dbname="$DB_URL" --format=custom --compress=9 --no-owner --no-privileges --file="$DUMP_PATH")
+[[ "$QUIET" -eq 1 ]] || DUMP_ARGS+=(--verbose)
+pg_dump "${DUMP_ARGS[@]}" 2> >(grep -v '^pg_dump: dumping contents' >&2 || true)
 
 [[ -s "$DUMP_PATH" ]] || fail "pg_dump produced an empty file"
 
@@ -175,7 +197,7 @@ case "$KIND" in
 esac
 
 if [[ "$KEEP" -gt 0 ]]; then
-  mapfile -t OLD < <(ls -1t "${OUT_DIR}/colifees-${KIND}-"*.dump* 2>/dev/null | grep -v '\.sha256$' | tail -n "+$((KEEP + 1))" || true)
+  mapfile -t OLD < <(ls -1t "${OUT_DIR}/polyfix-${KIND}-"*.dump* 2>/dev/null | grep -v '\.sha256$' | tail -n "+$((KEEP + 1))" || true)
   for file in "${OLD[@]:-}"; do
     [[ -n "$file" ]] || continue
     log "Pruning $(basename "$file")"

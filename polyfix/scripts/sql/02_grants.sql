@@ -1,5 +1,5 @@
 -- =============================================================================
--- COLIFEES — least-privilege grants (idempotent)
+-- POLYFIX MATTRESS — least-privilege grants (idempotent)
 -- -----------------------------------------------------------------------------
 -- Run as the schema owner after EVERY migration:
 --

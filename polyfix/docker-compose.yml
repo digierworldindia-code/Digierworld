@@ -1,0 +1,232 @@
+# =============================================================================
+# POLYFIX MATTRESS — container topology
+# -----------------------------------------------------------------------------
+#   docker compose --profile db up -d        just PostgreSQL, apps run on the host
+#   docker compose --profile full up -d      the whole stack
+#
+# TWO RULES THIS FILE ENFORCES
+#
+#   1. The database is never reachable from the public internet. Its port is
+#      published to 127.0.0.1 only, so it is available to a developer's psql on
+#      this machine and to nothing else. On a production host, delete the
+#      `ports:` block entirely — the API reaches it over the private `internal`
+#      network by service name and needs no published port at all.
+#
+#   2. No secret is written in this file. Every credential is read from the
+#      environment (compose loads ./.env, which is git-ignored). In production,
+#      inject them from your secret manager instead and do not ship a .env.
+#
+# The web and console containers are published on loopback too: put a TLS
+# terminating reverse proxy (nginx, Caddy, a cloud load balancer) in front of
+# them. Nothing in this stack terminates TLS itself.
+# =============================================================================
+
+name: polyfix
+
+# -----------------------------------------------------------------------------
+# Networks. Two, not one, and that separation is the point: the database sits
+# only on `internal`, so the web and console containers have no route to it even
+# if they were compromised. They can reach the API; the API can reach both.
+# -----------------------------------------------------------------------------
+networks:
+  internal:
+    driver: bridge
+    internal: true     # no route out to the internet from this network
+  edge:
+    driver: bridge
+
+volumes:
+  pgdata:
+  storage:
+  backups:
+
+services:
+  # ---------------------------------------------------------------------------
+  # PostgreSQL 16
+  # ---------------------------------------------------------------------------
+  db:
+    image: postgres:16-bookworm
+    profiles: ["db", "full"]
+    restart: unless-stopped
+    environment:
+      # The superuser exists to create the least-privilege roles and for nothing
+      # else. The application never connects as this user.
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_SUPERUSER_PASSWORD:?set POSTGRES_SUPERUSER_PASSWORD in .env}
+      POSTGRES_DB: ${POSTGRES_DB:-colifees}
+      # Consumed by infra/postgres/init/10-roles.sh on first start only.
+      OWNER_DB_PASSWORD: ${OWNER_DB_PASSWORD:?set OWNER_DB_PASSWORD in .env}
+      APP_DB_PASSWORD: ${APP_DB_PASSWORD:?set APP_DB_PASSWORD in .env}
+      READONLY_DB_PASSWORD: ${READONLY_DB_PASSWORD:?set READONLY_DB_PASSWORD in .env}
+      BACKUP_DB_PASSWORD: ${BACKUP_DB_PASSWORD:?set BACKUP_DB_PASSWORD in .env}
+      # Deterministic collation, so ORDER BY does not change under the database
+      # when the image's locale data is updated.
+      POSTGRES_INITDB_ARGS: "--locale-provider=icu --icu-locale=en-IN --encoding=UTF8"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      # Runs once, on an empty data directory.
+      - ./infra/postgres/init:/docker-entrypoint-initdb.d:ro
+      - ./scripts/sql:/opt/polyfix/sql:ro
+    ports:
+      # LOOPBACK ONLY. "5432:5432" would publish the database to every interface
+      # on the host, which on a cloud VM means the internet.
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+    networks: [internal]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d ${POSTGRES_DB:-colifees}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    stop_grace_period: 1m
+    security_opt: ["no-new-privileges:true"]
+
+  # ---------------------------------------------------------------------------
+  # API — the only service that holds database credentials
+  # ---------------------------------------------------------------------------
+  api:
+    profiles: ["full"]
+    build:
+      context: .
+      dockerfile: infra/docker/api.Dockerfile
+    restart: unless-stopped
+    depends_on:
+      db: { condition: service_healthy }
+    environment:
+      NODE_ENV: production
+      APP_ENV: ${APP_ENV:-production}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      HOST: 0.0.0.0
+      PORT: 4000
+      PUBLIC_WEB_ORIGIN: ${PUBLIC_WEB_ORIGIN:?required}
+      PRIVATE_APP_ORIGIN: ${PRIVATE_APP_ORIGIN:?required}
+      API_PUBLIC_URL: ${API_PUBLIC_URL:?required}
+      # `db` is the service name on the internal network. Inside Docker the
+      # traffic never leaves the host, but sslmode is still required by the
+      # config validator in production — terminate TLS at the database or run
+      # APP_ENV=staging if this stack is not internet-facing.
+      DATABASE_URL: ${DATABASE_URL:?required}
+      DIRECT_DATABASE_URL: ${DIRECT_DATABASE_URL:-}
+      BACKUP_DATABASE_URL: ${BACKUP_DATABASE_URL:-}
+      AUTH_SECRET: ${AUTH_SECRET:?required}
+      SIGNING_SECRET: ${SIGNING_SECRET:?required}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:?required}
+      INTERNAL_API_TOKEN: ${INTERNAL_API_TOKEN:?required}
+      COOKIE_DOMAIN: ${COOKIE_DOMAIN:-}
+      MFA_REQUIRED_ROLES: ${MFA_REQUIRED_ROLES:-SUPER_ADMIN,ADMIN,WARRANTY_MANAGER}
+      STORAGE_DRIVER: ${STORAGE_DRIVER:-s3}
+      STORAGE_LOCAL_PATH: /app/storage
+      STORAGE_ENDPOINT: ${STORAGE_ENDPOINT:-}
+      STORAGE_REGION: ${STORAGE_REGION:-}
+      STORAGE_BUCKET: ${STORAGE_BUCKET:-}
+      STORAGE_ACCESS_KEY: ${STORAGE_ACCESS_KEY:-}
+      STORAGE_SECRET_KEY: ${STORAGE_SECRET_KEY:-}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      MAIL_FROM: ${MAIL_FROM:-}
+      BACKUP_DIR: /app/backups
+      BACKUP_ENCRYPTION_PASSPHRASE_FILE: ${BACKUP_ENCRYPTION_PASSPHRASE_FILE:-}
+      TRUST_PROXY: ${TRUST_PROXY:-true}
+    volumes:
+      - storage:/app/storage
+      - backups:/app/backups
+    ports:
+      # Loopback only. In production remove this: web and console reach the API
+      # by service name on the `edge` network and nothing else should.
+      - "127.0.0.1:${API_PORT:-4000}:4000"
+    networks: [internal, edge]
+    security_opt: ["no-new-privileges:true"]
+    read_only: false     # the API writes uploads and backups to its volumes
+
+  # ---------------------------------------------------------------------------
+  # Public website — renders on the server, holds no database credential
+  # ---------------------------------------------------------------------------
+  web:
+    profiles: ["full"]
+    build:
+      context: .
+      dockerfile: infra/docker/next.Dockerfile
+      args:
+        APP_DIR: apps/web
+        APP_FILTER: "@polyfix/web"
+        # Inlined into the client bundle at build time. Public by definition.
+        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-https://polyfixmattress.com}
+        NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-https://app.polyfixmattress.com}
+        NEXT_PUBLIC_SITE_NAME: ${NEXT_PUBLIC_SITE_NAME:-POLYFIX MATTRESS}
+        NEXT_PUBLIC_GA4_MEASUREMENT_ID: ${NEXT_PUBLIC_GA4_MEASUREMENT_ID:-}
+        NEXT_PUBLIC_GSC_VERIFICATION: ${NEXT_PUBLIC_GSC_VERIFICATION:-}
+    restart: unless-stopped
+    depends_on:
+      api: { condition: service_started }
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      HOSTNAME: 0.0.0.0
+      # Server-side only. Never reaches the browser.
+      INTERNAL_API_URL: http://api:4000
+      INTERNAL_API_TOKEN: ${INTERNAL_API_TOKEN:?required}
+    ports:
+      - "127.0.0.1:${WEB_PORT:-3000}:3000"
+    # `edge` only: the website has no route to the database, by construction.
+    networks: [edge]
+    security_opt: ["no-new-privileges:true"]
+    read_only: true
+    tmpfs: ["/tmp"]
+
+  # ---------------------------------------------------------------------------
+  # Private console — admin + dealer portal, noindex, authenticated
+  # ---------------------------------------------------------------------------
+  console:
+    profiles: ["full"]
+    build:
+      context: .
+      dockerfile: infra/docker/next.Dockerfile
+      args:
+        APP_DIR: apps/app
+        APP_FILTER: "@polyfix/console"
+        NEXT_PUBLIC_CONSOLE_NAME: ${NEXT_PUBLIC_CONSOLE_NAME:-POLYFIX MATTRESS Control}
+        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-https://polyfixmattress.com}
+    restart: unless-stopped
+    depends_on:
+      api: { condition: service_started }
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      HOSTNAME: 0.0.0.0
+      # The browser talks to this app's BFF route, which forwards to the API.
+      # The browser never holds an API address.
+      APP_INTERNAL_API_URL: http://api:4000
+    ports:
+      - "127.0.0.1:${CONSOLE_PORT:-3001}:3000"
+    networks: [edge]
+    security_opt: ["no-new-privileges:true"]
+    read_only: true
+    tmpfs: ["/tmp"]
+
+  # ---------------------------------------------------------------------------
+  # Optional: S3-compatible object storage for local development, so the local
+  # disk driver (which production refuses) is not the only thing ever exercised.
+  #   docker compose --profile storage up -d
+  # ---------------------------------------------------------------------------
+  minio:
+    image: minio/minio:latest
+    profiles: ["storage"]
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${STORAGE_ACCESS_KEY:-polyfixdev}
+      MINIO_ROOT_PASSWORD: ${STORAGE_SECRET_KEY:?set STORAGE_SECRET_KEY in .env}
+    volumes:
+      - storage:/data
+    ports:
+      - "127.0.0.1:9000:9000"
+      - "127.0.0.1:9001:9001"
+    networks: [internal, edge]
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    security_opt: ["no-new-privileges:true"]
