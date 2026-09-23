@@ -1,0 +1,28 @@
+{
+  "name": "polyfix-platform",
+  "version": "1.0.0",
+  "private": true,
+  "description": "POLYFIX MATTRESS — premium public website + secure mattress lifecycle management platform",
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=20.11.0",
+    "pnpm": ">=9"
+  },
+  "packageManager": "pnpm@10.33.0",
+  "scripts": {
+    "dev": "pnpm --parallel --filter \"./apps/*\" dev",
+    "build": "pnpm --filter \"./packages/*\" build && pnpm --filter \"./apps/*\" build",
+    "typecheck": "pnpm -r typecheck",
+    "lint": "pnpm -r lint",
+    "test": "pnpm --filter @polyfix/api test",
+    "db:generate": "pnpm --filter @polyfix/database generate",
+    "db:migrate": "pnpm --filter @polyfix/database migrate:dev",
+    "db:deploy": "pnpm --filter @polyfix/database migrate:deploy",
+    "db:seed": "pnpm --filter @polyfix/database seed",
+    "db:studio": "pnpm --filter @polyfix/database studio",
+    "db:reset": "pnpm --filter @polyfix/database reset"
+  },
+  "devDependencies": {
+    "typescript": "5.9.2"
+  }
+}

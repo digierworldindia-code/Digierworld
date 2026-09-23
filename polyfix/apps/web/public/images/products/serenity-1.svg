@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900" role="img" aria-label="POLYFIX Serenity Memory Foam mattress in a bedroom setting">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f6f1e8"/><stop offset="1" stop-color="#e8e0d3"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="900" fill="url(#bg)"/>
+  <g transform="translate(150 250)">
+    <rect x="0" y="0" width="900" height="90" rx="30" fill="#b9c3c7"/>
+    <rect x="0" y="96" width="900" height="70" rx="22" fill="#dce3e5"/>
+    <rect x="0" y="172" width="900" height="150" rx="26" fill="#8fa0a6"/>
+    <g stroke="#ffffff" stroke-opacity="0.5" stroke-width="3" fill="none">
+      <path d="M40 45h820M40 131h820"/>
+    </g>
+    <g fill="#16120e" fill-opacity="0.07">
+      <rect x="60" y="330" width="780" height="26" rx="13"/>
+    </g>
+  </g>
+  <g fill="#16120e" fill-opacity="0.34" font-family="Georgia, serif" font-size="26" letter-spacing="6">
+    <text x="150" y="680">POLYFIX</text>
+  </g>
+</svg>
