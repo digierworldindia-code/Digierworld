@@ -199,12 +199,18 @@ export async function registerSystemRoutes(app: FastifyInstance): Promise<void> 
           pg_size_pretty(pg_database_size(current_database())) AS size,
           (SELECT count(*) FROM pg_stat_activity WHERE datname = current_database()) AS connections
       `,
-      app.prisma.$queryRaw<{ migration_name: string; finished_at: Date | null }[]>`
-        SELECT migration_name, finished_at
-        FROM _prisma_migrations
-        ORDER BY finished_at DESC NULLS FIRST
-        LIMIT 5
-      `,
+      // 02_grants.sql deliberately revokes _prisma_migrations from the
+      // application role — migration bookkeeping is none of its business. That
+      // is the right call, so this panel degrades instead of demanding the
+      // grant back: without it the whole health page used to fail with a 500.
+      app.prisma
+        .$queryRaw<{ migration_name: string; finished_at: Date | null }[]>`
+          SELECT migration_name, finished_at
+          FROM _prisma_migrations
+          ORDER BY finished_at DESC NULLS FIRST
+          LIMIT 5
+        `
+        .catch(() => null),
       app.prisma.$transaction(async (tx) => {
         await tx.$executeRaw`SELECT set_config('app.dealer_id', 'ALL', true)`;
         const [mattresses, dealers, claims, audits] = await Promise.all([
@@ -248,10 +254,19 @@ export async function registerSystemRoutes(app: FastifyInstance): Promise<void> 
         size: info?.size ?? 'unknown',
         activeConnections: Number(info?.connections ?? 0),
       },
-      migrations: {
-        applied: migrations.map((m) => ({ name: m.migration_name, appliedAt: m.finished_at })),
-        pending: migrations.filter((m) => m.finished_at === null).length,
-      },
+      migrations: migrations
+        ? {
+            readable: true as const,
+            applied: migrations.map((m) => ({ name: m.migration_name, appliedAt: m.finished_at })),
+            pending: migrations.filter((m) => m.finished_at === null).length,
+          }
+        : {
+            // Not an error: the application role is not permitted to read the
+            // migration table. Check it with psql as the schema owner.
+            readable: false as const,
+            applied: [],
+            pending: 0,
+          },
       records: counts,
       lastBackup: lastBackup
         ? {

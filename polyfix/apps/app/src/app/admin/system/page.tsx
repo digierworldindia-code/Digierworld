@@ -8,7 +8,7 @@ import { Kpi, Loading, ErrorNotice, Field, formatDate } from '@/components/ui';
 
 interface Health {
   database: { version: string; size: string; activeConnections: number };
-  migrations: { applied: { name: string; appliedAt: string | null }[]; pending: number };
+  migrations: { readable: boolean; applied: { name: string; appliedAt: string | null }[]; pending: number };
   records: { mattresses: number; dealers: number; claims: number; audits: number };
   lastBackup: { kind: string; startedAt: string; finishedAt: string | null; bytes: number | null; offsiteCopied: boolean; ageHours: number } | null;
   rowLevelSecurity: { policyCount: number; dealerTablesWithoutRls: string[]; healthy: boolean };
@@ -84,7 +84,7 @@ export default function SystemPage() {
       <div className="grid grid-4">
         <Kpi label="PostgreSQL" value={data.database.version} hint={`${data.database.size} on disk`} />
         <Kpi label="Connections" value={data.database.activeConnections} hint="Active right now" />
-        <Kpi label="Migrations" value={data.migrations.applied.length} hint={data.migrations.pending > 0 ? `${data.migrations.pending} pending` : 'All applied'} alert={data.migrations.pending > 0} />
+        <Kpi label="Migrations" value={data.migrations.readable ? data.migrations.applied.length : '—'} hint={!data.migrations.readable ? 'not readable by the app role' : data.migrations.pending > 0 ? `${data.migrations.pending} pending` : 'All applied'} alert={data.migrations.pending > 0} />
         <Kpi label="Audit entries" value={data.records.audits.toLocaleString('en-IN')} hint="Append-only" />
       </div>
 
@@ -204,6 +204,12 @@ export default function SystemPage() {
           <section className="card" aria-labelledby="migrations-heading">
             <h2 id="migrations-heading" style={{ marginBottom: '0.75rem' }}>Recent migrations</h2>
             <div className="stack-sm">
+              {!data.migrations.readable ? (
+                <p className="small faint">
+                  The application role is not permitted to read the migration table, by design.
+                  Check applied migrations with <span className="mono">pnpm --filter @polyfix/database migrate:status</span>.
+                </p>
+              ) : null}
               {data.migrations.applied.map((migration) => (
                 <div key={migration.name} className="small">
                   <span className="mono">{migration.name}</span>
