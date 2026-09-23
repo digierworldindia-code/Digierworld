@@ -17,6 +17,11 @@ build/
 out/
 *.tsbuildinfo
 
+# delivery archives — a compressed copy of this repository is not part of it
+*.tar.gz
+*.tgz
+*.zip
+
 # runtime / local data
 storage/
 uploads/
