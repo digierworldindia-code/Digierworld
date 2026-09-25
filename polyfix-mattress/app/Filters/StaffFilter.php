@@ -27,7 +27,7 @@ class StaffFilter implements FilterInterface
         ]);
 
         return $context->isDealer()
-            ? redirect()->to(site_url('dealer'))->with('error', 'That area is for POLYFIX staff.')
+            ? redirect()->to(site_url('dealer'))->with('error', 'That area is for ' . brand('shortName') . ' staff.')
             : service('response')->setStatusCode(403)->setBody(view('errors/html/error_403'));
     }
 

@@ -78,6 +78,7 @@ class Dispatches extends AdminController
         return $this->act(
             fn () => LogisticsService::instance()->createDispatch($in),
             static fn ($r) => "Dispatch {$r['dispatch_code']} is ready with {$r['item_count']} unit(s). Send it when it leaves the warehouse.",
+            site_url('admin/dispatches?status=DRAFT'),
         );
     }
 

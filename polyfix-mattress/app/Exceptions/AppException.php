@@ -2,6 +2,7 @@
 
 namespace App\Exceptions;
 
+use CodeIgniter\Exceptions\HTTPExceptionInterface;
 use RuntimeException;
 use Throwable;
 
@@ -11,8 +12,12 @@ use Throwable;
  * getMessage() is written for them: short, specific, and free of internals.
  * Anything that is NOT an AppException is treated as a fault — logged in full,
  * and shown to the visitor only as a generic error with a reference.
+ *
+ * It carries an HTTP status, so one thrown outside a form action (a dealer
+ * opening another dealer's record, say) renders the matching error page rather
+ * than a fault: CodeIgniter reads the exception code for HTTPExceptionInterface.
  */
-class AppException extends RuntimeException
+class AppException extends RuntimeException implements HTTPExceptionInterface
 {
     public function __construct(
         string $publicMessage,
