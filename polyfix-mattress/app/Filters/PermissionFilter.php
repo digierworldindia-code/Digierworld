@@ -19,6 +19,8 @@ use CodeIgniter\HTTP\ResponseInterface;
  */
 class PermissionFilter implements FilterInterface
 {
+    use MarksPrivate;
+
     public function before(RequestInterface $request, $arguments = null)
     {
         $context     = service('requestContext');
@@ -44,10 +46,10 @@ class PermissionFilter implements FilterInterface
             : 'You do not have permission to do that.';
 
         if ($request->getMethod() === 'GET') {
-            return service('response')->setStatusCode(403)->setBody(view('errors/html/error_403', ['message' => $message]));
+            return $this->private(service('response')->setStatusCode(403)->setBody(view('errors/html/error_403', ['message' => $message])));
         }
 
-        return redirect()->back()->with('error', $message);
+        return $this->private(redirect()->back()->with('error', $message));
     }
 
     public function after(RequestInterface $request, ResponseInterface $response, $arguments = null)

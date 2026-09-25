@@ -23,7 +23,8 @@ final class Audit
     private const SENSITIVE_KEYS = [
         'password', 'password_hash', 'passwordHash', 'new_password', 'newPassword',
         'current_password', 'currentPassword', 'mfa_secret_encrypted', 'mfaSecretEncrypted',
-        'mfa_recovery_codes', 'mfaRecoveryCodes', 'token', 'token_hash', 'tokenHash',
+        'mfa_secret', 'mfaSecret', 'mfa_recovery_codes', 'mfaRecoveryCodes',
+        'token', 'token_hash', 'tokenHash', 'secret', 'api_key', 'apiKey',
         'phone_encrypted', 'phoneEncrypted', 'email_encrypted', 'emailEncrypted',
         'csrf_pfm', 'totp_code', 'totpCode', 'recovery_code',
     ];

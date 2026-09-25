@@ -225,6 +225,12 @@ final class ClaimService
             $claim = $scope->assertOwns('warranty_claims',
                 $db->query('SELECT * FROM warranty_claims WHERE id = ? AND deleted_at IS NULL FOR UPDATE', [$claimId])->getRowArray(), 'claim');
 
+            // A closed claim is finished. A reply here would look answered and
+            // never be read, so it is refused rather than quietly filed.
+            if (in_array($claim['status'], self::CLOSED_STATES, true)) {
+                throw AppException::rule('This claim is closed. Contact the warranty team if something has changed.');
+            }
+
             $to = $claim['status'] === 'INFO_REQUESTED' ? 'UNDER_REVIEW' : $claim['status'];
             if ($to !== $claim['status']) {
                 self::assertTransition($claim['status'], $to);

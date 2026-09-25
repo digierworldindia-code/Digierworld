@@ -95,6 +95,11 @@ final class PasswordPolicy
                 break;
             }
         }
+        // Length made of one character repeated is length a guesser gets free:
+        // "aaaaaaaaaaaaA1!" satisfies every rule above and is trivial.
+        if ($length >= self::MIN_LENGTH && count(array_unique(mb_str_split($password))) < 6) {
+            $problems[] = 'must use more than a handful of different characters';
+        }
 
         return $problems;
     }

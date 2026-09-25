@@ -18,6 +18,8 @@ use CodeIgniter\HTTP\ResponseInterface;
  */
 class AuthFilter implements FilterInterface
 {
+    use MarksPrivate;
+
     private const ALWAYS_ALLOWED = ['account/security', 'account/password', 'account/mfa/start', 'account/mfa/confirm', 'logout'];
 
     public function before(RequestInterface $request, $arguments = null)
@@ -30,7 +32,7 @@ class AuthFilter implements FilterInterface
             $session->set('redirect_after_login', current_url());
             $login = str_starts_with($path, 'dealer') ? 'dealer/login' : 'admin/login';
 
-            return redirect()->to(site_url($login))->with('notice', 'Please sign in to continue.');
+            return $this->private(redirect()->to(site_url($login))->with('notice', 'Please sign in to continue.'));
         }
 
         service('requestContext')->signIn($user);
@@ -39,10 +41,10 @@ class AuthFilter implements FilterInterface
             return null;
         }
         if ($user['must_change_password']) {
-            return redirect()->to(site_url('account/security'))->with('notice', 'You are using a temporary password. Set your own before continuing.');
+            return $this->private(redirect()->to(site_url('account/security'))->with('notice', 'You are using a temporary password. Set your own before continuing.'));
         }
         if ($user['must_enrol_mfa']) {
-            return redirect()->to(site_url('account/security?enrol=1'))->with('notice', 'Your role requires two-factor authentication. Set it up to continue.');
+            return $this->private(redirect()->to(site_url('account/security?enrol=1'))->with('notice', 'Your role requires two-factor authentication. Set it up to continue.'));
         }
 
         return null;

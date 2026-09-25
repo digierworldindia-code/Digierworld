@@ -15,6 +15,8 @@ use CodeIgniter\HTTP\ResponseInterface;
  */
 class StaffFilter implements FilterInterface
 {
+    use MarksPrivate;
+
     public function before(RequestInterface $request, $arguments = null)
     {
         $context = service('requestContext');
@@ -26,9 +28,9 @@ class StaffFilter implements FilterInterface
             'user' => $context->userId() ?? 'anonymous', 'path' => $request->getUri()->getPath(),
         ]);
 
-        return $context->isDealer()
+        return $this->private($context->isDealer()
             ? redirect()->to(site_url('dealer'))->with('error', 'That area is for ' . brand('shortName') . ' staff.')
-            : service('response')->setStatusCode(403)->setBody(view('errors/html/error_403'));
+            : service('response')->setStatusCode(403)->setBody(view('errors/html/error_403')));
     }
 
     public function after(RequestInterface $request, ResponseInterface $response, $arguments = null)

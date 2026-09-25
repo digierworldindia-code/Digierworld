@@ -29,9 +29,10 @@ class Migrate extends BaseCommand
     protected $group       = 'POLYFIX';
     protected $name        = 'polyfix:migrate';
     protected $description = 'Apply pending database migrations as the schema owner.';
-    protected $usage       = 'polyfix:migrate [--owner-user <name>]';
+    protected $usage       = 'polyfix:migrate [--owner-user <name>] [--group <name>]';
     protected $options     = [
         '--owner-user' => 'MySQL account with DDL rights (default: polyfix_owner)',
+        '--group'      => 'Database group to migrate (default: the default group; "tests" for the test database)',
     ];
 
     public function run(array $params)
@@ -45,7 +46,14 @@ class Migrate extends BaseCommand
             return EXIT_ERROR;
         }
 
-        $connection             = config(Database::class)->default;
+        $group      = $params['group'] ?? CLI::getOption('group') ?? 'default';
+        $config     = config(Database::class);
+        $connection = $config->{$group} ?? null;
+        if ($connection === null) {
+            CLI::error("No database group named {$group}.");
+
+            return EXIT_ERROR;
+        }
         $connection['username'] = $user;
         $connection['password'] = $password;
 
