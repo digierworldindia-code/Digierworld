@@ -20,8 +20,10 @@ class ReferenceData extends Seeder
 {
     /** Settings, with the value a new installation starts from. */
     private const SETTINGS = [
-        ['company.legal_name', '"POLYFIX MATTRESS"', 'company', 'Registered name, shown in the website footer'],
-        ['company.address', '"Manesar, Noranpur Chowk, Haryana, India"', 'company', 'Address shown on the website'],
+        // The brand and the company's own address come from Config\Brand, so
+        // there is still only one place they are written down.
+        ['company.legal_name', null, 'company', 'Registered name, shown in the website footer'],
+        ['company.address', null, 'company', 'Address shown on the website'],
         ['company.support_phone', '""', 'company', 'Support number shown on the website'],
         ['company.support_email', '""', 'company', 'Support address shown on the website'],
         ['company.gst_number', '""', 'company', 'GSTIN, for documents'],
@@ -97,7 +99,13 @@ class ReferenceData extends Seeder
 
     private function settings(): void
     {
+        $defaults = [
+            'company.legal_name' => json_encode(brand('legalName'), JSON_UNESCAPED_UNICODE),
+            'company.address'    => json_encode(brand('location')['line'], JSON_UNESCAPED_UNICODE),
+        ];
+
         foreach (self::SETTINGS as [$key, $value, $category, $description]) {
+            $value ??= $defaults[$key] ?? '""';
             $existing = $this->db->table('system_settings')->select('key')->where('key', $key)->get()->getRow();
             if ($existing === null) {
                 // An existing value is never overwritten: it is the administrator's.
