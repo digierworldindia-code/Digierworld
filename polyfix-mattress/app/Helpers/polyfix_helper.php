@@ -106,7 +106,10 @@ if (! function_exists('humanise')) {
 if (! function_exists('client_ip')) {
     function client_ip(): string
     {
-        return substr((string) service('request')->getIPAddress(), 0, 64);
+        $request = service('request');
+
+        // Commands run by an operator have no client address.
+        return $request instanceof \CodeIgniter\HTTP\IncomingRequest ? substr((string) $request->getIPAddress(), 0, 64) : '127.0.0.1';
     }
 }
 
@@ -139,5 +142,40 @@ if (! function_exists('field_error')) {
         return isset($errors[$field])
             ? '<div class="invalid-feedback d-block" id="' . esc($field, 'attr') . '-error">' . esc($errors[$field]) . '</div>'
             : '';
+    }
+}
+
+if (! function_exists('pill')) {
+    /**
+     * A status as a coloured pill. Colour carries meaning only: green done/
+     * healthy, amber waiting on someone, red a problem, blue in motion.
+     */
+    function pill(?string $status, ?string $label = null): string
+    {
+        static $tones = [
+            'positive' => ['ACTIVE', 'PUBLISHED', 'RECEIVED', 'APPROVED', 'SOLD', 'OK', 'LOW', 'SUCCESS', 'CONVERTED', 'REPLACED'],
+            'caution'  => ['PENDING', 'PENDING_ACTIVATION', 'DRAFT', 'INFO_REQUESTED', 'PARTIALLY_RECEIVED', 'MEDIUM', 'SUBMITTED', 'NEW', 'FOLLOW_UP', 'NOT_ACTIVATED', 'CLAIM_OPEN', 'DAMAGED', 'RUNNING'],
+            'critical' => ['SUSPENDED', 'TERMINATED', 'REJECTED', 'VOID', 'HIGH', 'CANCELLED', 'MISSING', 'FAILED', 'DISABLED', 'SCRAPPED'],
+            'info'     => ['IN_DISPATCH', 'DISPATCHED', 'UNDER_REVIEW', 'DEALER_RECEIVED', 'CONTACTED', 'MANUFACTURED'],
+        ];
+        $tone = 'neutral';
+        foreach ($tones as $t => $list) {
+            if (in_array($status, $list, true)) {
+                $tone = $t;
+                break;
+            }
+        }
+
+        return '<span class="pill pill-' . $tone . '">' . esc($label ?? humanise($status)) . '</span>';
+    }
+}
+
+if (! function_exists('query_url')) {
+    /** The current URL with some query parameters replaced (null removes one). */
+    function query_url(array $changes): string
+    {
+        $query = array_filter(array_merge(service('request')->getGet() ?? [], $changes), static fn ($v) => $v !== null && $v !== '');
+
+        return current_url() . ($query === [] ? '' : '?' . http_build_query($query));
     }
 }

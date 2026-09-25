@@ -35,7 +35,7 @@ class Polyfix extends BaseConfig
 
     // --- uploads ----------------------------------------------------------------
     /** Outside the web root. WRITEPATH is expanded at runtime. */
-    public string $uploadPath        = 'WRITEPATH/uploads/claims';
+    public string $uploadPath        = 'WRITEPATH/uploads';
     public int $maxUploadBytes       = 8_388_608;
     public int $maxVideoBytes        = 26_214_400;
     public int $maxUploadsPerClaim   = 8;

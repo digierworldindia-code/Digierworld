@@ -30,6 +30,12 @@ final class Labels
 
     public static function qrSvg(string $qrToken, int $scale = 5): string
     {
+        return self::qrSvgFor(self::verifyUrl($qrToken), $scale);
+    }
+
+    /** Any string as an inline SVG QR code (also used for two-factor setup). */
+    public static function qrSvgFor(string $data, int $scale = 5): string
+    {
         $options = new QROptions([
             'outputInterface'  => QRMarkupSVG::class,
             'outputBase64'     => false,
@@ -41,7 +47,7 @@ final class Labels
             'drawLightModules' => false,
         ]);
 
-        return (new QRCode($options))->render(self::verifyUrl($qrToken));
+        return (new QRCode($options))->render($data);
     }
 
     public static function barcodeSvg(string $serial): string

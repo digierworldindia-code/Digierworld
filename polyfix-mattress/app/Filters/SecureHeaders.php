@@ -45,10 +45,15 @@ class SecureHeaders implements FilterInterface
             $response->setHeader('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload');
         }
 
-        $response->setHeader('Content-Security-Policy', implode('; ', $csp));
+        // A controller that set a stricter policy (claim media) keeps it.
+        if (! $response->hasHeader('Content-Security-Policy')) {
+            $response->setHeader('Content-Security-Policy', implode('; ', $csp));
+        }
         $response->setHeader('X-Content-Type-Options', 'nosniff');
         $response->setHeader('X-Frame-Options', 'DENY');
-        $response->setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+        if (! $response->hasHeader('Referrer-Policy')) {
+            $response->setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+        }
         $response->setHeader('Cross-Origin-Opener-Policy', 'same-origin');
         $response->setHeader('Permissions-Policy', 'accelerometer=(), camera=(self), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()');
         $response->removeHeader('X-Powered-By');

@@ -119,7 +119,11 @@ final class RequestContext
 
     public function userAgent(): ?string
     {
-        $agent = (string) service('request')->getUserAgent();
+        $request = service('request');
+        if (! $request instanceof \CodeIgniter\HTTP\IncomingRequest) {
+            return 'spark (command line)';
+        }
+        $agent = (string) $request->getUserAgent();
 
         return $agent === '' ? null : mb_substr($agent, 0, 400);
     }

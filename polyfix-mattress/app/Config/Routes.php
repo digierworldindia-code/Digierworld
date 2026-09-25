@@ -80,7 +80,16 @@ $routes->group('admin', ['filter' => ['auth', 'staff', 'noindex'], 'namespace' =
     $routes->get('mattresses', 'Mattresses::index', ['filter' => 'can:mattress.read']);
     $routes->get('mattresses/(:uuid)', 'Mattresses::show/$1', ['filter' => 'can:mattress.read']);
     $routes->get('mattresses/(:uuid)/label', 'Mattresses::label/$1', ['filter' => 'can:mattress.read']);
+    $routes->post('mattresses/(:uuid)/delete', 'Mattresses::delete/$1', ['filter' => 'can:mattress.delete']);
     $routes->get('lookup', 'Mattresses::lookup', ['filter' => 'can:mattress.read']);
+    $routes->get('products', 'Products::index', ['filter' => 'can:product.read']);
+    $routes->get('products/new', 'Products::new', ['filter' => 'can:product.write']);
+    $routes->post('products', 'Products::create', ['filter' => 'can:product.write']);
+    $routes->get('products/(:uuid)', 'Products::show/$1', ['filter' => 'can:product.read']);
+    $routes->post('products/(:uuid)', 'Products::update/$1', ['filter' => 'can:product.write']);
+    $routes->post('products/(:uuid)/status', 'Products::status/$1', ['filter' => 'can:product.publish']);
+    $routes->post('products/(:uuid)/variants', 'Products::saveVariant/$1', ['filter' => 'can:product.write']);
+    $routes->post('products/(:uuid)/delete', 'Products::delete/$1', ['filter' => 'can:product.delete']);
     $routes->get('batches', 'Batches::index', ['filter' => 'can:batch.read']);
     $routes->post('batches', 'Batches::create', ['filter' => 'can:batch.write']);
     $routes->get('batches/(:uuid)', 'Batches::show/$1', ['filter' => 'can:batch.read']);
@@ -147,6 +156,7 @@ $routes->group('admin', ['filter' => ['auth', 'staff', 'noindex'], 'namespace' =
     $routes->post('users/(:uuid)', 'Users::update/$1', ['filter' => 'can:user.write']);
     $routes->post('users/(:uuid)/roles', 'Users::roles/$1', ['filter' => 'can:user.role.assign']);
     $routes->post('users/(:uuid)/force-password-reset', 'Users::forceReset/$1', ['filter' => 'can:user.reset_password']);
+    $routes->post('users/(:uuid)/reset-mfa', 'Users::resetMfa/$1', ['filter' => 'can:user.reset_password']);
     $routes->get('roles', 'Users::roleMatrix', ['filter' => 'can:user.read']);
     $routes->get('notifications', 'Notifications::index', ['filter' => 'can:dashboard.view']);
     $routes->post('notifications/(:uuid)/read', 'Notifications::read/$1', ['filter' => 'can:dashboard.view']);
