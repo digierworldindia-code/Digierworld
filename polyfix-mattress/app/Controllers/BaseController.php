@@ -85,9 +85,4 @@ abstract class BaseController extends Controller
     {
         throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
     }
-
-    protected function page(string $view, array $data = []): string
-    {
-        return view($view, $data + ['ctx' => $this->ctx]);
-    }
 }
