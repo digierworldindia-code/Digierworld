@@ -11,7 +11,6 @@ use CodeIgniter\Filters\Honeypot;
 use CodeIgniter\Filters\InvalidChars;
 use CodeIgniter\Filters\PageCache;
 use CodeIgniter\Filters\PerformanceMetrics;
-use CodeIgniter\Filters\SecureHeaders;
 
 class Filters extends BaseFilters
 {
@@ -29,7 +28,14 @@ class Filters extends BaseFilters
         'toolbar'       => DebugToolbar::class,
         'honeypot'      => Honeypot::class,
         'invalidchars'  => InvalidChars::class,
-        'secureheaders' => SecureHeaders::class,
+        'secureheaders' => \App\Filters\SecureHeaders::class,
+        // POLYFIX
+        'auth'          => \App\Filters\AuthFilter::class,
+        'staff'         => \App\Filters\StaffFilter::class,
+        'dealer'        => \App\Filters\DealerFilter::class,
+        'can'           => \App\Filters\PermissionFilter::class,
+        'noindex'       => \App\Filters\NoIndex::class,
+        'throttle'      => \App\Filters\Throttle::class,
         'cors'          => Cors::class,
         'forcehttps'    => ForceHTTPS::class,
         'pagecache'     => PageCache::class,
@@ -72,13 +78,15 @@ class Filters extends BaseFilters
      */
     public array $globals = [
         'before' => [
-            // 'honeypot',
-            // 'csrf',
-            // 'invalidchars',
+            // Every state-changing request carries a CSRF token. Public forms
+            // carry their own honeypot field ("website"): a filled one is
+            // recorded with a high spam score and answered as a success, so a
+            // bot learns nothing (the framework honeypot would reject it).
+            'csrf',
+            'invalidchars',
         ],
         'after' => [
-            // 'honeypot',
-            // 'secureheaders',
+            'secureheaders',
         ],
     ];
 

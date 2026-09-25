@@ -1,25 +1,7 @@
-<!doctype html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <meta name="robots" content="noindex">
-
-    <title><?= lang('Errors.whoops') ?></title>
-
-    <style>
-        <?= preg_replace('#[\r\n\t ]+#', ' ', file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . 'debug.css')) ?>
-    </style>
-</head>
-<body>
-
-    <div class="container text-center">
-
-        <h1 class="headline"><?= lang('Errors.whoops') ?></h1>
-
-        <p class="lead"><?= lang('Errors.weHitASnag') ?></p>
-
-    </div>
-
-</body>
-
-</html>
+<?php
+// Production: no message, no trace, no path — only an apology and a way on.
+echo view('errors/html/_page', [
+    'code'  => 500,
+    'title' => 'Something went wrong on our side',
+    'body'  => 'The problem has been logged. Please try again in a few minutes.',
+]);

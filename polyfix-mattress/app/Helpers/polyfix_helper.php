@@ -109,3 +109,35 @@ if (! function_exists('client_ip')) {
         return substr((string) service('request')->getIPAddress(), 0, 64);
     }
 }
+
+if (! function_exists('ip_hash')) {
+    /**
+     * One-way, keyed hash of the client address — enough to spot abuse from
+     * one source, useless for identifying a person. The address itself is
+     * never stored with a public submission.
+     */
+    function ip_hash(): string
+    {
+        return hash('sha256', client_ip() . ':' . config('Polyfix')->signingSecret);
+    }
+}
+
+if (! function_exists('invalid')) {
+    /** " is-invalid" when the last submission failed validation on this field. */
+    function invalid(string $field): string
+    {
+        return isset((session('errors') ?? [])[$field]) ? ' is-invalid' : '';
+    }
+}
+
+if (! function_exists('field_error')) {
+    /** The escaped validation message for a field, ready to print under it. */
+    function field_error(string $field): string
+    {
+        $errors = session('errors') ?? [];
+
+        return isset($errors[$field])
+            ? '<div class="invalid-feedback d-block" id="' . esc($field, 'attr') . '-error">' . esc($errors[$field]) . '</div>'
+            : '';
+    }
+}

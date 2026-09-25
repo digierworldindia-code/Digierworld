@@ -23,6 +23,23 @@ use CodeIgniter\HotReloader\HotReloader;
  *      Events::on('create', [$myInstance, 'myMethod']);
  */
 
+/*
+ * POLYFIX: refuse to serve a production request with missing or placeholder
+ * secrets. A half-configured deployment that runs is more dangerous than one
+ * that stops, and the log names what is wrong — never the values.
+ */
+Events::on('pre_system', static function (): void {
+    if (ENVIRONMENT !== 'production' || is_cli()) {
+        return;
+    }
+    $problems = config(\Config\Polyfix::class)->problems();
+    if ($problems !== []) {
+        log_message('critical', 'Refusing to serve: invalid configuration: ' . implode('; ', $problems));
+
+        throw new \RuntimeException('The application is not configured. See the log for details.');
+    }
+});
+
 Events::on('pre_system', static function (): void {
     if (ENVIRONMENT !== 'testing') {
         $value = ini_get('zlib.output_compression');

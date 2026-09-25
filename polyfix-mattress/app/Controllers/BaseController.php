@@ -2,44 +2,92 @@
 
 namespace App\Controllers;
 
+use App\Exceptions\AppException;
+use App\Libraries\RequestContext;
 use CodeIgniter\Controller;
+use CodeIgniter\HTTP\RedirectResponse;
 use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
 use Psr\Log\LoggerInterface;
+use Throwable;
 
 /**
- * BaseController provides a convenient place for loading components
- * and performing functions that are needed by all your controllers.
+ * Shared by every controller.
  *
- * Extend this class in any new controllers:
- * ```
- *     class Home extends BaseController
- * ```
- *
- * For security, be sure to declare any new methods as protected or private.
+ * Controllers stay thin: they read and validate input, call a service, and
+ * choose what to show. Business rules live in app/Services; SQL never appears
+ * in a view.
  */
 abstract class BaseController extends Controller
 {
-    /**
-     * Be sure to declare properties for any property fetch you initialized.
-     * The creation of dynamic property is deprecated in PHP 8.2.
-     */
+    /** @var \CodeIgniter\HTTP\IncomingRequest */
+    protected $request;
 
-    // protected $session;
+    protected RequestContext $ctx;
 
-    /**
-     * @return void
-     */
     public function initController(RequestInterface $request, ResponseInterface $response, LoggerInterface $logger)
     {
-        // Load here all helpers you want to be available in your controllers that extend BaseController.
-        // Caution: Do not put the this below the parent::initController() call below.
-        // $this->helpers = ['form', 'url'];
-
-        // Caution: Do not edit this line.
         parent::initController($request, $response, $logger);
+        $this->ctx = service('requestContext');
+    }
 
-        // Preload any models, libraries, etc, here.
-        // $this->session = service('session');
+    /**
+     * Runs a state-changing action and turns the outcome into a redirect with a
+     * message. A rule the person broke (AppException) comes back as a readable
+     * error on the form they were using; anything else is a fault, logged in
+     * full and reported generically.
+     */
+    protected function act(callable $action, string|callable $successMessage, ?string $successUrl = null): RedirectResponse
+    {
+        try {
+            $result = $action();
+        } catch (AppException $e) {
+            if ($e->internal() !== null) {
+                log_message('info', 'refused: {why}', ['why' => $e->internal()]);
+            }
+
+            return redirect()->back()->withInput()->with('error', $e->getMessage());
+        } catch (Throwable $e) {
+            log_message('error', '[{rid}] {class}: {msg} at {file}:{line}', [
+                'rid' => $this->ctx->requestId, 'class' => $e::class, 'msg' => $e->getMessage(),
+                'file' => $e->getFile(), 'line' => $e->getLine(),
+            ]);
+
+            return redirect()->back()->withInput()->with('error', 'Something went wrong. Reference ' . $this->ctx->requestId . ' — quote it if you contact support.');
+        }
+
+        $message = is_string($successMessage) ? $successMessage : $successMessage($result);
+        $target  = $successUrl !== null ? redirect()->to($successUrl) : redirect()->back();
+
+        return $target->with('success', $message);
+    }
+
+    /**
+     * Validates the request. On failure, returns to the form with every
+     * field's message; on success returns only the validated fields.
+     *
+     * @param array<string,string|array> $rules
+     *
+     * @return array<string,mixed>|RedirectResponse
+     */
+    protected function validated(array $rules, array $messages = []): array|RedirectResponse
+    {
+        if (! $this->validate($rules, $messages)) {
+            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors())
+                ->with('error', 'Please check the highlighted fields.');
+        }
+
+        return $this->validator->getValidated();
+    }
+
+    /** A page-not-found that never reveals whether something exists but is not yours. */
+    protected function notFound(): never
+    {
+        throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+    }
+
+    protected function page(string $view, array $data = []): string
+    {
+        return view($view, $data + ['ctx' => $this->ctx]);
     }
 }
