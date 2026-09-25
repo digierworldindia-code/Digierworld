@@ -39,6 +39,8 @@ class BrandCheck extends BaseCommand
         'docs/',                           // documentation quotes both names
         'README.md',
         'LICENSE',
+        'composer.json',                   // the package's own description
+        'public/assets/vendor/README.md',
     ];
 
     public function run(array $params)

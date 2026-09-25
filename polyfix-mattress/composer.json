@@ -1,22 +1,15 @@
 {
-    "name": "codeigniter4/appstarter",
-    "description": "CodeIgniter4 starter app",
-    "license": "MIT",
+    "name": "polyfix/mattress-platform",
+    "description": "POLYFIX MATTRESS — website, staff console and dealer portal on CodeIgniter 4",
+    "license": "proprietary",
     "type": "project",
-    "homepage": "https://codeigniter.com",
-    "support": {
-        "forum": "https://forum.codeigniter.com/",
-        "source": "https://github.com/codeigniter4/CodeIgniter4",
-        "slack": "https://codeigniterchat.slack.com"
-    },
+    "homepage": "https://polyfixmattress.com",
     "require": {
         "php": "^8.2",
         "chillerlan/php-qrcode": "^5.0",
         "codeigniter4/framework": "^4.7",
         "openspout/openspout": "^4.28",
-        "picqer/php-barcode-generator": "^3.2",
-        "twbs/bootstrap": "^5.3",
-        "twbs/bootstrap-icons": "^1.11"
+        "picqer/php-barcode-generator": "^3.2"
     },
     "require-dev": {
         "fakerphp/faker": "^1.9",
