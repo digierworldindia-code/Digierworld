@@ -1,0 +1,57 @@
+POLYFIX MATTRESS — what is in this package and how to install it
+================================================================
+
+Contents
+--------
+  POLYFIX-MATTRESS/                 the application, dependencies already installed
+  POLYFIX-MATTRESS-DATABASE.sql     schema, roles, permissions, settings, website
+                                    content and one plant. No accounts, no customer
+                                    data, no audit trail — those belong to a running
+                                    system and to its backups.
+  README.md                         start here
+  docs/                             database, migration, backup, restore, deployment, security
+  .env.example                      every setting, with notes. Copy it to .env and edit.
+
+There is no .env in this package, and no password, key or token of any kind.
+
+Install
+-------
+  1.  Unpack outside the web root, e.g. /srv/polyfix.
+  2.  Point the web server's document root at POLYFIX-MATTRESS/public.
+  3.  cp .env.example .env  and fill in app.baseURL, the database, and three secrets:
+        php -r 'echo base64_encode(random_bytes(32)), PHP_EOL;'   # polyfix.encryptionKey
+        php -r 'echo bin2hex(random_bytes(32)), PHP_EOL;'         # polyfix.signingSecret
+        php spark key:generate                                    # encryption.key
+  4.  mysql -u root -p -e "CREATE DATABASE polyfix_mattress CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;"
+      mysql -u root -p polyfix_mattress < POLYFIX-MATTRESS-DATABASE.sql
+  5.  chmod -R 770 writable
+  6.  Create the database accounts and restrict the application's one:
+        mysql -u root -p polyfix_mattress < database/sql/generate-privileges.sql | mysql -u root -p polyfix_mattress
+        mysql -u root -p polyfix_mattress < database/sql/verify-privileges.sql
+  7.  php spark polyfix:create-user --email you@your-domain --name "Your Name" --role SUPER_ADMIN
+      It prints a one-time password, once. You will be made to change it at first
+      sign-in, and to enrol two-factor authentication.
+  8.  Sign in at /admin/login, then open Console → System and read the checks.
+
+Upgrading an existing installation instead
+------------------------------------------
+Do not load the .sql file over live data. Take a backup, then:
+
+    php spark polyfix:migrate --owner-user polyfix_owner
+    php spark polyfix:seed ReferenceData
+
+Bringing data over from the previous platform
+---------------------------------------------
+Against an empty database, instead of the .sql file:
+
+    php spark polyfix:import-postgres --pg-dsn "host=… dbname=colifees" --pg-user colifees_backup --dry-run
+    php spark polyfix:import-postgres --pg-dsn "host=… dbname=colifees" --pg-user colifees_backup
+
+It reads PostgreSQL in a read-only snapshot, copies everything in one
+transaction, then compares every value it wrote. docs/migration.md has the detail.
+
+Before you go live
+------------------
+docs/deployment.md ends with a checklist: CI_ENVIRONMENT=production, HTTPS on,
+the application's database account restricted, two-factor enrolled for the senior
+roles, and a backup taken and restored once.
