@@ -90,7 +90,18 @@ class Session extends BaseConfig
      * when auto-regenerating the session ID. When set to FALSE, the data
      * will be later deleted by the garbage collector.
      */
-    public bool $regenerateDestroy = true;
+    /*
+     * The id rotates every $timeToUpdate seconds. Destroying the old record at
+     * that moment signs people out mid-task: a request already in flight — a
+     * report download, an asset fetch, a second tab — still carries the
+     * previous id and finds nothing behind it.
+     *
+     * The rotation that actually matters for session fixation is the one at
+     * sign-in, and AuthService calls regenerate(true) there, which destroys the
+     * pre-authentication session outright. The periodic rotation leaves its old
+     * record to expire with the garbage collector instead.
+     */
+    public bool $regenerateDestroy = false;
 
     /**
      * --------------------------------------------------------------------------
