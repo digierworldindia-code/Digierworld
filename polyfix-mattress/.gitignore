@@ -85,6 +85,10 @@ php_errors.log
 # Composer
 #-------------------------
 vendor/
+# …except the compiled front-end files the pages load. They are committed on
+# purpose: the application has no build step and pulls nothing from a CDN.
+!public/assets/vendor/
+!public/assets/vendor/**
 
 #-------------------------
 # IDE / Development Files
@@ -124,3 +128,9 @@ _modules/*
 
 /results/
 /phpunit.xml
+
+# Delivery archives are built from the repository, not kept in it.
+/delivery/
+
+# Source maps are for debugging Bootstrap itself, not for running the site.
+public/assets/vendor/**/*.map
