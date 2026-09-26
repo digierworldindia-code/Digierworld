@@ -22,7 +22,12 @@ import base64
 import io
 import os
 import re
+import shutil
+import socket
+import subprocess
 import sys
+import time
+import urllib.request
 from urllib.parse import quote
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -31,6 +36,40 @@ OFFLINE = "--cdn" not in sys.argv
 
 PAGES = ["index", "our-story", "sweets", "bakery", "restaurant", "menu",
          "gallery", "contact", "privacy-policy", "terms", "404"]
+
+
+def render_pages():
+    """The pages are PHP now, so run them through PHP's built-in server and
+    capture the rendered HTML — the same bytes a visitor would receive."""
+    php = shutil.which("php")
+    if not php:
+        sys.exit("PHP not found. Install php-cli, then run this again.")
+    with socket.socket() as probe:
+        probe.bind(("127.0.0.1", 0))
+        port = probe.getsockname()[1]
+    server = subprocess.Popen([php, "-S", "127.0.0.1:%d" % port, "-t", SITE],
+                              cwd=SITE, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    try:
+        base = "http://127.0.0.1:%d/" % port
+        for _ in range(60):
+            try:
+                urllib.request.urlopen(base + "index.php", timeout=1).read()
+                break
+            except Exception:
+                time.sleep(0.1)
+        else:
+            sys.exit("Could not start the PHP server.")
+        out = {}
+        for slug in PAGES:
+            with urllib.request.urlopen(base + slug + ".php", timeout=10) as r:
+                out[slug] = r.read().decode("utf-8")
+        return out
+    finally:
+        server.terminate()
+        server.wait(timeout=5)
+
+
+RENDERED = None
 ICONS = ["arrow-right", "chevron-left", "chevron-right", "facebook", "instagram",
          "journal-text", "search", "telephone", "whatsapp", "x-lg"]
 
@@ -92,11 +131,11 @@ def rewrite_links(s):
     def sub(m):
         page, frag = m.group(1), m.group(2) or ""
         return 'href="#/%s%s"' % (page, ("/" + frag[1:]) if frag else "")
-    return re.sub(r'href="([a-z0-9-]+)\.html(#[a-z-]+)?"', sub, s)
+    return re.sub(r'href="([a-z0-9-]+)\.(?:html|php)(#[a-z-]+)?"', sub, s)
 
 
 def page_body(slug):
-    html = read(SITE, slug + ".html")
+    html = RENDERED[slug]
     i = html.index('<nav class="actionbar"')
     j = html.index("</nav>", i) + len("</nav>")
     k = html.index('<footer class="footer">')
@@ -104,7 +143,8 @@ def page_body(slug):
     return html[j:k].replace('<main id="main">', "<main>").strip()
 
 
-home = read(SITE, "index.html")
+RENDERED = render_pages()
+home = RENDERED["index"]
 chrome = rewrite_links(home[home.index('<header class="nav-mithaas"'):
                             home.index("</nav>", home.index('<nav class="actionbar"')) + 6])
 footer = rewrite_links(home[home.index('<footer class="footer">'):

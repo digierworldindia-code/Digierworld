@@ -4,67 +4,21 @@
     python3 serve.py            ->  http://localhost:8000
     python3 serve.py 3000       ->  http://localhost:3000
 
-No dependencies — this uses only the Python standard library. Serves from this
-folder regardless of where you run it from, sends a proper 404.html, and
-disables caching so a refresh always shows your latest edit.
+The site is PHP now, so this starts PHP's own built-in web server. You need
+PHP 8 installed:
+
+    Ubuntu / Debian   sudo apt install php-cli
+    macOS             brew install php
+    Windows           https://windows.php.net/download
 
 Press Ctrl+C to stop.
 """
-import functools
-import http.server
 import os
-import socket
-import socketserver
+import shutil
+import subprocess
 import sys
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
-
-
-class Handler(http.server.SimpleHTTPRequestHandler):
-    extensions_map = {
-        **http.server.SimpleHTTPRequestHandler.extensions_map,
-        ".js": "text/javascript",
-        ".mjs": "text/javascript",
-        ".json": "application/json",
-        ".webp": "image/webp",
-        ".avif": "image/avif",
-        ".svg": "image/svg+xml",
-        ".woff2": "font/woff2",
-        ".woff": "font/woff",
-    }
-
-    def end_headers(self):
-        # Always serve fresh files while editing.
-        self.send_header("Cache-Control", "no-store, max-age=0")
-        super().end_headers()
-
-    def send_error(self, code, message=None, explain=None):
-        # Use the site's own 404 page rather than the stock Python one.
-        if code == 404:
-            page = os.path.join(ROOT, "404.html")
-            if os.path.exists(page):
-                body = open(page, "rb").read()
-                self.send_response(404)
-                self.send_header("Content-Type", "text/html; charset=utf-8")
-                self.send_header("Content-Length", str(len(body)))
-                self.end_headers()
-                if self.command != "HEAD":
-                    self.wfile.write(body)
-                return
-        super().send_error(code, message, explain)
-
-    def log_message(self, fmt, *args):
-        # Quiet the per-request noise; missing photographs are expected until
-        # real images are added to assets/img/.
-        status = str(args[1]) if len(args) > 1 else ""
-        if status.startswith("4") or status.startswith("5"):
-            return
-        sys.stderr.write("  %s\n" % (fmt % args))
-
-
-class Server(socketserver.TCPServer):
-    allow_reuse_address = True
-    daemon_threads = True
 
 
 def main():
@@ -75,35 +29,29 @@ def main():
         except ValueError:
             sys.exit("Usage: python3 serve.py [port]")
 
-    handler = functools.partial(Handler, directory=ROOT)
+    php = shutil.which("php")
+    if not php:
+        sys.exit(
+            "PHP was not found on this machine.\n\n"
+            "The website needs PHP to run, because the pages share one header\n"
+            "and footer through PHP includes. Install it with:\n\n"
+            "    Ubuntu / Debian   sudo apt install php-cli\n"
+            "    macOS             brew install php\n"
+            "    Windows           https://windows.php.net/download\n\n"
+            "Just want to look at the design? Open mithaas-offline.html — that\n"
+            "is the whole site in one file and needs nothing installed."
+        )
 
-    try:
-        httpd = Server(("", port), handler)
-    except OSError as err:
-        if getattr(err, "errno", None) in (48, 98):  # address already in use
-            sys.exit(
-                "Port %d is already in use.\n"
-                "Try another one:  python3 serve.py %d" % (port, port + 1)
-            )
-        raise
-
-    host = socket.gethostname()
     print("\n  MITHAAS — running locally")
     print("  " + "-" * 38)
     print("  Local:    http://localhost:%d" % port)
-    try:
-        print("  Network:  http://%s:%d" % (socket.gethostbyname(host), port))
-    except OSError:
-        pass
     print("\n  Serving:  %s" % ROOT)
     print("  Stop:     Ctrl+C\n")
 
     try:
-        httpd.serve_forever()
+        subprocess.run([php, "-S", "localhost:%d" % port, "-t", ROOT], cwd=ROOT)
     except KeyboardInterrupt:
         print("\n  Stopped.\n")
-    finally:
-        httpd.server_close()
 
 
 if __name__ == "__main__":

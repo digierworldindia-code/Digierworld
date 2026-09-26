@@ -74,8 +74,12 @@
     }, { passive: true });
     onScroll();
 
-    /* Mark the current page in every nav list */
-    var here = location.pathname.split("/").pop() || "index.html";
+    /* Mark the current page in every nav list.
+       PHP already sets aria-current server-side; this keeps the markup correct
+       if a page is ever served statically. A directory URL ("/" or "/mithaas/")
+       resolves to the index page. */
+    var here = location.pathname.split("/").pop();
+    if (!here || here.indexOf(".") === -1) here = "index.php";
     $$("[data-navlink]").forEach(function (a) {
       if (a.getAttribute("data-navlink") === here) a.setAttribute("aria-current", "page");
     });

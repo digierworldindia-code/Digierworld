@@ -1,89 +1,12 @@
-<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Mithaas | Indian Sweets, Bakery &amp; Restaurant</title>
-<meta name="description" content="Mithaas is a sweet shop, a daily bakery and a full vegetarian restaurant under one roof — traditional mithai, fresh cakes and breads, North Indian, South Indian, chaat and Chinese.">
-<link rel="canonical" href="https://www.digierworld.com/mithaas/index.html">
-<meta name="theme-color" content="#FBF7EF">
-<meta name="robots" content="index, follow, max-image-preview:large">
+<?php
+declare(strict_types=1);
 
-<meta property="og:site_name" content="Mithaas">
-<meta property="og:type" content="website">
-<meta property="og:title" content="Mithaas | Indian Sweets, Bakery &amp; Restaurant">
-<meta property="og:description" content="Mithaas is a sweet shop, a daily bakery and a full vegetarian restaurant under one roof — traditional mithai, fresh cakes and breads, North Indian, South Indian, chaat and Chinese.">
-<meta property="og:url" content="https://www.digierworld.com/mithaas/index.html">
-<meta property="og:image" content="https://www.digierworld.com/mithaas/assets/img/brand/og-mithaas.jpg">
-<meta property="og:image:alt" content="Mithaas — Sweets, Bakery, Restaurant">
-<meta property="og:locale" content="en_IN">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Mithaas | Indian Sweets, Bakery &amp; Restaurant">
-<meta name="twitter:description" content="Mithaas is a sweet shop, a daily bakery and a full vegetarian restaurant under one roof — traditional mithai, fresh cakes and breads, North Indian, South Indian, chaat and Chinese.">
-<meta name="twitter:image" content="https://www.digierworld.com/mithaas/assets/img/brand/og-mithaas.jpg">
+$pageTitle       = 'Mithaas | Indian Sweets, Bakery & Restaurant';
+$metaDescription = 'Mithaas is a sweet shop, a daily bakery and a full vegetarian restaurant under one roof — traditional mithai, fresh cakes and breads, North Indian, South Indian, chaat and Chinese.';
 
-<link rel="icon" href="assets/img/brand/favicon.png" sizes="any">
-<link rel="apple-touch-icon" href="assets/img/brand/apple-touch-icon.png">
+require __DIR__ . '/includes/header.php';
+?>
 
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="preload" as="style"
-  href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap">
-<link rel="stylesheet"
-  href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap">
-
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-  integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-<link rel="stylesheet" href="assets/css/mithaas.css">
-</head>
-<body>
-<a class="skip-link" href="#main">Skip to content</a>
-
-<header class="nav-mithaas" data-solid="false">
-  <div class="container">
-    <a class="brand" href="index.html" aria-label="Mithaas — home">
-      <img class="brand__logo" data-logo="nav" src="assets/img/brand/mithaas-logo.png"
-           alt="Mithaas — Sweets, Bakery, Restaurant" width="240" height="150">
-    </a>
-
-    <nav class="nav-links" aria-label="Primary"><a class="nav-link-m" href="index.html" data-navlink="index.html">Home</a><a class="nav-link-m" href="our-story.html" data-navlink="our-story.html">Our Story</a><a class="nav-link-m" href="sweets.html" data-navlink="sweets.html">Sweets</a><a class="nav-link-m" href="bakery.html" data-navlink="bakery.html">Bakery</a><a class="nav-link-m" href="restaurant.html" data-navlink="restaurant.html">Restaurant</a><a class="nav-link-m" href="menu.html" data-navlink="menu.html">Menu</a><a class="nav-link-m" href="gallery.html" data-navlink="gallery.html">Gallery</a><a class="nav-link-m" href="contact.html" data-navlink="contact.html">Contact</a></nav>
-
-    <a class="btn btn-sm-brand nav-cta" href="contact.html">Visit Us</a>
-
-    <button class="navbar-toggler-m" type="button" data-bs-toggle="offcanvas"
-            data-bs-target="#menuDrawer" aria-controls="menuDrawer" aria-label="Open menu">
-      <span></span><span></span><span></span>
-    </button>
-  </div>
-</header>
-
-<div class="offcanvas offcanvas-end offcanvas-mithaas" tabindex="-1" id="menuDrawer"
-     aria-labelledby="menuDrawerLabel">
-  <div class="offcanvas-header">
-    <h2 class="offcanvas-title visually-hidden" id="menuDrawerLabel">Menu</h2>
-    <a class="brand" href="index.html" aria-label="Mithaas — home">
-      <img class="brand__logo" data-logo="nav" src="assets/img/brand/mithaas-logo.png"
-           alt="Mithaas — Sweets, Bakery, Restaurant" width="200" height="125">
-    </a>
-    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close menu"></button>
-  </div>
-  <div class="offcanvas-body">
-    <nav class="drawer-links" aria-label="Mobile"><a class="drawer-link" href="index.html" data-navlink="index.html" style="--i:0"><span class="idx">01</span><span>Home</span></a><a class="drawer-link" href="our-story.html" data-navlink="our-story.html" style="--i:1"><span class="idx">02</span><span>Our Story</span></a><a class="drawer-link" href="sweets.html" data-navlink="sweets.html" style="--i:2"><span class="idx">03</span><span>Sweets</span></a><a class="drawer-link" href="bakery.html" data-navlink="bakery.html" style="--i:3"><span class="idx">04</span><span>Bakery</span></a><a class="drawer-link" href="restaurant.html" data-navlink="restaurant.html" style="--i:4"><span class="idx">05</span><span>Restaurant</span></a><a class="drawer-link" href="menu.html" data-navlink="menu.html" style="--i:5"><span class="idx">06</span><span>Menu</span></a><a class="drawer-link" href="gallery.html" data-navlink="gallery.html" style="--i:6"><span class="idx">07</span><span>Gallery</span></a><a class="drawer-link" href="contact.html" data-navlink="contact.html" style="--i:7"><span class="idx">08</span><span>Contact</span></a></nav>
-    <div class="drawer-foot">
-      <a class="btn" href="menu.html">Explore Our Menu</a>
-      <p class="form-note mt-3 mb-0">
-        <span data-field="addressInline" data-pending="Address to be confirmed"></span>
-      </p>
-    </div>
-  </div>
-</div>
-
-<nav class="actionbar" data-show="false" aria-label="Quick actions">
-  <a data-action="call" href="#"><i class="bi bi-telephone" aria-hidden="true"></i>Call</a>
-  <a data-action="whatsapp" data-message="Hello Mithaas, I'd like to place an order." href="#"><i class="bi bi-whatsapp" aria-hidden="true"></i>WhatsApp</a>
-  <a href="menu.html"><i class="bi bi-journal-text" aria-hidden="true"></i>Menu</a>
-</nav>
 
 <main id="main">
 
@@ -105,8 +28,8 @@
           Beautifully crafted sweets, freshly baked favourites and flavours made for every occasion.
         </p>
         <div class="btn-row btn-row--center hero__actions">
-          <a class="btn btn-gold" href="menu.html">Explore Our Menu</a>
-          <a class="btn btn-on-dark" href="contact.html">Visit Mithaas</a>
+          <a class="btn btn-gold" href="menu.php">Explore Our Menu</a>
+          <a class="btn btn-on-dark" href="contact.php">Visit Mithaas</a>
         </div>
       </div>
     </div>
@@ -158,7 +81,7 @@
               We would rather make less of something and make it properly.
             </p>
             <p class="mt-4 mb-0">
-              <a class="tlink" href="our-story.html">Read our story <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+              <a class="tlink" href="our-story.php">Read our story <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
             </p>
           </div>
         </div>
@@ -175,7 +98,7 @@
           <h2 class="display-2" id="fav-h">The Mithaas Favourites</h2>
         </div>
         <div class="col-lg-4 text-lg-end" data-reveal>
-          <a class="tlink" href="sweets.html">All our sweets <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+          <a class="tlink" href="sweets.php">All our sweets <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
         </div>
       </div>
 
@@ -186,7 +109,7 @@
           <h3 class="sweet__name">Gulab Jamun</h3>
           <p class="sweet__desc">Soft, warm, and soaked right through with cardamom syrup.</p>
           <p class="sweet__meta"><span>250g / 500g / 1kg</span>
-            <a class="tlink" href="menu.html#traditional-mithai" aria-label="See Gulab Jamun on the menu">
+            <a class="tlink" href="menu.php#traditional-mithai" aria-label="See Gulab Jamun on the menu">
               Details <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
           </p>
         </article>
@@ -196,7 +119,7 @@
           <h3 class="sweet__name">Kaju Katli</h3>
           <p class="sweet__desc">Thin diamonds of cashew and sugar, finished with silver leaf.</p>
           <p class="sweet__meta"><span>250g / 500g / 1kg</span>
-            <a class="tlink" href="menu.html#traditional-mithai" aria-label="See Kaju Katli on the menu">
+            <a class="tlink" href="menu.php#traditional-mithai" aria-label="See Kaju Katli on the menu">
               Details <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
           </p>
         </article>
@@ -206,7 +129,7 @@
           <h3 class="sweet__name">Motichoor Laddoo</h3>
           <p class="sweet__desc">Tiny pearls of boondi pressed into a laddoo that gives way at first bite.</p>
           <p class="sweet__meta"><span>250g / 500g / 1kg</span>
-            <a class="tlink" href="menu.html#traditional-mithai" aria-label="See Motichoor Laddoo on the menu">
+            <a class="tlink" href="menu.php#traditional-mithai" aria-label="See Motichoor Laddoo on the menu">
               Details <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
           </p>
         </article>
@@ -216,7 +139,7 @@
           <h3 class="sweet__name">Rasmalai</h3>
           <p class="sweet__desc">Chhena discs resting in thickened, cardamom-scented milk.</p>
           <p class="sweet__meta"><span>4 pc / 8 pc</span>
-            <a class="tlink" href="menu.html#traditional-mithai" aria-label="See Rasmalai on the menu">
+            <a class="tlink" href="menu.php#traditional-mithai" aria-label="See Rasmalai on the menu">
               Details <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
           </p>
         </article>
@@ -226,7 +149,7 @@
           <h3 class="sweet__name">Kaju Anjeer Roll</h3>
           <p class="sweet__desc">Cashew wrapped around a fig centre, sliced thin.</p>
           <p class="sweet__meta"><span>250g / 500g / 1kg</span>
-            <a class="tlink" href="menu.html#traditional-mithai" aria-label="See Kaju Anjeer Roll on the menu">
+            <a class="tlink" href="menu.php#traditional-mithai" aria-label="See Kaju Anjeer Roll on the menu">
               Details <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
           </p>
         </article>
@@ -236,7 +159,7 @@
           <h3 class="sweet__name">Ghewar</h3>
           <p class="sweet__desc">The monsoon disc of lace-thin batter, soaked and topped with malai.</p>
           <p class="sweet__meta"><span>In season</span>
-            <a class="tlink" href="menu.html#traditional-mithai" aria-label="See Ghewar on the menu">
+            <a class="tlink" href="menu.php#traditional-mithai" aria-label="See Ghewar on the menu">
               Details <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
           </p>
         </article></div>
@@ -261,7 +184,7 @@
             <h3 class="display-3 mb-3">Traditional Mithai</h3>
             <p class="lead">Gulab jamun, laddoo, burfi, jalebi — the sweets that turn up at every festival, every exam result and every ordinary Tuesday that needed improving.</p>
             <ul class="panel__list"><li>Laddoo</li><li>Burfi</li><li>Jalebi</li><li>Peda</li><li>Rasgulla</li><li>Halwa</li></ul>
-            <p class="mt-4 mb-0"><a class="tlink" href="menu.html#traditional-mithai">
+            <p class="mt-4 mb-0"><a class="tlink" href="menu.php#traditional-mithai">
               See the traditional mithai <i class="bi bi-arrow-right" aria-hidden="true"></i></a></p>
           </div>
         </div>
@@ -278,7 +201,7 @@
             <h3 class="display-3 mb-3">Premium Sweets</h3>
             <p class="lead">More dry fruit, more patience, and a box that looks like it means something. These are the ones that go out for weddings and Diwali.</p>
             <ul class="panel__list"><li>Kaju Katli</li><li>Anjeer</li><li>Pista Roll</li><li>Badam Barfi</li><li>Gift Boxes</li></ul>
-            <p class="mt-4 mb-0"><a class="tlink" href="menu.html#premium-sweets">
+            <p class="mt-4 mb-0"><a class="tlink" href="menu.php#premium-sweets">
               See the premium sweets <i class="bi bi-arrow-right" aria-hidden="true"></i></a></p>
           </div>
         </div>
@@ -295,7 +218,7 @@
             <h3 class="display-3 mb-3">Regional Favourites</h3>
             <p class="lead">Ghewar from Rajasthan, petha from Agra, mysore pak from the south. India makes sweets differently in every direction, and we've learned a few of them.</p>
             <ul class="panel__list"><li>Ghewar</li><li>Petha</li><li>Mysore Pak</li><li>Sandesh</li></ul>
-            <p class="mt-4 mb-0"><a class="tlink" href="menu.html#regional-seasonal">
+            <p class="mt-4 mb-0"><a class="tlink" href="menu.php#regional-seasonal">
               See the regional favourites <i class="bi bi-arrow-right" aria-hidden="true"></i></a></p>
           </div>
         </div>
@@ -312,7 +235,7 @@
             <h3 class="display-3 mb-3">Seasonal Specials</h3>
             <p class="lead">Gajar halwa when the carrots are red, ghewar through the monsoon, thandai at Holi. Some things are worth waiting for.</p>
             <ul class="panel__list"><li>Gajar Halwa</li><li>Moong Dal Halwa</li><li>Malpua</li><li>Thandai</li></ul>
-            <p class="mt-4 mb-0"><a class="tlink" href="menu.html#regional-seasonal">
+            <p class="mt-4 mb-0"><a class="tlink" href="menu.php#regional-seasonal">
               See the seasonal specials <i class="bi bi-arrow-right" aria-hidden="true"></i></a></p>
           </div>
         </div>
@@ -323,7 +246,7 @@
         </div>
       </div>
       <div class="text-center">
-        <a class="btn btn-ghost" href="sweets.html" data-reveal>Explore The Sweets</a>
+        <a class="btn btn-ghost" href="sweets.php" data-reveal>Explore The Sweets</a>
       </div>
     </div>
   </section>
@@ -346,7 +269,7 @@
 
       <div class="row g-4" data-stagger>
         <div class="col-sm-6 col-lg-4" data-reveal>
-          <a class="tile fig ar-43 fig--zoom d-block" href="menu.html#bakery">
+          <a class="tile fig ar-43 fig--zoom d-block" href="menu.php#bakery">
             <img src="assets/img/bakery/truffle-cake.jpg" alt="Cakes at Mithaas"
                  data-photo data-label="Cakes" loading="lazy" decoding="async">
             <span class="tile__cap">
@@ -356,7 +279,7 @@
           </a>
         </div>
         <div class="col-sm-6 col-lg-4" data-reveal>
-          <a class="tile fig ar-43 fig--zoom d-block" href="menu.html#bakery">
+          <a class="tile fig ar-43 fig--zoom d-block" href="menu.php#bakery">
             <img src="assets/img/bakery/pastry-counter.jpg" alt="Pastries at Mithaas"
                  data-photo data-label="Pastries" loading="lazy" decoding="async">
             <span class="tile__cap">
@@ -366,7 +289,7 @@
           </a>
         </div>
         <div class="col-sm-6 col-lg-4" data-reveal>
-          <a class="tile fig ar-43 fig--zoom d-block" href="menu.html#bakery">
+          <a class="tile fig ar-43 fig--zoom d-block" href="menu.php#bakery">
             <img src="assets/img/bakery/cookies.jpg" alt="Cookies &amp; Rusk at Mithaas"
                  data-photo data-label="Cookies &amp; Rusk" loading="lazy" decoding="async">
             <span class="tile__cap">
@@ -376,7 +299,7 @@
           </a>
         </div>
         <div class="col-sm-6 col-lg-4" data-reveal>
-          <a class="tile fig ar-43 fig--zoom d-block" href="menu.html#bakery">
+          <a class="tile fig ar-43 fig--zoom d-block" href="menu.php#bakery">
             <img src="assets/img/bakery/bread.jpg" alt="Breads &amp; Buns at Mithaas"
                  data-photo data-label="Breads &amp; Buns" loading="lazy" decoding="async">
             <span class="tile__cap">
@@ -386,7 +309,7 @@
           </a>
         </div>
         <div class="col-sm-6 col-lg-4" data-reveal>
-          <a class="tile fig ar-43 fig--zoom d-block" href="menu.html#bakery">
+          <a class="tile fig ar-43 fig--zoom d-block" href="menu.php#bakery">
             <img src="assets/img/bakery/veg-puff.jpg" alt="Baked Snacks at Mithaas"
                  data-photo data-label="Baked Snacks" loading="lazy" decoding="async">
             <span class="tile__cap">
@@ -396,7 +319,7 @@
           </a>
         </div>
         <div class="col-sm-6 col-lg-4" data-reveal>
-          <a class="tile fig ar-43 fig--zoom d-block" href="menu.html#bakery">
+          <a class="tile fig ar-43 fig--zoom d-block" href="menu.php#bakery">
             <img src="assets/img/bakery/brownie.jpg" alt="Doughnuts &amp; Brownies at Mithaas"
                  data-photo data-label="Doughnuts &amp; Brownies" loading="lazy" decoding="async">
             <span class="tile__cap">
@@ -407,7 +330,7 @@
         </div></div>
 
       <div class="text-center mt-5 pt-3">
-        <a class="btn btn-ghost" href="bakery.html" data-reveal>Visit The Bakery</a>
+        <a class="btn btn-ghost" href="bakery.php" data-reveal>Visit The Bakery</a>
       </div>
     </div>
   </section>
@@ -431,7 +354,7 @@
               front, noodles in the wok, and somebody's birthday cake coming out of the fridge.
             </p>
             <p class="mt-4 mb-0">
-              <a class="tlink" href="restaurant.html">See the restaurant <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+              <a class="tlink" href="restaurant.php">See the restaurant <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
             </p>
           </div>
         </div>
@@ -443,7 +366,7 @@
             <h3>North Indian</h3>
             <p>Paneer and dal cooked to order, breads off the tandoor, rice, raita and a full thali.</p>
             <ul class="panel__list"><li>Paneer</li><li>Dal Makhani</li><li>Tandoori Roti</li><li>Biryani</li><li>Thali</li></ul>
-            <p class="mt-3 mb-0"><a class="tlink" href="menu.html#north-indian">
+            <p class="mt-3 mb-0"><a class="tlink" href="menu.php#north-indian">
               View <i class="bi bi-arrow-right" aria-hidden="true"></i></a></p>
           </div>
         </div>
@@ -452,7 +375,7 @@
             <h3>South Indian</h3>
             <p>Batter ground in-house and left overnight, which is the whole difference.</p>
             <ul class="panel__list"><li>Masala Dosa</li><li>Idli</li><li>Medu Vada</li><li>Uttapam</li><li>Filter Coffee</li></ul>
-            <p class="mt-3 mb-0"><a class="tlink" href="menu.html#south-indian">
+            <p class="mt-3 mb-0"><a class="tlink" href="menu.php#south-indian">
               View <i class="bi bi-arrow-right" aria-hidden="true"></i></a></p>
           </div>
         </div>
@@ -461,7 +384,7 @@
             <h3>Snacks &amp; Street Food</h3>
             <p>The chaat counter at the front, assembled while you watch.</p>
             <ul class="panel__list"><li>Golgappa</li><li>Samosa Chaat</li><li>Pav Bhaji</li><li>Chole Bhature</li><li>Rolls</li></ul>
-            <p class="mt-3 mb-0"><a class="tlink" href="menu.html#snacks-street-food">
+            <p class="mt-3 mb-0"><a class="tlink" href="menu.php#snacks-street-food">
               View <i class="bi bi-arrow-right" aria-hidden="true"></i></a></p>
           </div>
         </div>
@@ -470,7 +393,7 @@
             <h3>Chinese</h3>
             <p>Cooked hot and fast in a wok. Dry or gravy, your call.</p>
             <ul class="panel__list"><li>Manchurian</li><li>Chilli Paneer</li><li>Hakka Noodles</li><li>Momos</li><li>Fried Rice</li></ul>
-            <p class="mt-3 mb-0"><a class="tlink" href="menu.html#chinese">
+            <p class="mt-3 mb-0"><a class="tlink" href="menu.php#chinese">
               View <i class="bi bi-arrow-right" aria-hidden="true"></i></a></p>
           </div>
         </div>
@@ -479,7 +402,7 @@
             <h3>Beverages</h3>
             <p>Chai boiled properly, lassi in a tall glass, shakes for the afternoon.</p>
             <ul class="panel__list"><li>Masala Chai</li><li>Filter Coffee</li><li>Lassi</li><li>Shakes</li><li>Mojito</li></ul>
-            <p class="mt-3 mb-0"><a class="tlink" href="menu.html#beverages">
+            <p class="mt-3 mb-0"><a class="tlink" href="menu.php#beverages">
               View <i class="bi bi-arrow-right" aria-hidden="true"></i></a></p>
           </div>
         </div>
@@ -488,7 +411,7 @@
             <h3>Desserts</h3>
             <p>Falooda, kulfi, and hot gulab jamun with cold vanilla.</p>
             <ul class="panel__list"><li>Falooda</li><li>Kulfi</li><li>Rabri Jalebi</li><li>Ice Cream</li></ul>
-            <p class="mt-3 mb-0"><a class="tlink" href="menu.html#desserts">
+            <p class="mt-3 mb-0"><a class="tlink" href="menu.php#desserts">
               View <i class="bi bi-arrow-right" aria-hidden="true"></i></a></p>
           </div>
         </div></div>
@@ -504,7 +427,7 @@
         Eleven sections, searchable, and built to be read on a phone while you are deciding.
       </p>
       <div class="btn-row btn-row--center mt-4" data-reveal>
-        <a class="btn" href="menu.html">Browse The Full Menu</a>
+        <a class="btn" href="menu.php">Browse The Full Menu</a>
       </div>
       <div data-reveal><svg class="ornament" viewBox="0 0 160 26" fill="none" aria-hidden="true" focusable="false"><path d="M4 13h52M104 13h52" stroke="currentColor" stroke-width="1"/><path d="M80 3c5.4 5.2 8.1 8.5 8.1 10S85.4 20.8 80 23c-5.4-2.2-8.1-8.5-8.1-10S74.6 8.2 80 3z" stroke="currentColor" stroke-width="1"/><path d="M80 8.5c2 2.2 3 3.6 3 4.5s-1 2.3-3 4.5c-2-2.2-3-3.6-3-4.5s1-2.3 3-4.5z" fill="currentColor" opacity=".55"/><circle cx="62" cy="13" r="2" fill="currentColor"/><circle cx="98" cy="13" r="2" fill="currentColor"/><circle cx="56" cy="13" r="1" fill="currentColor" opacity=".6"/><circle cx="104" cy="13" r="1" fill="currentColor" opacity=".6"/></svg></div>
     </div>
@@ -530,7 +453,7 @@
             <div class="btn-row mt-4">
               <a class="btn btn-on-dark" data-action="whatsapp"
                  data-message="Hello Mithaas, I'd like to ask about gifting and celebration orders." href="#">Explore Gifting</a>
-              <a class="btn btn-on-dark" href="contact.html">Talk To Us</a>
+              <a class="btn btn-on-dark" href="contact.php">Talk To Us</a>
             </div>
           </div>
         </div>
@@ -585,27 +508,27 @@
           <h2 class="display-2" id="gal-h">A Look Around</h2>
         </div>
         <div class="col-lg-4 text-lg-end" data-reveal>
-          <a class="tlink" href="gallery.html">Open the gallery <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+          <a class="tlink" href="gallery.php">Open the gallery <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
         </div>
       </div>
       <div class="row g-3 g-lg-4" data-stagger>
         <div class="col-6 col-lg-3" data-reveal>
-          <a href="gallery.html" aria-label="The sweet counter at Mithaas — open the gallery">
+          <a href="gallery.php" aria-label="The sweet counter at Mithaas — open the gallery">
             <div class="fig ar-34 fig--zoom"><img src="assets/img/gallery/sweet-counter.jpg" alt="The sweet counter at Mithaas" data-photo data-label="The sweet counter at Mithaas" loading="lazy" decoding="async"></div>
           </a>
         </div>
         <div class="col-6 col-lg-3" data-reveal>
-          <a href="gallery.html" aria-label="A full vegetarian thali — open the gallery">
+          <a href="gallery.php" aria-label="A full vegetarian thali — open the gallery">
             <div class="fig ar-1 fig--zoom"><img src="assets/img/gallery/thali.jpg" alt="A full vegetarian thali" data-photo data-label="A full vegetarian thali" loading="lazy" decoding="async"></div>
           </a>
         </div>
         <div class="col-6 col-lg-3" data-reveal>
-          <a href="gallery.html" aria-label="Fresh bakery shelf — open the gallery">
+          <a href="gallery.php" aria-label="Fresh bakery shelf — open the gallery">
             <div class="fig ar-34 fig--zoom"><img src="assets/img/gallery/bakery-shelf.jpg" alt="Fresh bakery shelf" data-photo data-label="Fresh bakery shelf" loading="lazy" decoding="async"></div>
           </a>
         </div>
         <div class="col-6 col-lg-3" data-reveal>
-          <a href="gallery.html" aria-label="The dining room at Mithaas — open the gallery">
+          <a href="gallery.php" aria-label="The dining room at Mithaas — open the gallery">
             <div class="fig ar-1 fig--zoom"><img src="assets/img/gallery/dining.jpg" alt="The dining room at Mithaas" data-photo data-label="The dining room at Mithaas" loading="lazy" decoding="async"></div>
           </a>
         </div></div>
@@ -703,79 +626,4 @@
 
 </main>
 
-<footer class="footer">
-  <div class="container">
-    <div class="row g-5">
-
-      <div class="col-lg-4">
-        <img class="footer__logo" data-logo="footer" src="assets/img/brand/mithaas-logo.png"
-             alt="Mithaas — Sweets, Bakery, Restaurant" width="240" height="150" loading="lazy">
-        <p class="footer__tagline">Sweets &middot; Bakery &middot; Restaurant</p>
-        <p class="footer__about">
-          Sweets made through the day, bread out of the oven each morning, and a kitchen
-          that cooks everything from a masala dosa to a full thali. One address, whatever
-          the occasion.
-        </p>
-        <div class="socials">
-          <a data-action="instagram" href="#" aria-label="Mithaas on Instagram"><i class="bi bi-instagram" aria-hidden="true"></i></a>
-          <a data-action="facebook" href="#" aria-label="Mithaas on Facebook"><i class="bi bi-facebook" aria-hidden="true"></i></a>
-          <a data-action="whatsapp" href="#" aria-label="Message Mithaas on WhatsApp"><i class="bi bi-whatsapp" aria-hidden="true"></i></a>
-        </div>
-      </div>
-
-      <div class="col-6 col-lg-2">
-        <h3>Explore</h3>
-        <ul class="footer__links">
-          <li><a href="our-story.html">Our Story</a></li>
-          <li><a href="sweets.html">Sweets</a></li>
-          <li><a href="bakery.html">Bakery</a></li>
-          <li><a href="restaurant.html">Restaurant</a></li>
-          <li><a href="gallery.html">Gallery</a></li>
-          <li><a href="contact.html">Contact</a></li>
-        </ul>
-      </div>
-
-      <div class="col-6 col-lg-2">
-        <h3>The Menu</h3>
-        <ul class="footer__links">
-          <li><a href="menu.html#traditional-mithai">Traditional Mithai</a></li>
-          <li><a href="menu.html#premium-sweets">Premium Sweets</a></li>
-          <li><a href="menu.html#bakery">Bakery</a></li>
-          <li><a href="menu.html#north-indian">North Indian</a></li>
-          <li><a href="menu.html#south-indian">South Indian</a></li>
-          <li><a href="menu.html#chinese">Chinese</a></li>
-          <li><a href="menu.html#beverages">Beverages</a></li>
-        </ul>
-      </div>
-
-      <div class="col-lg-4">
-        <h3>Find Us</h3>
-        <ul class="footer__links">
-          <li><span data-field="address" data-pending="Address to be confirmed" style="white-space:pre-line"></span></li>
-          <li><a data-action="call" href="#"><span data-field="phone" data-pending="Phone number to be confirmed"></span></a></li>
-          <li><a data-action="email" href="#"><span data-field="email" data-pending="Email to be confirmed"></span></a></li>
-        </ul>
-        <h3 class="mt-4">Opening Hours</h3>
-        <ul class="hours" data-hours><li><span>Opening hours</span><span class="pending">To be confirmed</span></li></ul>
-      </div>
-
-    </div>
-
-    <div class="footer__bar">
-      <p class="mb-0">&copy; <span data-year>2026</span> Mithaas. All rights reserved.</p>
-      <nav aria-label="Legal">
-        <a href="privacy-policy.html">Privacy Policy</a>
-        <a href="terms.html">Terms &amp; Conditions</a>
-        <a href="menu.html">Menu</a>
-      </nav>
-    </div>
-  </div>
-</footer>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-  integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous" defer></script>
-<script src="assets/js/config.js" defer></script>
-<script src="assets/js/menu-data.js" defer></script>
-<script src="assets/js/mithaas.js" defer></script>
-</body>
-</html>
+<?php require __DIR__ . '/includes/footer.php'; ?>

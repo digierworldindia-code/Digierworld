@@ -29,14 +29,15 @@ def repoint(ext):
     site = os.path.dirname(HERE)
     pat = re.compile(r"assets/img/brand/mithaas-logo\.(png|svg|jpg|jpeg|webp)")
     changed = 0
-    for page in sorted(glob.glob(os.path.join(site, "*.html"))):
+    for page in sorted(glob.glob(os.path.join(site, "*.php"))) + \
+                sorted(glob.glob(os.path.join(site, "includes", "*.php"))):
         s = open(page, encoding="utf-8").read()
         new = pat.sub("assets/img/brand/mithaas-logo" + ext, s)
         if new != s:
             open(page, "w", encoding="utf-8").write(new)
             changed += 1
     if changed:
-        print("  pages     -> repointed %d HTML file(s) to mithaas-logo%s" % (changed, ext))
+        print("  pages     -> repointed %d file(s) to mithaas-logo%s" % (changed, ext))
 
 
 def main():

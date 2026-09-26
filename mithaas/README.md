@@ -1,45 +1,80 @@
 # MITHAAS — Sweets • Bakery • Restaurant
 
-A static, premium brand website for **Mithaas**. Pure HTML/CSS/JS on Bootstrap 5.3 —
-no build step, no framework, no backend. Drop it on any host: GitHub Pages, Netlify,
-cPanel, shared hosting.
+A premium brand website for **Mithaas**. Plain PHP with shared includes — no
+framework, no database, no build step. Upload it to any PHP-enabled host.
 
 ## Stack
 
-- HTML5, semantic and hand-written
+- **PHP 8** for page composition only — every page pulls one shared header and
+  footer from `includes/`. There is no database and no backend logic.
 - **Bootstrap 5.3.3** (CDN) — grid, navbar, offcanvas, modal, forms
 - **Bootstrap Icons 1.11** (CDN)
 - Google Fonts: **Cormorant Garamond** (display) + **Jost** (body)
 - `assets/css/mithaas.css` — the brand theme layer, loaded after Bootstrap
 - Vanilla JS, ~28 KB unminified, no jQuery
 
+## Architecture
+
+Shared markup lives in exactly one place. Change the footer once and all 11
+pages follow.
+
+```
+includes/
+    config.php      site URL, navigation, SEO defaults, helpers
+    header.php      <head>, navigation, mobile drawer, sticky action bar
+    footer.php      footer and the scripts every page loads
+    page-hero.php   inner-page banner            — used by 9 pages
+    cta-band.php    closing call-to-action band  — used by 4 pages
+```
+
+A page is then just its own content plus its SEO values:
+
+```php
+<?php
+$pageTitle       = 'Menu | Mithaas Sweets, Bakery & Restaurant';
+$metaDescription = 'The full Mithaas menu — …';
+$breadcrumb      = ['Home' => 'index.php', 'Menu' => 'menu.php'];
+
+require __DIR__ . '/includes/header.php';
+?>
+  <!-- page content -->
+<?php require __DIR__ . '/includes/footer.php'; ?>
+```
+
+Every include is loaded with `__DIR__`, so paths hold no matter where a page
+sits. Sections that appear on only one page stay in that page — the goal is a
+single source of truth for what is genuinely shared, not a file per section.
+
+The active navigation item is resolved server-side from the requested
+filename, so it is correct before any JavaScript runs.
+
 ## Run it locally
 
-**Option 1 — local server (recommended)**
+**Option 1 — PHP's built-in server (recommended)**
 
 ```bash
 cd mithaas
+php -S localhost:8000
+```
+
+Or, for the same thing with a friendlier message if PHP is missing:
+
+```bash
 python3 serve.py          # -> http://localhost:8000
 python3 serve.py 3000     # or pick your own port
 ```
 
-No dependencies; it uses only the Python standard library. It serves the site's
-own `404.html`, sets correct MIME types, and disables caching so a refresh
-always shows your latest edit. Stop it with Ctrl+C.
+Needs PHP 8 (`sudo apt install php-cli`, `brew install php`, or
+windows.php.net). Stop it with Ctrl+C.
 
-Any other static server works just as well:
+**Option 2 — upload it**
 
-```bash
-npx serve mithaas          # Node
-php -S localhost:8000 -t mithaas
-```
+Copy the contents of `mithaas/` into your host's public folder
+(`public_html`, `www` or `htdocs`). Any standard PHP host works — shared
+hosting, cPanel, a VPS. Nothing to configure and nothing to install.
 
-**Option 2 — just open the file**
-
-Double-click `mithaas/index.html`. Everything works from `file://` — the menu,
-gallery and forms included — because there is no build step and no backend.
-You need an internet connection for this option, since Bootstrap and the fonts
-load from a CDN.
+Opening `index.php` by double-clicking will **not** work: the browser cannot
+run PHP. Use option 1 or 3 for that.
 
 **Option 3 — the single-file offline build**
 
@@ -55,16 +90,16 @@ someone. Good for showing the design to a client. Regenerate it any time with
 
 | File | Purpose |
 |---|---|
-| `index.html` | Home — hero, story, favourites, sweets, bakery, restaurant, gifting, why, gallery, reviews, Instagram, location |
-| `our-story.html` | Editorial brand story |
-| `sweets.html` | Traditional, premium, regional and seasonal sweets |
-| `bakery.html` | Cakes, pastries, cookies, breads, baked snacks |
-| `restaurant.html` | North Indian, South Indian, snacks & street food, Chinese, thali, beverages |
-| `menu.html` | **Interactive digital menu** — 11 categories, live search, deep links |
-| `gallery.html` | Filterable masonry gallery with lightbox |
-| `contact.html` | Call / WhatsApp / email / address / hours / map / enquiry form |
-| `privacy-policy.html`, `terms.html` | Legal |
-| `404.html` | Error state |
+| `index.php` | Home — hero, story, favourites, sweets, bakery, restaurant, gifting, why, gallery, reviews, Instagram, location |
+| `our-story.php` | Editorial brand story |
+| `sweets.php` | Traditional, premium, regional and seasonal sweets |
+| `bakery.php` | Cakes, pastries, cookies, breads, baked snacks |
+| `restaurant.php` | North Indian, South Indian, snacks & street food, Chinese, thali, beverages |
+| `menu.php` | **Interactive digital menu** — 11 categories, live search, deep links |
+| `gallery.php` | Filterable masonry gallery with lightbox |
+| `contact.php` | Call / WhatsApp / email / address / hours / map / enquiry form |
+| `privacy-policy.php`, `terms.php` | Legal |
+| `404.php` | Error state |
 
 ---
 
