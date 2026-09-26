@@ -73,7 +73,9 @@ class BrandCheck extends BaseCommand
             new \RecursiveDirectoryIterator($root, \FilesystemIterator::SKIP_DOTS),
             static function (\SplFileInfo $file): bool {
                 $path = $file->getPathname();
-                foreach (['/vendor', '/writable', '/.git', '/node_modules', '/public/assets/vendor'] as $skip) {
+                // vendor and writable are not ours; delivery holds built
+                // archives, which quote the brand by design.
+                foreach (['/vendor', '/writable', '/.git', '/node_modules', '/public/assets/vendor', '/delivery'] as $skip) {
                     if (str_contains($path, $skip)) {
                         return false;
                     }
