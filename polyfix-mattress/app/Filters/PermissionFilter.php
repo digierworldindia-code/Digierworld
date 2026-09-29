@@ -41,8 +41,10 @@ class PermissionFilter implements FilterInterface
             'user' => $context->userId() ?? 'anonymous', 'perm' => implode('|', $permissions),
         ]);
 
+        // The only way a held permission is refused is the two-factor gate,
+        // which applies to accounts that have two-factor switched on.
         $message = $needsMfa
-            ? 'This action needs two-factor authentication. Turn it on under Security, then sign in again.'
+            ? 'This action needs the code from your authenticator app. Sign out and in again to enter it.'
             : 'You do not have permission to do that.';
 
         if ($request->getMethod() === 'GET') {

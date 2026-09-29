@@ -186,8 +186,9 @@ abstract class PolyfixTestCase extends CIUnitTestCase
     /**
      * Signs a user into the request context, as the auth filter would.
      *
-     * Two-factor counts as satisfied by default so tests exercise the ordinary
-     * case; pass mfa_satisfied => false to check a gated permission is refused.
+     * Two-factor reflects the account: enabled if the row says so, and counted
+     * as satisfied, which is the ordinary case. Pass mfa_satisfied => false to
+     * check that a gated permission is refused when the code is still owed.
      */
     protected function actingAs(string $userId, array $overrides = []): array
     {
@@ -200,7 +201,7 @@ abstract class PolyfixTestCase extends CIUnitTestCase
         $signedIn = [
             'id' => $user['id'], 'email' => $user['email'], 'full_name' => $user['full_name'],
             'roles' => $roles, 'dealer_id' => $dealer['id'] ?? null, 'dealer_name' => $dealer['business_name'] ?? null,
-            'mfa_enabled' => true, 'mfa_satisfied' => true,
+            'mfa_enabled' => (bool) $user['mfa_enabled'], 'mfa_satisfied' => true,
             'must_change_password' => false, 'must_enrol_mfa' => false, 'session_id' => uuid4(),
         ];
         $signedIn = $overrides + $signedIn;

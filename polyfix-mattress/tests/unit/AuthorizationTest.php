@@ -69,7 +69,19 @@ final class AuthorizationTest extends PolyfixTestCase
         }
     }
 
-    public function testASessionWithoutTwoFactorCannotUseAGatedPermission(): void
+    public function testAnAccountWithoutTwoFactorIsNotBlockedFromSensitiveActions(): void
+    {
+        // Two-factor enrolment is a policy choice (Config\Polyfix's
+        // mfaRequiredRoles). With it switched off, an administrator who never
+        // enrolled must still be able to run the console.
+        $this->actingAs($this->makeUser(['SUPER_ADMIN'], null, ['mfa_enabled' => 0]));
+
+        foreach (Rbac::MFA_GATED as $permission) {
+            $this->assertTrue(service('requestContext')->can($permission), "{$permission} must not be blocked when two-factor is off");
+        }
+    }
+
+    public function testASessionThatStillOwesItsCodeCannotUseAGatedPermission(): void
     {
         $userId  = $this->makeUser(['SUPER_ADMIN'], null, ['mfa_enabled' => 1]);
         $this->actingAs($userId);

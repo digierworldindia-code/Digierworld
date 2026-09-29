@@ -72,7 +72,7 @@ $title = 'Password & security';
                     </form>
                 <?php else: ?>
                     <?php if ($enrol): ?><div class="alert alert-warning">Your role requires two-factor authentication. Set it up to continue.</div><?php endif ?>
-                    <p class="small text-muted">Adds a code from your phone to every sign-in, so a stolen password alone is not enough.</p>
+                    <p class="small text-muted">Optional, and worth turning on: it adds a code from your phone to every sign-in, so a stolen password alone is not enough to get in.</p>
                     <form method="post" action="<?= site_url('account/mfa/start') ?>">
                         <?= csrf_field() ?>
                         <label class="form-label" for="mfa-password">Confirm your password</label>

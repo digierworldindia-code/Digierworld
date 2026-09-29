@@ -18,7 +18,10 @@ use App\Libraries\Rbac;
                 <select class="form-select<?= invalid('role') ?>" id="role" name="role" required>
                     <?php foreach (Rbac::ROLE_KEYS as $r): ?><option value="<?= $r ?>"<?= old('role') === $r ? ' selected' : '' ?>><?= esc(Rbac::roleName($r)) ?> — <?= esc(Rbac::ROLE_METADATA[$r]['description'] ?? '') ?></option><?php endforeach ?>
                 </select><?= field_error('role') ?>
-                <div class="form-text">Roles requiring two-factor authentication: <?= esc(implode(', ', array_map(static fn ($r) => Rbac::roleName($r), config('Polyfix')->mfaRoles()))) ?>.</div></div>
+                <?php $mfaRoles = config('Polyfix')->mfaRoles(); ?>
+                <div class="form-text"><?= $mfaRoles === []
+                    ? 'Two-factor authentication is optional; anyone can turn it on under Password &amp; security.'
+                    : 'Roles that must enrol in two-factor authentication: ' . esc(implode(', ', array_map(static fn ($r) => Rbac::roleName($r), $mfaRoles))) . '.' ?></div></div>
             <div class="col-12"><label class="form-label" for="dealer_id">Dealership (for a Dealer login)</label>
                 <select class="form-select" id="dealer_id" name="dealer_id"><option value="">—</option>
                     <?php foreach ($dealers as $d): ?><option value="<?= $d['id'] ?>"<?= old('dealer_id') === $d['id'] ? ' selected' : '' ?>><?= esc($d['business_name']) ?> — <?= esc($d['city']) ?> (<?= esc($d['code']) ?>)</option><?php endforeach ?>

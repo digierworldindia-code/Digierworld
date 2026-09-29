@@ -21,10 +21,23 @@ in `.env`). A failed second factor counts toward the same counter — a change
 from the previous platform, where it did not.
 
 **Two-factor** is TOTP (SHA1, 6 digits, 30 seconds, one step of tolerance) with
-ten single-use recovery codes, stored as hashes. It is required for
-`SUPER_ADMIN`, `ADMIN` and `WARRANTY_MANAGER`: until they enrol, those accounts
-can reach only the security page. An authenticator app enrolled against the old
-platform still works.
+ten single-use recovery codes, stored as hashes. An authenticator app enrolled
+against the previous platform still works.
+
+It is **optional by default**: anyone can turn it on from Password & security,
+and an account that has it is asked for a code at every sign-in. Nobody is
+forced to enrol, which is a deliberate choice recorded here rather than an
+oversight — a password alone is what stands between an attacker and the console
+for an account that has not enrolled.
+
+To make it compulsory for the senior roles — recommended once the team is
+settled — set in `.env`:
+
+```
+polyfix.mfaRequiredRoles = 'SUPER_ADMIN,ADMIN,WARRANTY_MANAGER'
+```
+
+Those accounts can then reach only the security page until they enrol.
 
 **Sessions** live in the database, not in the cookie. The cookie carries an
 opaque id and a random token whose SHA-256 is what is stored, so reading the
@@ -44,9 +57,12 @@ Three rules are enforced in `UserService`, not in the interface:
 - nobody can change their own roles;
 - a dealer login holds the `DEALER` role only, tied to one dealership.
 
-Five abilities need two-factor satisfied *in the current session*, not merely
-enrolled: `system:backup`, `system:export`, `system:sql:read`,
-`system:settings:write`, `user:role:assign`.
+Five abilities are gated on two-factor: `system:backup`, `system:export`,
+`system:sql:read`, `system:settings:write`, `user:role:assign`. For an account
+that has two-factor switched on, the code must have been given *in the current
+session*, not merely enrolled once — so a borrowed cookie cannot change roles or
+settings. An account without two-factor is not blocked by the gate; it is only
+as protected as its password, which is the trade the setting above makes.
 
 Every route declares its permission in a filter, on the group as well as the
 route, so a new admin route cannot forget the check. Hiding a link in a template

@@ -91,16 +91,23 @@ final class RequestContext
     }
 
     /**
-     * True only if the role grants the permission AND, for MFA-gated
-     * permissions, two-factor authentication was satisfied in this session.
+     * True when the role grants the permission and, for the handful of
+     * sensitive ones, two-factor authentication is not owed.
+     *
+     * The gate bites only for an account that actually has two-factor turned
+     * on: it then has to have been satisfied in this session, so a borrowed
+     * cookie cannot change roles or settings. An account without two-factor is
+     * not blocked — otherwise switching enrolment off (Config\Polyfix's
+     * mfaRequiredRoles) would quietly make those actions impossible for
+     * everyone. Put roles back in mfaRequiredRoles to make the gate universal.
      */
     public function can(string $permission): bool
     {
         if ($this->user === null || ! in_array($permission, $this->user['permissions'], true)) {
             return false;
         }
-        if (in_array($permission, Rbac::MFA_GATED, true)) {
-            return $this->user['mfa_enabled'] && $this->user['mfa_satisfied'];
+        if (in_array($permission, Rbac::MFA_GATED, true) && $this->user['mfa_enabled']) {
+            return $this->user['mfa_satisfied'];
         }
 
         return true;

@@ -30,7 +30,9 @@ Install
         mysql -u root -p polyfix_mattress < database/sql/verify-privileges.sql
   7.  php spark polyfix:create-user --email you@your-domain --name "Your Name" --role SUPER_ADMIN
       It prints a one-time password, once. You will be made to change it at first
-      sign-in, and to enrol two-factor authentication.
+      sign-in. Two-factor authentication is optional — turn it on per account
+      under Password & security, or make it compulsory for the senior roles with
+      polyfix.mfaRequiredRoles in .env.
   8.  Sign in at /admin/login, then open Console → System and read the checks.
 
 Upgrading an existing installation instead
@@ -53,5 +55,5 @@ transaction, then compares every value it wrote. docs/migration.md has the detai
 Before you go live
 ------------------
 docs/deployment.md ends with a checklist: CI_ENVIRONMENT=production, HTTPS on,
-the application's database account restricted, two-factor enrolled for the senior
-roles, and a backup taken and restored once.
+the application's database account restricted, a decision made about two-factor
+authentication, and a backup taken and restored once.

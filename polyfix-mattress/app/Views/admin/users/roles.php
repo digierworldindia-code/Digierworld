@@ -38,6 +38,6 @@ use App\Libraries\Rbac;
         <?php endforeach ?>
         </tbody>
     </table></div>
-    <div class="panel-body small text-muted">Permissions marked 2FA can only be used from a session that passed two-factor authentication.</div>
+    <div class="panel-body small text-muted">Permissions marked 2FA ask for the code from the authenticator app — for accounts that have two-factor switched on, in the session doing the work. Two-factor is optional here; make it compulsory for a role with <span class="mono">polyfix.mfaRequiredRoles</span> in <span class="mono">.env</span>.</div>
 </div>
 <?= $this->endSection() ?>
