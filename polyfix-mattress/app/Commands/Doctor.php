@@ -47,7 +47,10 @@ class Doctor extends BaseCommand
 
         CLI::newLine();
         if ($this->failed > 0) {
-            CLI::write(sprintf('%d check(s) failed. The site will not serve until they pass.', $this->failed), 'red');
+            // Not every failure stops the site booting — a baseURL pointing at
+            // this machine serves perfectly well, it just serves the wrong URLs
+            // to everyone else. Claiming otherwise would be its own small lie.
+            CLI::write(sprintf('%d check(s) failed. Put them right before this goes live.', $this->failed), 'red');
             CLI::write('docs/HOSTINGER-DEPLOYMENT.md explains each one.');
 
             return EXIT_ERROR;
