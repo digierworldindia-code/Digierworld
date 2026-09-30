@@ -172,8 +172,6 @@ Lines beginning `security.` are the ones worth alerting on:
 - [ ] `polyfix_app` restricted by `generate-privileges.sql`, verified by `verify-privileges.sql`
 - [ ] MySQL not listening on a public interface
 - [ ] First administrator created with `polyfix:create-user`; no demo accounts
-- [ ] Two-factor decided: optional by default, or compulsory for the senior
-      roles with `polyfix.mfaRequiredRoles` — and enrolled by whoever it covers
 - [ ] `seo.robots_allow_indexing` on (and *off* on any staging copy)
 - [ ] SMTP configured and a reset email actually received
 - [ ] Backup job running, and one restore drill completed

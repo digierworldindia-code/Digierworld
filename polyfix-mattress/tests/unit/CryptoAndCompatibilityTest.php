@@ -4,7 +4,6 @@ namespace Tests\Unit;
 
 use App\Libraries\Crypto;
 use App\Libraries\PasswordPolicy;
-use App\Libraries\Totp;
 use Tests\Support\PolyfixTestCase;
 
 /**
@@ -86,35 +85,8 @@ final class CryptoAndCompatibilityTest extends PolyfixTestCase
         $this->assertNotSame($index, $crypto->blindIndex(Crypto::normalisePhone('9876500012')));
     }
 
-    public function testTwoFactorCodesMatchTheStandard(): void
-    {
-        // RFC 6238 test vector: the secret "12345678901234567890" in base32.
-        $secret = Totp::base32Encode('12345678901234567890');
 
-        $this->assertSame('287082', Totp::code($secret, 59));
-        $this->assertSame('081804', Totp::code($secret, 1_111_111_109));
-        $this->assertTrue(Totp::verify($secret, Totp::code($secret)));
-        $this->assertFalse(Totp::verify($secret, '000000'));
-    }
 
-    public function testACodeFromTheAdjacentWindowIsStillAccepted(): void
-    {
-        $secret = Totp::generateSecret();
-        $now    = time();
-
-        $this->assertTrue(Totp::verify($secret, Totp::code($secret, $now - 30)), 'a clock a step behind still works');
-        $this->assertFalse(Totp::verify($secret, Totp::code($secret, $now - 300)), 'an old code does not');
-    }
-
-    public function testTheOtpauthUrlNamesTheBrandAndTheAccount(): void
-    {
-        $url = Totp::otpauthUrl(Totp::generateSecret(), 'ritu@polyfixmattress.com');
-
-        $this->assertStringStartsWith('otpauth://totp/', $url);
-        $this->assertStringContainsString(rawurlencode(brand('shortName')), $url);
-        $this->assertStringContainsString('ritu%40polyfixmattress.com', $url);
-        $this->assertStringContainsString('algorithm=SHA1', $url);
-    }
 
     public function testSignaturesAreVerifiedInConstantTime(): void
     {

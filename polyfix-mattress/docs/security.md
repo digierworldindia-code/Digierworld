@@ -17,27 +17,39 @@ comparable time: an unknown account still runs a dummy verify. Whether an
 address has an account is not something an anonymous caller gets to learn.
 
 **Lockout**: five failures locks the account for fifteen minutes (both figures
-in `.env`). A failed second factor counts toward the same counter — a change
-from the previous platform, where it did not.
+in `.env`).
 
-**Two-factor** is TOTP (SHA1, 6 digits, 30 seconds, one step of tolerance) with
-ten single-use recovery codes, stored as hashes. An authenticator app enrolled
-against the previous platform still works.
+**Two-factor authentication has been removed.** Signing in is an email address
+and a password; authorisation is then decided by role and permission alone.
 
-It is **optional by default**: anyone can turn it on from Password & security,
-and an account that has it is asked for a code at every sign-in. Nobody is
-forced to enrol, which is a deliberate choice recorded here rather than an
-oversight — a password alone is what stands between an attacker and the console
-for an account that has not enrolled.
+This is recorded here as a deliberate decision, not an oversight, and it is a
+real reduction in security: for any account, a password alone is what stands
+between an attacker and the console. It replaced an arrangement that was worse
+in practice. Enrolment was compulsory for the senior roles, the gate only
+cleared once an authenticator code had been accepted, and anything that stopped
+a code being accepted — a server clock a minute out, a mistyped setup key, a
+replaced phone — left the account redirected to the setup page from every
+screen, with the switch-off button refused because the role required it. The
+account was locked out of its own console with no way back except the database.
 
-To make it compulsory for the senior roles — recommended once the team is
-settled — set in `.env`:
+What follows from that decision:
 
-```
-polyfix.mfaRequiredRoles = 'SUPER_ADMIN,ADMIN,WARRANTY_MANAGER'
-```
+- Password quality and Argon2id hashing carry more weight than before. The
+  twelve-character policy and the forced change of a temporary password are
+  not negotiable.
+- The five sensitive permissions that used to need a satisfied second factor
+  (`system:backup`, `system:export`, `system:sql:read`,
+  `system:settings:write`, `user:role:assign`) are now granted by role alone.
+  Keep the senior roles to as few people as possible.
+- A stolen session cookie is worth more. Sessions remain server-side and
+  revocable, with idle and absolute expiry, and every account can sign out its
+  other sessions from Password & security.
+- If two-factor is ever wanted again, it should come back as something a person
+  can turn off themselves, and with an administrator able to clear it without
+  touching the database.
 
-Those accounts can then reach only the security page until they enrol.
+The `mfa_*` columns stay in `users` and `sessions` so existing rows and older
+backups still load. Nothing reads or writes them.
 
 **Sessions** live in the database, not in the cookie. The cookie carries an
 opaque id and a random token whose SHA-256 is what is stored, so reading the
@@ -57,12 +69,11 @@ Three rules are enforced in `UserService`, not in the interface:
 - nobody can change their own roles;
 - a dealer login holds the `DEALER` role only, tied to one dealership.
 
-Five abilities are gated on two-factor: `system:backup`, `system:export`,
-`system:sql:read`, `system:settings:write`, `user:role:assign`. For an account
-that has two-factor switched on, the code must have been given *in the current
-session*, not merely enrolled once — so a borrowed cookie cannot change roles or
-settings. An account without two-factor is not blocked by the gate; it is only
-as protected as its password, which is the trade the setting above makes.
+Five abilities used to need a second factor satisfied in the current session:
+`system:backup`, `system:export`, `system:sql:read`, `system:settings:write`,
+`user:role:assign`. They are now granted by role alone, so a borrowed session
+cookie for a senior account can reach them. Keep those roles to as few people
+as possible, and revoke sessions from Password & security if one is suspected.
 
 Every route declares its permission in a filter, on the group as well as the
 route, so a new admin route cannot forget the check. Hiding a link in a template
@@ -107,7 +118,7 @@ and nothing else: it cannot update, delete, or truncate them
 adds triggers that refuse the operation even for the owner account, where the
 server allows creating them.
 
-Passwords, hashes, tokens, two-factor secrets, recovery codes, API keys and
+Passwords, hashes, tokens, any leftover two-factor secrets, API keys and
 encrypted columns are redacted before anything is written to the trail.
 
 ## Input and output

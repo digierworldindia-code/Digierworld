@@ -8,7 +8,7 @@ use App\Services\AuthService;
 use CodeIgniter\HTTP\RedirectResponse;
 
 /**
- * Sign-in, two-factor, password reset and sign-out — for staff and dealers
+ * Sign-in, password reset and sign-out — for staff and dealers
  * alike. The two login addresses differ only in wording; where someone lands
  * afterwards depends on the account, not on the form they used.
  *
@@ -42,40 +42,6 @@ class Auth extends BaseController
             $result = AuthService::instance()->attemptPassword($in['email'], $this->request->getPost('password'), session());
         } catch (AppException $e) {
             return redirect()->back()->withInput()->with('error', $e->getMessage());
-        }
-
-        if ($result['status'] === 'mfa_required') {
-            return redirect()->to(site_url('login/verify'));
-        }
-
-        return $this->afterSignIn();
-    }
-
-    public function secondFactor(): string|RedirectResponse
-    {
-        $pending = session('auth_pending');
-        if (! is_array($pending) || ($pending['expires'] ?? 0) < time()) {
-            return redirect()->to(site_url('admin/login'))->with('notice', 'Enter your email and password to sign in.');
-        }
-        $this->response->setHeader('Cache-Control', 'no-store');
-
-        return view('auth/second_factor');
-    }
-
-    public function verifySecondFactor(): RedirectResponse
-    {
-        $code = trim((string) $this->request->getPost('code'));
-        if ($code === '' || mb_strlen($code) > 20) {
-            return redirect()->back()->with('error', 'Enter the 6-digit code from your authenticator app, or a recovery code.');
-        }
-
-        try {
-            AuthService::instance()->attemptSecondFactor($code, session());
-        } catch (AppException $e) {
-            // An expired pending sign-in goes back to the start; a wrong code stays.
-            return session('auth_pending') === null
-                ? redirect()->to(site_url('admin/login'))->with('error', $e->getMessage())
-                : redirect()->back()->with('error', $e->getMessage());
         }
 
         return $this->afterSignIn();

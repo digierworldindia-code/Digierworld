@@ -148,7 +148,7 @@ php -r 'echo bin2hex(random_bytes(32)), PHP_EOL;'         # polyfix.signingSecre
 ```
 
 **Back up `polyfix.encryptionKey` somewhere safe, outside the server.** It
-decrypts customer contact details and two-factor secrets. Lose it and that data
+decrypts customer contact details. Lose it and that data
 cannot be recovered from any backup. Changing `polyfix.signingSecret` breaks
 duplicate-phone detection for customers already in the database.
 
@@ -356,11 +356,9 @@ Now test in a browser:
 3. Sign in with the address and the one-time password.
 4. You are asked to **choose a new password** — that is the forced
    first-sign-in password change, and it is meant to happen.
-5. You then land on the dashboard. **No authenticator app is involved.**
-   Two-factor authentication is optional in this build: it is offered under
-   **Password & security** for anyone who wants it, and nobody is made to use
-   it. To make it compulsory for senior roles later, set
-   `polyfix.mfaRequiredRoles` in `.env`.
+5. You then land on the dashboard. **There is no second step of any kind** —
+   no authenticator app, no code, no setup page. Two-factor authentication has
+   been removed from this build.
 6. Check the dealer panel loads at `https://your-domain.com/dealer/login`.
 7. Sign out from the menu, and confirm `/admin` sends you back to the sign-in
    page.

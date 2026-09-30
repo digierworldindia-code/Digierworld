@@ -22,8 +22,6 @@ code, and the tests exist to show it still behaves the same way.
 - **Encrypted columns.** AES-256-GCM in the same `v1.iv.ct.tag` base64url
   shape, under the same `ENCRYPTION_KEY`; blind indexes are the same
   HMAC-SHA256 under the same `SIGNING_SECRET`.
-- **Two-factor secrets.** SHA1 TOTP, 6 digits, 30-second step, one step of
-  tolerance. An authenticator app enrolled against the old platform still works.
 - **The audit hash chain.** The same field order and the same separator, so the
   chain that was built by the old platform continues unbroken and still
   verifies.
@@ -78,8 +76,9 @@ It is written down here because an operator should know what changed.
 
 - **Sessions** are database-backed (`ci_sessions`) rather than signed cookies,
   and a session row can be revoked from the console immediately.
-- **Two-factor lockout**: a failed second factor now counts toward the same
-  lockout counter as a failed password. It did not before.
+- **Two-factor authentication** is not carried over. The old platform's
+  `mfa_*` values are copied so nothing is lost, but this build signs in with a
+  password only and never reads them.
 - **Rate limiting** is per address in the application cache rather than in the
   API gateway. Behind a proxy, set `app.proxyIPs` or every request looks like
   it comes from the proxy.

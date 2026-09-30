@@ -80,14 +80,8 @@ final class Rbac
         'system:health' => ['group' => 'system', 'description' => 'View system and database health'],
         'system:backup' => ['group' => 'system', 'description' => 'Trigger a database backup'],
         'system:export' => ['group' => 'system', 'description' => 'Export the database'],
-        'system:sql:read' => ['group' => 'system', 'description' => 'Run read-only SQL from the technical console (MFA required)'],
+        'system:sql:read' => ['group' => 'system', 'description' => 'Run read-only SQL from the technical console'],
     ];
-
-    /**
-     * Never granted by a role assignment alone: the holder must also have
-     * two-factor authentication enabled and satisfied in the current session.
-     */
-    public const MFA_GATED = ['system:backup', 'system:export', 'system:sql:read', 'system:settings:write', 'user:role:assign'];
 
     /** @var array<string, list<string>> */
     public const ROLE_PERMISSIONS = [

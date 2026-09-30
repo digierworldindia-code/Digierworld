@@ -28,7 +28,7 @@ $temp = session()->getFlashdata('temporary_password');
         <div><button class="btn btn-light" type="submit">Filter</button></div>
     </form>
     <div class="table-responsive"><table class="table table-hover">
-        <thead><tr><th>Name</th><th>Email</th><th>Roles</th><th>Dealer</th><th>Status</th><th>2FA</th><th>Last sign-in</th></tr></thead>
+        <thead><tr><th>Name</th><th>Email</th><th>Roles</th><th>Dealer</th><th>Status</th><th>Last sign-in</th></tr></thead>
         <tbody>
         <?php foreach ($list['rows'] as $u): ?>
         <tr><td><a class="fw-semibold" href="<?= site_url('admin/users/' . $u['id']) ?>"><?= esc($u['full_name']) ?></a>
@@ -38,7 +38,6 @@ $temp = session()->getFlashdata('temporary_password');
             <td class="small"><?= esc(implode(', ', array_map(static fn ($r) => Rbac::roleName($r), array_filter(explode(',', (string) $u['roles']))))) ?></td>
             <td class="small"><?= esc($u['dealer'] ?? '—') ?></td>
             <td><?= pill($u['status']) ?></td>
-            <td><?= $u['mfa_enabled'] ? '<span class="pill pill-positive">On</span>' : '<span class="pill">Off</span>' ?></td>
             <td class="small text-nowrap"><?= esc(local_time($u['last_login_at'], 'd M Y')) ?></td></tr>
         <?php endforeach ?>
         <?php if ($list['rows'] === []): ?><tr><td colspan="7" class="table-empty">No users match.</td></tr><?php endif ?>

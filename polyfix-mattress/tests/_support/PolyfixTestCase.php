@@ -86,7 +86,7 @@ abstract class PolyfixTestCase extends CIUnitTestCase
         $this->insert('users', $overrides + [
             'id' => $id, 'email' => strtolower(substr($id, 0, 8)) . '@test.polyfix.local',
             'full_name' => 'Test Person', 'password_hash' => PasswordPolicy::hash(self::password()),
-            'status' => 'ACTIVE', 'mfa_enabled' => 0, 'must_change_password' => 0, 'password_changed_at' => utc_now(),
+            'status' => 'ACTIVE', 'must_change_password' => 0, 'password_changed_at' => utc_now(),
         ]);
         foreach ($roles as $role) {
             $roleId = $this->db->table('roles')->select('id')->where('key', $role)->get()->getRow()->id;
@@ -183,16 +183,10 @@ abstract class PolyfixTestCase extends CIUnitTestCase
         return ['id' => $id, 'serial' => $serial, 'qr_token' => $token];
     }
 
-    /**
-     * Signs a user into the request context, as the auth filter would.
-     *
-     * Two-factor reflects the account: enabled if the row says so, and counted
-     * as satisfied, which is the ordinary case. Pass mfa_satisfied => false to
-     * check that a gated permission is refused when the code is still owed.
-     */
+    /** Signs a user into the request context, as the auth filter would. */
     protected function actingAs(string $userId, array $overrides = []): array
     {
-        $user = $this->db->table('users u')->select('u.id, u.email, u.full_name, u.mfa_enabled')->where('u.id', $userId)->get()->getRowArray();
+        $user = $this->db->table('users u')->select('u.id, u.email, u.full_name')->where('u.id', $userId)->get()->getRowArray();
         $roles = array_column($this->db->table('user_roles ur')->select('r.key')->join('roles r', 'r.id = ur.role_id')
             ->where('ur.user_id', $userId)->get()->getResultArray(), 'key');
         $dealer = $this->db->table('dealer_users du')->select('d.id, d.business_name')->join('dealers d', 'd.id = du.dealer_id')
@@ -201,8 +195,7 @@ abstract class PolyfixTestCase extends CIUnitTestCase
         $signedIn = [
             'id' => $user['id'], 'email' => $user['email'], 'full_name' => $user['full_name'],
             'roles' => $roles, 'dealer_id' => $dealer['id'] ?? null, 'dealer_name' => $dealer['business_name'] ?? null,
-            'mfa_enabled' => (bool) $user['mfa_enabled'], 'mfa_satisfied' => true,
-            'must_change_password' => false, 'must_enrol_mfa' => false, 'session_id' => uuid4(),
+            'must_change_password' => false, 'session_id' => uuid4(),
         ];
         $signedIn = $overrides + $signedIn;
         service('requestContext')->signIn($signedIn);

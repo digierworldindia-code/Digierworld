@@ -128,6 +128,34 @@ run.
 
 ---
 
+## Admin login flow
+
+1. Open `/admin/login`
+2. Enter the admin username/email and password
+3. Click Login
+4. The admin dashboard opens
+5. All admin modules are accessible according to the account's permissions
+
+**No 2FA is required.**
+
+Two-factor authentication has been removed from this build. There is no
+authenticator app, no setup step, no code to enter and no verification page.
+An account signs in with an email address and a password, and authorisation is
+decided by role and permission alone.
+
+Everything else about signing in is unchanged: Argon2id password hashing, a
+forced change of a temporary password at first sign-in, server-side sessions
+with a regenerated identifier, CSRF protection on every form, role checks on
+every route, rate limiting and account lockout on repeated failures, idle and
+absolute session expiry, secure cookies, and sign-out.
+
+The `mfa_*` columns remain in the `users` and `sessions` tables so existing
+rows and older backups still load, but nothing reads or writes them. An older
+`.env` may still set `polyfix.mfaRequiredRoles`; that setting no longer exists
+and is ignored, so it is safe to leave in place or delete.
+
+---
+
 ## Day to day
 
 ```bash

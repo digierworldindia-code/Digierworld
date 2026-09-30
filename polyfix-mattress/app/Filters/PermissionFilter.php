@@ -14,8 +14,8 @@ use CodeIgniter\HTTP\ResponseInterface;
  * check for a permission named 'claim'. Arguments are therefore written with
  * dots and converted back here. Several arguments mean "any of these".
  *
- * For a two-factor-gated permission the role alone is not enough: the session
- * must have satisfied two-factor authentication. The refusal says so plainly.
+ * A permission is granted by role alone, so a refusal here means the account
+ * simply does not hold it.
  */
 class PermissionFilter implements FilterInterface
 {
@@ -32,20 +32,11 @@ class PermissionFilter implements FilterInterface
             }
         }
 
-        $needsMfa = false;
-        foreach ($permissions as $permission) {
-            $needsMfa = $needsMfa || $context->hasRolePermission($permission);
-        }
-
         log_message('notice', 'security.PERMISSION_REFUSED user={user} needs={perm}', [
             'user' => $context->userId() ?? 'anonymous', 'perm' => implode('|', $permissions),
         ]);
 
-        // The only way a held permission is refused is the two-factor gate,
-        // which applies to accounts that have two-factor switched on.
-        $message = $needsMfa
-            ? 'This action needs the code from your authenticator app. Sign out and in again to enter it.'
-            : 'You do not have permission to do that.';
+        $message = 'You do not have permission to do that.';
 
         if ($request->getMethod() === 'GET') {
             return $this->private(service('response')->setStatusCode(403)->setBody(view('errors/html/error_403', ['message' => $message])));

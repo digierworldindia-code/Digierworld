@@ -28,7 +28,7 @@ use App\Libraries\Rbac;
             <tr><th colspan="<?= count(Rbac::ROLE_KEYS) + 1 ?>" class="bg-body-secondary"><?= esc(ucfirst($group)) ?></th></tr>
             <?php foreach ($permissions as $key => $description): ?>
             <tr>
-                <td><span class="mono small"><?= esc($key) ?></span><?= in_array($key, Rbac::MFA_GATED, true) ? ' <span class="pill pill-caution">2FA</span>' : '' ?>
+                <td><span class="mono small"><?= esc($key) ?></span>
                     <div class="small text-muted"><?= esc($description) ?></div></td>
                 <?php foreach (Rbac::ROLE_KEYS as $r): ?>
                     <td class="text-center"><?= in_array($key, Rbac::ROLE_PERMISSIONS[$r], true) ? '<i class="bi bi-check-lg" style="color:var(--accent)" aria-label="yes"></i>' : '<span class="text-muted" aria-label="no">·</span>' ?></td>
@@ -38,6 +38,6 @@ use App\Libraries\Rbac;
         <?php endforeach ?>
         </tbody>
     </table></div>
-    <div class="panel-body small text-muted">Permissions marked 2FA ask for the code from the authenticator app — for accounts that have two-factor switched on, in the session doing the work. Two-factor is optional here; make it compulsory for a role with <span class="mono">polyfix.mfaRequiredRoles</span> in <span class="mono">.env</span>.</div>
+    <div class="panel-body small text-muted">A permission is granted by role alone. Signing in needs an email address and a password; there is no second factor.</div>
 </div>
 <?= $this->endSection() ?>

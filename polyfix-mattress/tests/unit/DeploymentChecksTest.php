@@ -141,18 +141,25 @@ final class DeploymentChecksTest extends PolyfixTestCase
         );
     }
 
-    // --- two-factor authentication is optional --------------------------------
+    // --- two-factor authentication is gone ------------------------------------
 
-    public function testNobodyIsForcedIntoTwoFactorByDefault(): void
+    /**
+     * The setting that caused the lock-out. Its presence in an old .env is
+     * harmless — CodeIgniter ignores a key with no matching property — but it
+     * must not come back as a property, or the enrolment gate could be
+     * switched on again by editing a file.
+     */
+    public function testTheCompulsoryTwoFactorSettingNoLongerExists(): void
     {
-        $this->assertSame('', (new Polyfix())->mfaRequiredRoles);
-        $this->assertSame([], (new Polyfix())->mfaRoles());
+        $this->assertFalse(property_exists(Polyfix::class, 'mfaRequiredRoles'));
+        $this->assertFalse(method_exists(Polyfix::class, 'mfaRoles'));
     }
 
-    public function testTwoFactorCanStillBeMadeCompulsoryPerRole(): void
+    public function testNothingInTheConfigMentionsASecondFactor(): void
     {
-        $config = $this->config(['mfaRequiredRoles' => 'SUPER_ADMIN, ADMIN']);
+        $source = (string) file_get_contents(APPPATH . 'Config/Polyfix.php');
 
-        $this->assertSame(['SUPER_ADMIN', 'ADMIN'], $config->mfaRoles());
+        $this->assertDoesNotMatchRegularExpression('/\$mfa|mfaRoles|mfaRequired/', $source);
     }
+
 }

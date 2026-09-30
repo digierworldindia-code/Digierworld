@@ -141,18 +141,6 @@ final class UserManagementTest extends PolyfixTestCase
         $this->assertSame(0, (int) $row['failed_login_count']);
     }
 
-    public function testClearingTwoFactorLetsSomeoneEnrolANewPhone(): void
-    {
-        $this->actingAs($this->makeUser(['SUPER_ADMIN']));
-        $targetId = $this->makeUser(['ADMIN'], null, ['mfa_enabled' => 1, 'mfa_secret_encrypted' => 'v1.x', 'mfa_enrolled_at' => utc_now()]);
-
-        $this->users->resetMfa($targetId, 'Phone replaced', ['SUPER_ADMIN']);
-
-        $row = $this->db->table('users')->where('id', $targetId)->get()->getRowArray();
-        $this->assertSame(0, (int) $row['mfa_enabled']);
-        $this->assertNull($row['mfa_secret_encrypted']);
-        $this->assertNull($row['mfa_recovery_codes']);
-    }
 
     public function testSuspendingAnAccountEndsItsSessions(): void
     {

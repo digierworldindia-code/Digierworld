@@ -710,6 +710,11 @@ CREATE TABLE `users` (
   `full_name` VARCHAR(160) NOT NULL,
   `phone` VARCHAR(20) NULL,
   `status` ENUM('PENDING_ACTIVATION', 'ACTIVE', 'SUSPENDED', 'DISABLED') NOT NULL DEFAULT 'PENDING_ACTIVATION',
+  -- mfa_* and sessions.mfa_satisfied are retained but no longer read or
+  -- written: two-factor authentication was removed from the sign-in flow.
+  -- They are kept so that existing rows, backups and this schema still match,
+  -- and so a restore of an older dump loads without error. Nothing depends on
+  -- their values.
   `mfa_enabled` TINYINT(1) NOT NULL DEFAULT 0,
   `mfa_secret_encrypted` TEXT NULL,
   `mfa_recovery_codes` JSON NULL,

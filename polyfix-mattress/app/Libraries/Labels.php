@@ -33,7 +33,7 @@ final class Labels
         return self::qrSvgFor(self::verifyUrl($qrToken), $scale);
     }
 
-    /** Any string as an inline SVG QR code (also used for two-factor setup). */
+    /** Any string as an inline SVG QR code. */
     public static function qrSvgFor(string $data, int $scale = 5): string
     {
         $options = new QROptions([

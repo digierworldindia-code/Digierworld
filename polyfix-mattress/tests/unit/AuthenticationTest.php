@@ -4,7 +4,6 @@ namespace Tests\Unit;
 
 use App\Exceptions\AppException;
 use App\Libraries\Crypto;
-use App\Libraries\Totp;
 use App\Services\AuthService;
 use CodeIgniter\Session\Handlers\ArrayHandler;
 use CodeIgniter\Session\Session;
@@ -82,44 +81,57 @@ final class AuthenticationTest extends PolyfixTestCase
         $this->assertNotNull($this->db->table('users')->select('locked_until')->where('id', $userId)->get()->getRow()->locked_until);
     }
 
-    public function testTwoFactorIsDemandedBeforeASessionExists(): void
+    /**
+     * The whole point of this build: a correct password is the only thing
+     * between an administrator and their dashboard.
+     *
+     * This used to return 'mfa_required' and hold the sign-in in a pending
+     * state until an authenticator code was accepted.
+     */
+    public function testAPasswordAloneCompletesTheSignIn(): void
     {
-        $secret = Totp::generateSecret();
-        $userId = $this->makeUser(['WARRANTY_MANAGER'], null, [
-            'mfa_enabled' => 1, 'mfa_secret_encrypted' => Crypto::instance()->encrypt($secret), 'mfa_enrolled_at' => utc_now(),
-        ]);
+        $userId  = $this->makeUser(['SUPER_ADMIN']);
         $email   = $this->db->table('users')->select('email')->where('id', $userId)->get()->getRow()->email;
         $session = $this->session();
 
         $result = $this->auth->attemptPassword($email, self::password(), $session);
-        $this->assertSame('mfa_required', $result['status']);
-        $this->assertSame(0, $this->db->table('sessions')->where('user_id', $userId)->countAllResults(), 'no session before the second factor');
 
-        $this->refusal(fn () => $this->auth->attemptSecondFactor('000000', $session));
-        $this->auth->attemptSecondFactor(Totp::code($secret), $session);
-
-        $this->assertSame(1, $this->db->table('sessions')->where('user_id', $userId)->countAllResults());
-        $this->assertSame(1, (int) $this->db->table('sessions')->select('mfa_satisfied')->where('user_id', $userId)->get()->getRow()->mfa_satisfied);
+        $this->assertSame('signed_in', $result['status'], 'there is no second step to wait for');
+        $this->assertSame(1, $this->db->table('sessions')->where('user_id', $userId)->countAllResults(), 'the session exists immediately');
+        $this->assertNull($session->get('auth_pending'), 'nothing is left half-signed-in');
     }
 
-    public function testARecoveryCodeWorksOnceOnly(): void
+    /**
+     * A senior role is no different. Every role used to be a candidate for
+     * compulsory enrolment, and a role named in that setting could not reach
+     * any screen until it had enrolled.
+     */
+    public function testASeniorRoleIsNotAskedToEnrolInAnything(): void
     {
-        $secret = Totp::generateSecret();
-        $userId = $this->makeUser(['ADMIN'], null, ['mfa_enabled' => 1, 'mfa_secret_encrypted' => Crypto::instance()->encrypt($secret)]);
-        $codes  = Totp::recoveryCodes(3);
-        $this->db->table('users')->where('id', $userId)->update([
-            'mfa_recovery_codes' => json_encode(array_map(static fn ($c) => hash('sha256', $c), $codes)),
-        ]);
-        $email = $this->db->table('users')->select('email')->where('id', $userId)->get()->getRow()->email;
+        foreach (['SUPER_ADMIN', 'ADMIN', 'WARRANTY_MANAGER'] as $role) {
+            $userId = $this->makeUser([$role]);
+            $email  = $this->db->table('users')->select('email')->where('id', $userId)->get()->getRow()->email;
 
-        $session = $this->session();
-        $this->auth->attemptPassword($email, self::password(), $session);
-        $this->auth->attemptSecondFactor($codes[0], $session);
-        $this->assertSame(1, $this->db->table('sessions')->where('user_id', $userId)->countAllResults());
+            $result = $this->auth->attemptPassword($email, self::password(), $this->session());
+            $this->assertSame('signed_in', $result['status'], $role . ' must sign straight in');
 
-        $second = $this->session();
-        $this->auth->attemptPassword($email, self::password(), $second);
-        $this->assertStringContainsString('not accepted', $this->refusal(fn () => $this->auth->attemptSecondFactor($codes[0], $second)));
+            $resolved = $this->auth->resolve($this->session());
+            $this->assertArrayNotHasKey('must_enrol_mfa', $resolved ?? [], 'no enrolment obligation is published to the filters');
+        }
+    }
+
+    /** The second-factor entry point is gone, not merely unreachable. */
+    public function testTheSecondFactorStepNoLongerExists(): void
+    {
+        $this->assertFalse(method_exists($this->auth, 'attemptSecondFactor'));
+        $this->assertFalse(method_exists($this->auth, 'startMfaEnrolment'));
+        $this->assertFalse(method_exists($this->auth, 'confirmMfaEnrolment'));
+        $this->assertFalse(method_exists($this->auth, 'disableMfa'));
+        // Checked as a file rather than with class_exists(), which would ask
+        // the autoloader to include it and fail on a stale classmap instead of
+        // reporting cleanly.
+        $this->assertFileDoesNotExist(APPPATH . 'Libraries/Totp.php', 'the TOTP library is removed');
+        $this->assertFileDoesNotExist(APPPATH . 'Views/auth/second_factor.php', 'the second-factor page is removed');
     }
 
     public function testResolveRejectsATamperedSessionToken(): void

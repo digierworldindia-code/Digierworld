@@ -10,7 +10,7 @@ use RuntimeException;
  *
  *  encrypt / decrypt   AES-256-GCM column encryption for data the application
  *                      must read but a raw database dump must not reveal:
- *                      customer phone, email, TOTP secrets.
+ *                      customer phone, email.
  *                      Format: v1.<iv>.<ciphertext>.<tag>, each base64url.
  *  blindIndex          keyed HMAC-SHA256 of a normalised value. Lets the system
  *                      match "same phone number again" without a plaintext

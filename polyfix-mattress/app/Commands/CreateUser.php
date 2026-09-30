@@ -17,8 +17,7 @@ use CodeIgniter\CLI\CLI;
  *   php spark polyfix:create-user ... --demo        (marks the account DEMO ONLY)
  *
  * There is no default or universal password. A random temporary password is
- * printed once; the holder must replace it at first sign-in, and roles that
- * require two-factor authentication must enrol before reaching anything else.
+ * printed once and the holder must replace it at first sign-in.
  */
 class CreateUser extends BaseCommand
 {
@@ -85,9 +84,6 @@ class CreateUser extends BaseCommand
         CLI::write('Temporary password (shown once, not stored readable):');
         CLI::write('    ' . $created['temporary_password'], 'yellow');
         CLI::write('Hand it over in person or by phone. It must be changed at first sign-in.');
-        if (in_array($role, config('Polyfix')->mfaRoles(), true)) {
-            CLI::write('This role requires two-factor authentication: have an authenticator app ready.');
-        }
 
         return EXIT_SUCCESS;
     }

@@ -41,7 +41,6 @@ $self = $u['id'] === $ctx->userId();
         <?php endif ?>
 
         <div class="panel"><div class="panel-head"><h2>Security</h2></div><div class="panel-body"><dl class="dl-grid">
-            <dt>Two-factor</dt><dd><?= $u['mfa_enabled'] ? 'On since ' . esc(local_date($u['mfa_enrolled_at'])) : 'Off' ?></dd>
             <dt>Password changed</dt><dd><?= esc(local_time($u['password_changed_at'])) ?><?= $u['must_change_password'] ? ' · must change at next sign-in' : '' ?></dd>
             <dt>Failed attempts</dt><dd><?= (int) $u['failed_login_count'] ?><?= $u['locked_until'] && strtotime($u['locked_until'] . ' UTC') > time() ? ' · locked until ' . esc(local_time($u['locked_until'])) : '' ?></dd>
             <dt>Last sign-in</dt><dd><?= esc(local_time($u['last_login_at'])) ?><?= $u['last_login_ip'] ? ' from ' . esc($u['last_login_ip']) : '' ?></dd>
@@ -83,15 +82,6 @@ $self = $u['id'] === $ctx->userId();
                 <div class="d-flex gap-2"><input class="form-control" name="reason" maxlength="500" placeholder="Reason"><button class="btn btn-light" type="submit">Reset</button></div>
             </div>
         </form>
-        <?php if ($u['mfa_enabled']): ?>
-        <form class="panel" method="post" action="<?= site_url('admin/users/' . $u['id'] . '/reset-mfa') ?>" data-confirm="Clear two-factor authentication for this account?">
-            <div class="panel-head"><h2>Reset two-factor</h2></div>
-            <div class="panel-body"><?= csrf_field() ?>
-                <p class="small text-muted">For a lost or replaced phone. They enrol a new device at next sign-in.</p>
-                <div class="d-flex gap-2"><input class="form-control" name="reason" maxlength="500" placeholder="Reason"><button class="btn btn-light" type="submit">Clear 2FA</button></div>
-            </div>
-        </form>
-        <?php endif ?>
         <?php endif ?>
 
         <div class="panel"><div class="panel-head"><h2>Recent activity</h2><?php if ($ctx->can('audit:read')): ?><a class="small" href="<?= site_url('admin/audit?user=' . $u['id']) ?>">Audit trail</a><?php endif ?></div>

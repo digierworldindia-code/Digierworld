@@ -62,36 +62,36 @@ final class AuthorizationTest extends PolyfixTestCase
         }
     }
 
-    public function testSensitiveAbilitiesRequireTwoFactor(): void
+    /**
+     * These five used to be granted only to a session that had satisfied a
+     * second factor. They are now granted by role, like everything else, so
+     * an administrator who cannot get a code accepted does not quietly lose
+     * the ability to assign roles or change settings.
+     */
+    public function testTheMostSensitiveAbilitiesAreGrantedByRoleAlone(): void
     {
-        foreach (['system:backup', 'system:export', 'system:sql:read', 'system:settings:write', 'user:role:assign'] as $permission) {
-            $this->assertContains($permission, Rbac::MFA_GATED, "{$permission} must be behind two-factor authentication");
-        }
-    }
-
-    public function testAnAccountWithoutTwoFactorIsNotBlockedFromSensitiveActions(): void
-    {
-        // Two-factor enrolment is a policy choice (Config\Polyfix's
-        // mfaRequiredRoles). With it switched off, an administrator who never
-        // enrolled must still be able to run the console.
-        $this->actingAs($this->makeUser(['SUPER_ADMIN'], null, ['mfa_enabled' => 0]));
-
-        foreach (Rbac::MFA_GATED as $permission) {
-            $this->assertTrue(service('requestContext')->can($permission), "{$permission} must not be blocked when two-factor is off");
-        }
-    }
-
-    public function testASessionThatStillOwesItsCodeCannotUseAGatedPermission(): void
-    {
-        $userId  = $this->makeUser(['SUPER_ADMIN'], null, ['mfa_enabled' => 1]);
-        $this->actingAs($userId);
+        $this->actingAs($this->makeUser(['SUPER_ADMIN']));
         $context = service('requestContext');
 
-        $this->assertTrue($context->can('user:role:assign'), 'a session that passed two-factor may');
+        foreach (['system:backup', 'system:export', 'system:sql:read', 'system:settings:write', 'user:role:assign'] as $permission) {
+            $this->assertTrue($context->can($permission), $permission . ' must be granted by the role alone');
+        }
+    }
 
-        $this->actingAs($userId, ['mfa_satisfied' => false]);
-        $this->assertFalse($context->can('user:role:assign'), 'an unsatisfied session may not');
-        $this->assertTrue($context->can('dealer:read'), 'ordinary permissions still work');
+    public function testALesserRoleStillCannotReachThem(): void
+    {
+        $this->actingAs($this->makeUser(['REPORTING']));
+        $context = service('requestContext');
+
+        foreach (['system:settings:write', 'user:role:assign'] as $permission) {
+            $this->assertFalse($context->can($permission), $permission . ' must still be refused without the role');
+        }
+    }
+
+    /** The gate itself is gone, so nothing can reintroduce it by accident. */
+    public function testThereIsNoSecondFactorGateLeftInAuthorisation(): void
+    {
+        $this->assertFalse(defined(Rbac::class . '::MFA_GATED'), 'the gated-permission list is removed');
     }
 
     public function testStaffAndDealerAccountsAreToldApart(): void

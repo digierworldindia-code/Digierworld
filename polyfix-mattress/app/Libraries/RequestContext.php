@@ -25,7 +25,7 @@ final class RequestContext
 
     /**
      * @param array{id:string, email:string, full_name:string, roles:list<string>, dealer_id:?string,
-     *              mfa_enabled:bool, mfa_satisfied:bool, must_change_password:bool, session_id:string} $user
+     *              must_change_password:bool, session_id:string} $user
      */
     public function signIn(array $user): void
     {
@@ -91,29 +91,21 @@ final class RequestContext
     }
 
     /**
-     * True when the role grants the permission and, for the handful of
-     * sensitive ones, two-factor authentication is not owed.
+     * True when one of the signed-in user's roles grants the permission.
      *
-     * The gate bites only for an account that actually has two-factor turned
-     * on: it then has to have been satisfied in this session, so a borrowed
-     * cookie cannot change roles or settings. An account without two-factor is
-     * not blocked — otherwise switching enrolment off (Config\Polyfix's
-     * mfaRequiredRoles) would quietly make those actions impossible for
-     * everyone. Put roles back in mfaRequiredRoles to make the gate universal.
+     * Authorisation is role and permission only. A handful of sensitive
+     * permissions used to additionally require a second factor satisfied in
+     * the current session, which meant an account that could not get a code
+     * accepted lost the ability to assign roles, change settings or export —
+     * silently, as a permission refusal rather than anything that explained
+     * itself.
      */
     public function can(string $permission): bool
     {
-        if ($this->user === null || ! in_array($permission, $this->user['permissions'], true)) {
-            return false;
-        }
-        if (in_array($permission, Rbac::MFA_GATED, true) && $this->user['mfa_enabled']) {
-            return $this->user['mfa_satisfied'];
-        }
-
-        return true;
+        return $this->user !== null && in_array($permission, $this->user['permissions'], true);
     }
 
-    /** Holds the permission by role, whatever the MFA state. For explaining refusals. */
+    /** Kept as the name the views use when explaining a refusal. */
     public function hasRolePermission(string $permission): bool
     {
         return $this->user !== null && in_array($permission, $this->user['permissions'], true);

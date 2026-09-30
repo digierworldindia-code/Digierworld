@@ -17,7 +17,7 @@ use RuntimeException;
 class Polyfix extends BaseConfig
 {
     // --- secrets (from .env only) --------------------------------------------
-    /** base64, 32 bytes decoded. AES-256-GCM for customer contact data and TOTP secrets. */
+    /** base64, 32 bytes decoded. AES-256-GCM for customer contact data. */
     public string $encryptionKey = '';
 
     /** HMAC key for blind indexes and signed URLs. Must match the key the data was written with. */
@@ -30,20 +30,6 @@ class Polyfix extends BaseConfig
     public int $sessionAbsoluteSeconds = 43200;
     public int $passwordResetTtlSeconds = 3600;
 
-    /**
-     * Roles that must enrol in two-factor authentication before they can use
-     * the console, as comma separated role keys.
-     *
-     * Empty means nobody is forced to: two-factor stays available for anyone
-     * who wants it, under Password & security, and an account that turns it on
-     * is then asked for a code at every sign-in.
-     *
-     * To make it compulsory again — recommended once the team is settled — put
-     * the roles back, here or in .env:
-     *
-     *   polyfix.mfaRequiredRoles = 'SUPER_ADMIN,ADMIN,WARRANTY_MANAGER'
-     */
-    public string $mfaRequiredRoles = '';
 
     // --- uploads ----------------------------------------------------------------
     /** Outside the web root. WRITEPATH is expanded at runtime. */
@@ -68,12 +54,6 @@ class Polyfix extends BaseConfig
     public function uploadDirectory(): string
     {
         return rtrim(str_replace('WRITEPATH/', WRITEPATH, $this->uploadPath), '/') . '/';
-    }
-
-    /** @return list<string> */
-    public function mfaRoles(): array
-    {
-        return array_values(array_filter(array_map('trim', explode(',', $this->mfaRequiredRoles))));
     }
 
     /** Raw 32-byte key. Throws rather than returning something weak. */

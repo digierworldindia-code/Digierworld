@@ -7,14 +7,13 @@ use App\Libraries\Audit;
 use App\Libraries\Crypto;
 use App\Libraries\PasswordPolicy;
 use App\Libraries\Rbac;
-use App\Libraries\Totp;
 use App\Libraries\Tx;
 use CodeIgniter\Database\BaseConnection;
 use CodeIgniter\Session\Session;
 use Config\Polyfix;
 
 /**
- * Sign-in, sessions, passwords and two-factor authentication.
+ * Sign-in, sessions and passwords.
  *
  * Carried over from the previous platform, rule for rule:
  *  - "no such account", "wrong password" and "account not active" produce the
@@ -22,9 +21,8 @@ use Config\Polyfix;
  *    neither the words nor the timing reveal whether an account exists
  *  - lockout is per account; every failure is recorded with a hashed source
  *    address, so spraying many accounts from one address is visible
- *  - changing or resetting a password, or turning off two-factor, signs out
+ *  - changing or resetting a password signs out
  *    every other device
- *  - recovery codes are single use and stored only as hashes
  *
  * Sessions: CodeIgniter's database session holds only a session record id and
  * a random token. The `sessions` table row is the authority — revoking it ends
@@ -32,7 +30,6 @@ use Config\Polyfix;
  */
 final class AuthService
 {
-    private const PENDING_MFA_TTL = 300;
     private const SEEN_WRITE_INTERVAL = 60;
 
     public const GENERIC_FAILURE = 'That email and password combination was not recognised.';
@@ -54,9 +51,9 @@ final class AuthService
     // =========================================================================
 
     /**
-     * Step one: email and password.
+     * Email and password. There is no second step.
      *
-     * @return array{status: 'signed_in'|'mfa_required', user_id: string}
+     * @return array{status: 'signed_in', user_id: string}
      */
     public function attemptPassword(string $email, string $password, Session $session): array
     {
@@ -99,67 +96,24 @@ final class AuthService
             $this->db->table('users')->where('id', $user['id'])->update(['password_hash' => PasswordPolicy::hash($password)]);
         }
 
-        if ((bool) $user['mfa_enabled']) {
-            // The password was right; the second factor is still owed. Remember
-            // that for a few minutes, bound to this browser session only.
-            $session->regenerate(true);
-            $session->set('auth_pending', ['user_id' => $user['id'], 'expires' => time() + self::PENDING_MFA_TTL]);
-
-            return ['status' => 'mfa_required', 'user_id' => $user['id']];
-        }
-
-        $this->completeSignIn($user, false, $session);
+        $this->completeSignIn($user, $session);
 
         return ['status' => 'signed_in', 'user_id' => $user['id']];
     }
 
-    /** Step two, when two-factor is enabled: a code from the app, or a recovery code. */
-    public function attemptSecondFactor(string $code, Session $session): void
-    {
-        $pending = $session->get('auth_pending');
-        if (! is_array($pending) || ($pending['expires'] ?? 0) < time()) {
-            $session->remove('auth_pending');
-
-            throw new AppException('That sign-in has expired. Enter your email and password again.', 401);
-        }
-
-        $user = $this->findUserForLogin(null, $pending['user_id']);
-        if ($user === null || $user['status'] !== 'ACTIVE') {
-            $session->remove('auth_pending');
-
-            throw new AppException(self::GENERIC_FAILURE, 401, 'pending user no longer active');
-        }
-
-        $code = trim($code);
-        $ok   = str_contains($code, '-') || preg_match('/[A-Za-z]/', $code)
-            ? $this->consumeRecoveryCode($user, $code)
-            : ($user['mfa_secret_encrypted'] !== null && Totp::verify($this->crypto->decrypt($user['mfa_secret_encrypted']), $code));
-
-        if (! $ok) {
-            $this->noteFailure($user['email'], 'mfa_failed');
-            $this->registerFailedAttempt($user['id'], $user['email'], false);
-
-            throw new AppException('That code was not accepted. Check your authenticator app and try again.', 401, 'mfa failed');
-        }
-
-        $session->remove('auth_pending');
-        $this->completeSignIn($user, true, $session);
-    }
-
-    private function completeSignIn(array $user, bool $mfaSatisfied, Session $session): void
+    private function completeSignIn(array $user, Session $session): void
     {
         $token     = Crypto::randomToken(32);
         $sessionId = uuid4();
         $now       = utc_now();
 
-        Tx::run(function (BaseConnection $db) use ($user, $mfaSatisfied, $token, $sessionId, $now): void {
+        Tx::run(function (BaseConnection $db) use ($user, $token, $sessionId, $now): void {
             $db->table('sessions')->insert([
                 'id'              => $sessionId,
                 'user_id'         => $user['id'],
                 'token_hash'      => hash('sha256', $token),
                 'ip'              => client_ip(),
                 'user_agent'      => mb_substr((string) service('request')->getUserAgent(), 0, 400) ?: null,
-                'mfa_satisfied'   => $mfaSatisfied ? 1 : 0,
                 'created_at'      => $now,
                 'last_seen_at'    => $now,
                 'absolute_expiry' => gmdate('Y-m-d H:i:s', time() + $this->config->sessionAbsoluteSeconds) . '.000000',
@@ -172,7 +126,7 @@ final class AuthService
                 'last_login_ip'      => client_ip(),
             ]);
 
-            Audit::instance($db)->record('LOGIN', 'user', $user['id'], null, ['mfaSatisfied' => $mfaSatisfied], null, [
+            Audit::instance($db)->record('LOGIN', 'user', $user['id'], null, null, null, [
                 'user_id'    => $user['id'],
                 'user_email' => $user['email'],
                 'role_key'   => $user['roles'][0] ?? null,
@@ -228,10 +182,7 @@ final class AuthService
             'roles'                => $user['roles'],
             'dealer_id'            => $user['dealer_id'],
             'dealer_name'          => $user['dealer_name'],
-            'mfa_enabled'          => (bool) $user['mfa_enabled'],
-            'mfa_satisfied'        => (bool) $record['mfa_satisfied'],
             'must_change_password' => (bool) $user['must_change_password'],
-            'must_enrol_mfa'       => ! $user['mfa_enabled'] && array_intersect($user['roles'], $this->config->mfaRoles()) !== [],
             'session_id'           => $record['id'],
         ];
     }
@@ -271,7 +222,7 @@ final class AuthService
     public function activeSessions(string $userId): array
     {
         return $this->db->table('sessions')
-            ->select('id, ip, user_agent, created_at, last_seen_at, mfa_satisfied')
+            ->select('id, ip, user_agent, created_at, last_seen_at')
             ->where('user_id', $userId)->where('revoked_at', null)
             ->where('absolute_expiry >', utc_now())
             ->orderBy('last_seen_at', 'DESC')->get()->getResultArray();
@@ -375,74 +326,6 @@ final class AuthService
     }
 
     // =========================================================================
-    // Two-factor authentication
-    // =========================================================================
-
-    /** @return array{secret:string, otpauth:string} */
-    public function startMfaEnrolment(string $userId, string $password): array
-    {
-        $user = $this->db->table('users')->where('id', $userId)->get()->getRowArray();
-        if (! PasswordPolicy::verify($user['password_hash'], $password)) {
-            throw new AppException('Your password was not correct.', 422);
-        }
-
-        $secret = Totp::generateSecret();
-        // Stored encrypted and not yet enabled: an abandoned setup locks no one out.
-        $this->db->table('users')->where('id', $userId)->update([
-            'mfa_secret_encrypted' => $this->crypto->encrypt($secret),
-            'mfa_enabled'          => 0,
-        ]);
-
-        return ['secret' => $secret, 'otpauth' => Totp::otpauthUrl($secret, $user['email'])];
-    }
-
-    /** @return list<string> recovery codes, shown once and never again */
-    public function confirmMfaEnrolment(string $userId, string $code, string $sessionId): array
-    {
-        $user = $this->db->table('users')->where('id', $userId)->get()->getRowArray();
-        if ($user['mfa_secret_encrypted'] === null) {
-            throw AppException::rule('Start two-factor setup before confirming it.');
-        }
-        if (! Totp::verify($this->crypto->decrypt($user['mfa_secret_encrypted']), $code)) {
-            throw AppException::rule('That code was not accepted. Check the time on your phone is set automatically, then try again.');
-        }
-
-        $codes = Totp::recoveryCodes();
-        Tx::run(function (BaseConnection $db) use ($userId, $codes, $sessionId): void {
-            $db->table('users')->where('id', $userId)->update([
-                'mfa_enabled'        => 1,
-                'mfa_enrolled_at'    => utc_now(),
-                'mfa_recovery_codes' => json_encode(array_map(static fn ($c) => hash('sha256', $c), $codes)),
-            ]);
-            // The code just typed proves possession, so this session now counts as MFA-satisfied.
-            $db->table('sessions')->where('id', $sessionId)->update(['mfa_satisfied' => 1]);
-            Audit::instance($db)->record('MFA_ENABLED', 'user', $userId);
-        }, $this->db);
-
-        return $codes;
-    }
-
-    public function disableMfa(string $userId, string $password, string $code): void
-    {
-        $user = $this->db->table('users')->where('id', $userId)->get()->getRowArray();
-        if (! PasswordPolicy::verify($user['password_hash'], $password)) {
-            throw new AppException('Your password was not correct.', 422);
-        }
-        if ($user['mfa_secret_encrypted'] === null || ! Totp::verify($this->crypto->decrypt($user['mfa_secret_encrypted']), $code)) {
-            throw AppException::rule('That code was not accepted.');
-        }
-
-        Tx::run(function (BaseConnection $db) use ($userId): void {
-            $db->table('users')->where('id', $userId)->update([
-                'mfa_enabled' => 0, 'mfa_secret_encrypted' => null, 'mfa_recovery_codes' => null, 'mfa_enrolled_at' => null,
-            ]);
-            Audit::instance($db)->record('MFA_DISABLED', 'user', $userId);
-        }, $this->db);
-
-        $this->revokeAllSessions($userId, 'two-factor authentication disabled');
-    }
-
-    // =========================================================================
     // Internals
     // =========================================================================
 
@@ -470,24 +353,6 @@ final class AuthService
         usort($user['roles'], static fn ($a, $b) => (Rbac::ROLE_METADATA[$a]['rank'] ?? 99) <=> (Rbac::ROLE_METADATA[$b]['rank'] ?? 99));
 
         return $user;
-    }
-
-    private function consumeRecoveryCode(array $user, string $code): bool
-    {
-        $stored  = json_decode((string) $user['mfa_recovery_codes'], true) ?: [];
-        $offered = hash('sha256', strtoupper(trim($code)));
-        foreach ($stored as $i => $hash) {
-            if (hash_equals($hash, $offered)) {
-                unset($stored[$i]);
-                $this->db->table('users')->where('id', $user['id'])
-                    ->update(['mfa_recovery_codes' => json_encode(array_values($stored))]);
-                log_message('notice', 'security.MFA_RECOVERY_CODE_USED user={user}', ['user' => $user['id']]);
-
-                return true;
-            }
-        }
-
-        return false;
     }
 
     private function registerFailedAttempt(string $userId, string $email, bool $note = true): void

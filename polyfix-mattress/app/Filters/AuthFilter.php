@@ -10,17 +10,22 @@ use CodeIgniter\HTTP\ResponseInterface;
 /**
  * Requires a signed-in user and loads them into the request context.
  *
- * The identity comes from the server-side session record only. Two obligations
- * are enforced before anything else is reachable:
- *   - a temporary password must be changed
- *   - a role that requires two-factor authentication must enrol in it
- * Until then, only the security page and sign-out answer.
+ * The identity comes from the server-side session record only. One obligation
+ * is enforced before anything else is reachable: a temporary password must be
+ * changed. Until then, only the security page and sign-out answer.
+ *
+ * There is deliberately no second-factor obligation here. It used to redirect
+ * any senior role that had not enrolled to the setup page, and because that
+ * gate only cleared when an authenticator code was accepted, anything that
+ * stopped a code being accepted — a server clock a minute out, a mistyped
+ * key, a replaced phone — left the account bounced back to the same page from
+ * every single admin screen, with no way out of it from the interface.
  */
 class AuthFilter implements FilterInterface
 {
     use MarksPrivate;
 
-    private const ALWAYS_ALLOWED = ['account/security', 'account/password', 'account/mfa/start', 'account/mfa/confirm', 'logout'];
+    private const ALWAYS_ALLOWED = ['account/security', 'account/password', 'logout'];
 
     public function before(RequestInterface $request, $arguments = null)
     {
@@ -42,9 +47,6 @@ class AuthFilter implements FilterInterface
         }
         if ($user['must_change_password']) {
             return $this->private(redirect()->to(site_url('account/security'))->with('notice', 'You are using a temporary password. Set your own before continuing.'));
-        }
-        if ($user['must_enrol_mfa']) {
-            return $this->private(redirect()->to(site_url('account/security?enrol=1'))->with('notice', 'Your role requires two-factor authentication. Set it up to continue.'));
         }
 
         return null;

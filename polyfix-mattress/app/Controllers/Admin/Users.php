@@ -22,7 +22,7 @@ class Users extends AdminController
         $q      = $this->filter('q', 80);
 
         $builder = $db->table('users u')
-            ->select("u.id, u.email, u.full_name, u.status, u.mfa_enabled, u.last_login_at, u.locked_until, u.must_change_password,
+            ->select("u.id, u.email, u.full_name, u.status, u.last_login_at, u.locked_until, u.must_change_password,
                       GROUP_CONCAT(r.key ORDER BY r.rank SEPARATOR ',') roles, d.business_name dealer", false)
             ->join('user_roles ur', 'ur.user_id = u.id', 'left')->join('roles r', 'r.id = ur.role_id', 'left')
             ->join('dealer_users du', 'du.user_id = u.id', 'left')->join('dealers d', 'd.id = du.dealer_id', 'left')
@@ -81,7 +81,7 @@ class Users extends AdminController
     public function show(string $id): string
     {
         $db   = db_connect();
-        $user = $db->table('users u')->select('u.id, u.email, u.full_name, u.phone, u.status, u.mfa_enabled, u.mfa_enrolled_at,
+        $user = $db->table('users u')->select('u.id, u.email, u.full_name, u.phone, u.status,
                     u.must_change_password, u.password_changed_at, u.failed_login_count, u.locked_until, u.last_login_at, u.last_login_ip, u.created_at, d.business_name dealer, d.id dealer_id')
             ->join('dealer_users du', 'du.user_id = u.id', 'left')->join('dealers d', 'd.id = du.dealer_id', 'left')
             ->where(['u.id' => $id, 'u.deleted_at' => null])->get()->getRowArray() ?? $this->notFound();
@@ -91,7 +91,7 @@ class Users extends AdminController
         return $this->render('admin/users/show', $user['full_name'], 'admin/users', [
             'u'        => $user,
             'roles'    => $service->rolesOf($id),
-            'sessions' => $db->table('sessions')->select('id, ip, user_agent, created_at, last_seen_at, mfa_satisfied')
+            'sessions' => $db->table('sessions')->select('id, ip, user_agent, created_at, last_seen_at')
                 ->where('user_id', $id)->where('revoked_at', null)->where('absolute_expiry >', utc_now())->orderBy('last_seen_at', 'DESC')->get()->getResultArray(),
             'recent'   => $db->table('audit_logs')->select('occurred_at, action, entity, entity_id')
                 ->where('user_id', $id)->orderBy('occurred_at', 'DESC')->limit(15)->get()->getResultArray(),
@@ -135,14 +135,6 @@ class Users extends AdminController
         }, 'Password reset. The temporary password is shown below — hand it over in person or by phone.', site_url('admin/users/' . $id));
     }
 
-    public function resetMfa(string $id): RedirectResponse
-    {
-        return $this->act(
-            fn () => UserService::instance()->resetMfa($id, $this->post('reason', 500), $this->ctx->roles()),
-            'Two-factor authentication cleared. They will enrol a new device at next sign-in.',
-            site_url('admin/users/' . $id),
-        );
-    }
 
     /** What each role can do — generated from the same table the filters use. */
     public function roleMatrix(): string
