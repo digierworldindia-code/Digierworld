@@ -17,7 +17,7 @@ cd "$(dirname "$0")/.."
 ROOT=$(pwd)
 OUT=${1:-"$ROOT/delivery"}
 NAME=POLYFIX-MATTRESS
-ZIP="$OUT/POLYFIX-MATTRESS-CI4-FINAL-CLIENT-DELIVERY.zip"
+ZIP="$OUT/${ZIP_NAME:-POLYFIX-MATTRESS-CI4-NO-2FA-FINAL}.zip"
 SQL_SRC="$OUT/POLYFIX-MATTRESS-DATABASE.sql"
 
 command -v zip >/dev/null || { echo "zip is not installed"; exit 1; }
