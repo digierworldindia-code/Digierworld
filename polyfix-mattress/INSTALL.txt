@@ -9,19 +9,26 @@ Contents
                                     data, no audit trail — those belong to a running
                                     system and to its backups.
   README.md                         start here
-  docs/                             database, migration, backup, restore, deployment, security
+  docs/                             database, migration, backup, restore, deployment,
+                                    security, and HOSTINGER-DEPLOYMENT.md for shared
+                                    hosting (Hostinger, cPanel, Plesk)
   .env.example                      every setting, with notes. Copy it to .env and edit.
 
 There is no .env in this package, and no password, key or token of any kind.
 
 Install
 -------
+On Hostinger or any shared host where the document root is fixed at
+public_html, follow docs/HOSTINGER-DEPLOYMENT.md instead of this list — the
+layout and permissions differ. Otherwise:
+
   1.  Unpack outside the web root, e.g. /srv/polyfix.
   2.  Point the web server's document root at POLYFIX-MATTRESS/public.
-  3.  cp .env.example .env  and fill in app.baseURL, the database, and three secrets:
-        php -r 'echo base64_encode(random_bytes(32)), PHP_EOL;'   # polyfix.encryptionKey
-        php -r 'echo bin2hex(random_bytes(32)), PHP_EOL;'         # polyfix.signingSecret
-        php spark key:generate                                    # encryption.key
+  3.  cp .env.example .env  and fill in app.baseURL and the database, then
+      generate the three secrets:
+        php spark polyfix:keys --write
+      It fills in what is missing and never overwrites a secret already set.
+      Back up polyfix.encryptionKey: it decrypts customer contact details.
   4.  mysql -u root -p -e "CREATE DATABASE polyfix_mattress CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;"
       mysql -u root -p polyfix_mattress < POLYFIX-MATTRESS-DATABASE.sql
   5.  chmod -R 770 writable
@@ -33,7 +40,11 @@ Install
       sign-in. Two-factor authentication is optional — turn it on per account
       under Password & security, or make it compulsory for the senior roles with
       polyfix.mfaRequiredRoles in .env.
-  8.  Sign in at /admin/login, then open Console → System and read the checks.
+  8.  Check the deployment before opening it to anyone:
+        php spark polyfix:doctor
+      It tests the PHP build, the writable folders, the secrets, the database
+      and the migrations, and names whatever fails.
+  9.  Sign in at /admin/login, then open Console → System and read the checks.
 
 Upgrading an existing installation instead
 ------------------------------------------

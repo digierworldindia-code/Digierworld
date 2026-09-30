@@ -8,7 +8,10 @@ Options -Indexes
 # Turning on the rewrite engine is necessary for the following rules and features.
 # FollowSymLinks must be enabled for this to work.
 <IfModule mod_rewrite.c>
-	Options +FollowSymlinks
+	# Some shared hosts refuse +FollowSymlinks in .htaccess and answer 500 for
+	# the whole site. SymLinksIfOwnerMatch is accepted everywhere and is the
+	# safer of the two anyway.
+	Options +SymLinksIfOwnerMatch
 	RewriteEngine On
 
 	# If you installed CodeIgniter in a subfolder, you will need to
@@ -21,10 +24,35 @@ Options -Indexes
 	RewriteCond %{REQUEST_URI} (.+)/$
 	RewriteRule ^ %1 [L,R=301]
 
-	# Rewrite "www.example.com -> example.com"
-	RewriteCond %{HTTPS} !=on
-	RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
-	RewriteRule ^ http://%1%{REQUEST_URI} [R=301,L]
+	# www canonicalisation is deliberately left switched off.
+	#
+	# The stock CodeIgniter rule here redirects to http://, so with
+	# app.forceGlobalSecureRequests on the application bounces straight back to
+	# https://www… and the browser loops until it gives up. Guessing the wrong
+	# direction does the same thing: forcing non-www on a site whose
+	# app.baseURL is www (or the reverse) is an endless redirect.
+	#
+	# app.baseURL in .env already declares the canonical host, so nothing here
+	# is needed. If you do want Apache to canonicalise, uncomment ONE block and
+	# make sure it matches app.baseURL. Note the X-Forwarded-Proto condition:
+	# without it, a site behind a CDN that terminates TLS is seen as plain http
+	# and you are back to the loop.
+	#
+	# Send www.example.com -> example.com (baseURL must be the bare domain):
+	#   RewriteCond %{HTTP:X-Forwarded-Proto} =https [OR]
+	#   RewriteCond %{HTTPS} =on
+	#   RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
+	#   RewriteRule ^ https://%1%{REQUEST_URI} [R=301,L,NE]
+	#   RewriteCond %{HTTP:X-Forwarded-Proto} !=https
+	#   RewriteCond %{HTTPS} !=on
+	#   RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
+	#   RewriteRule ^ http://%1%{REQUEST_URI} [R=301,L,NE]
+	#
+	# Send example.com -> www.example.com (baseURL must include www):
+	#   RewriteCond %{HTTP:X-Forwarded-Proto} =https [OR]
+	#   RewriteCond %{HTTPS} =on
+	#   RewriteCond %{HTTP_HOST} !^www\. [NC]
+	#   RewriteRule ^ https://www.%{HTTP_HOST}%{REQUEST_URI} [R=301,L,NE]
 
 	# Checks to see if the user is attempting to access a valid file,
 	# such as an image or css document, if this isn't true it sends the
@@ -43,6 +71,18 @@ Options -Indexes
 	# can be sent to index.php, and everything works as normal.
 	ErrorDocument 404 index.php
 </IfModule>
+
+# ----------------------------------------------------------------------
+# Never serve these, whatever ends up in this directory
+# ----------------------------------------------------------------------
+<FilesMatch "^\.|\.(env|sql|log|lock|md|ini|sh)$">
+	<IfModule authz_core_module>
+		Require all denied
+	</IfModule>
+	<IfModule !authz_core_module>
+		Deny from all
+	</IfModule>
+</FilesMatch>
 
 # Disable server signature start
 ServerSignature Off

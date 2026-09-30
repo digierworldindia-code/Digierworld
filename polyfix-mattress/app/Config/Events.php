@@ -24,20 +24,46 @@ use CodeIgniter\HotReloader\HotReloader;
  */
 
 /*
- * POLYFIX: refuse to serve a production request with missing or placeholder
- * secrets. A half-configured deployment that runs is more dangerous than one
- * that stops, and the log names what is wrong — never the values.
+ * POLYFIX: refuse to serve a production request from an unfinished install.
+ *
+ * A half-configured deployment that runs is more dangerous than one that
+ * stops. But stopping with a bare 500 was its own bug: the generic error page
+ * is identical whether the secrets are unset, the database is unreachable or
+ * the disk is full, so whoever is deploying has nothing to go on. Worse, that
+ * page needs the brand helper, the config and base_url() to render, which is
+ * precisely what is unavailable when the install is broken.
+ *
+ * So: name the problems on a plain, self-contained page and answer 503, which
+ * is what "configured but not ready" actually means. Only install-integrity
+ * problems qualify — see Polyfix::installProblems(). They cannot be true of an
+ * installation that has ever served a request, so there is no live site whose
+ * details this could leak, and it prints names, never values.
  */
 Events::on('pre_system', static function (): void {
     if (ENVIRONMENT !== 'production' || is_cli()) {
         return;
     }
-    $problems = config(\Config\Polyfix::class)->problems();
-    if ($problems !== []) {
-        log_message('critical', 'Refusing to serve: invalid configuration: ' . implode('; ', $problems));
 
-        throw new \RuntimeException('The application is not configured. See the log for details.');
+    $problems = config(\Config\Polyfix::class)->installProblems();
+    if ($problems === []) {
+        return;
     }
+
+    log_message('critical', 'Refusing to serve: setup is not finished: ' . implode('; ', $problems));
+
+    if (! headers_sent()) {
+        header('HTTP/1.1 503 Service Unavailable', true, 503);
+        header('Content-Type: text/html; charset=UTF-8');
+        header('Cache-Control: no-store, private');
+        header('Retry-After: 300');
+        header('X-Robots-Tag: noindex, nofollow');
+    }
+
+    // Included directly rather than through view(): the renderer is one more
+    // thing that can fail here, and this template needs nothing from it.
+    require APPPATH . 'Views/errors/html/setup.php';
+
+    exit(1);
 });
 
 Events::on('pre_system', static function (): void {

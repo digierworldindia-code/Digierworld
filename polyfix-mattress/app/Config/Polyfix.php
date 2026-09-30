@@ -96,24 +96,120 @@ class Polyfix extends BaseConfig
     public function problems(): array
     {
         $problems = [];
+        $unset    = [];
 
         foreach (['encryptionKey', 'signingSecret'] as $name) {
             $value = $this->{$name};
             if ($value === '' || stripos($value, 'CHANGE_ME') === 0) {
-                $problems[] = "polyfix.{$name} is not set";
+                $problems[] = "polyfix.{$name} is not set in .env";
+                $unset[]    = $name;
             }
         }
 
-        if ($this->signingSecret !== '' && strlen($this->signingSecret) < 32) {
+        // Only judge the shape of a value that is actually there, or the list
+        // says the same thing three times over.
+        if (! in_array('signingSecret', $unset, true) && strlen($this->signingSecret) < 32) {
             $problems[] = 'polyfix.signingSecret must be at least 32 characters';
         }
 
-        try {
-            $this->encryptionKeyBytes();
-        } catch (RuntimeException $e) {
-            $problems[] = $e->getMessage();
+        if (! in_array('encryptionKey', $unset, true)) {
+            try {
+                $this->encryptionKeyBytes();
+            } catch (RuntimeException $e) {
+                $problems[] = $e->getMessage();
+            }
         }
 
         return $problems;
+    }
+
+    /**
+     * Extensions this application actually uses. mysqli for the database,
+     * intl for CodeIgniter itself, the rest for crypto, uploads and exports.
+     *
+     * @var list<string>
+     */
+    public const REQUIRED_EXTENSIONS = [
+        'intl',
+        'mbstring',
+        'json',
+        'mysqli',
+        'openssl',
+        'gd',
+        'fileinfo',
+        'zip',
+    ];
+
+    /** The lowest PHP this code is tested on. Keep in step with composer.json. */
+    public const MINIMUM_PHP = '8.2';
+
+    /**
+     * Everything that must be true before the application can serve its first
+     * request: the PHP build, the writable directories, and the secrets.
+     *
+     * None of these can be true on an installation that has ever worked, so it
+     * is safe — and far kinder to whoever is deploying — to name them on screen
+     * rather than answer a bare 500. Names only: never a value, never a path
+     * outside the project, never a credential.
+     *
+     * Runtime faults are deliberately not in here. A database that is down, or
+     * a disk that filled up this morning, is a genuine production incident and
+     * belongs in the log and in `php spark polyfix:doctor`, not on a public
+     * page. Those still get the ordinary error page.
+     *
+     * @return list<string>
+     */
+    public function installProblems(): array
+    {
+        $problems = [];
+
+        if (version_compare(PHP_VERSION, self::MINIMUM_PHP, '<')) {
+            $problems[] = sprintf(
+                'PHP %s or newer is required. This server runs PHP %s. Switch the version in your hosting control panel.',
+                self::MINIMUM_PHP,
+                PHP_VERSION,
+            );
+        }
+
+        $missing = array_values(array_filter(
+            self::REQUIRED_EXTENSIONS,
+            static fn (string $ext): bool => ! extension_loaded($ext),
+        ));
+        if ($missing !== []) {
+            $problems[] = 'These PHP extensions are switched off: ' . implode(', ', $missing)
+                . '. Enable them in your hosting control panel.';
+        }
+
+        foreach (['', 'cache/', 'logs/', 'session/', 'uploads/'] as $sub) {
+            $dir = WRITEPATH . $sub;
+            if (! is_dir($dir) && ! @mkdir($dir, 0775, true) && ! is_dir($dir)) {
+                $problems[] = 'writable/' . $sub . ' does not exist and could not be created.';
+                continue;
+            }
+            if (! is_writable($dir)) {
+                $problems[] = 'writable/' . $sub . ' is not writable by the web server (try 775).';
+            }
+        }
+
+        if (! is_file(ROOTPATH . '.env')) {
+            $problems[] = 'There is no .env file. Copy .env.example to .env and fill it in.';
+        }
+
+        /*
+         * A baseURL still on the framework's own default means .env was never
+         * filled in. The site would appear to load and then break every
+         * stylesheet, form, redirect and QR code, which is harder to work out
+         * than an honest stop.
+         *
+         * Only the untouched default counts. Someone who has deliberately
+         * typed a private or local address may have a reason to, and gets a
+         * warning from `polyfix:doctor` instead of a locked door.
+         */
+        $baseUrl = (string) config('App')->baseURL;
+        if ($baseUrl === '' || $baseUrl === 'http://localhost:8080/') {
+            $problems[] = 'app.baseURL is not set in .env. Set it to the address the public will use, e.g. https://your-domain.com/ (with the trailing slash).';
+        }
+
+        return array_merge($problems, $this->problems());
     }
 }

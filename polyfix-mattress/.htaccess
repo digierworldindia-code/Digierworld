@@ -1,0 +1,60 @@
+# POLYFIX MATTRESS — root .htaccess
+#
+# Only needed when the document root cannot be pointed at public/.
+#
+# On Hostinger, cPanel and most shared hosting the document root is fixed at
+# public_html/, so the whole project ends up inside it and visitors would
+# otherwise land on this directory instead of the application. This file sends
+# every request into public/ and refuses direct access to everything else.
+#
+# If your host DOES let you set the document root (a VPS, or Hostinger's
+# "Change website root" setting), point it at public/ instead. That is the
+# better arrangement and this file then does nothing.
+
+# Never list the contents of a directory.
+Options -Indexes
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Refuse the dot-files and project files that must never be served, whatever
+    # else follows. .env first: it holds the database password.
+    RewriteRule ^\.env  - [F,L]
+    RewriteRule ^\.     - [F,L]
+    RewriteRule ^(app|system|tests|writable|vendor|database|scripts|docs|build)(/|$) - [F,L]
+    RewriteRule ^(composer\.(json|lock)|spark|preload\.php|phpunit\.dist\.xml|.*\.sql|.*\.md|INSTALL\.txt|LICENSE)$ - [F,L]
+
+    # Everything else is the application's. Serve it out of public/.
+    RewriteCond %{REQUEST_URI} !^/public/
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
+
+<IfModule !mod_rewrite.c>
+    # Without mod_rewrite there is no safe way to do this. Say so plainly
+    # rather than serve the project directory.
+    <IfModule mod_dir.c>
+        DirectoryIndex disabled
+    </IfModule>
+</IfModule>
+
+# Belt and braces: even if the rewrites above are ignored, these files are not
+# to be sent to a browser.
+<FilesMatch "^\.env">
+    <IfModule authz_core_module>
+        Require all denied
+    </IfModule>
+    <IfModule !authz_core_module>
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+<FilesMatch "\.(sql|log|md|lock|dist\.xml)$">
+    <IfModule authz_core_module>
+        Require all denied
+    </IfModule>
+    <IfModule !authz_core_module>
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+ServerSignature Off

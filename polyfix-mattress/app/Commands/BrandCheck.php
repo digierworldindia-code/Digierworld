@@ -41,6 +41,9 @@ class BrandCheck extends BaseCommand
         'LICENSE',
         'composer.json',                   // the package's own description
         'public/assets/vendor/README.md',
+        // Shown when the install is unfinished, so it must not call brand() —
+        // the config is one of the things that may be broken at that point.
+        'app/Views/errors/html/setup.php',
     ];
 
     public function run(array $params)
