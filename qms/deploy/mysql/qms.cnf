@@ -1,0 +1,22 @@
+# QMS - MySQL server settings (installed to /etc/mysql/mysql.conf.d/qms.cnf)
+[mysqld]
+# All DATETIME columns are UTC; the application converts to plant time for display.
+default_time_zone = '+00:00'
+character_set_server = utf8mb4
+collation_server = utf8mb4_0900_ai_ci
+
+# The integrity triggers are created by the deployment account (qms_migrator),
+# which has no SUPER privilege. With binary logging on, MySQL requires this.
+log_bin_trust_function_creators = 1
+
+# Local connections only (the application runs on the same server).
+bind-address = 127.0.0.1
+mysqlx-bind-address = 127.0.0.1
+local_infile = 0
+
+# Binary log for point-in-time recovery between nightly dumps (7 days).
+binlog_expire_logs_seconds = 604800
+
+# Sizing for a 2-4 GB VM; raise innodb_buffer_pool_size to ~50 % of RAM on a dedicated server.
+innodb_buffer_pool_size = 512M
+max_connections = 150

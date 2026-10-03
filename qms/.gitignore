@@ -9,8 +9,9 @@
 *credentials*.json
 google-sa*.json
 
-# Composer
+# Composer and published front-end libraries (rebuilt by composer install)
 /vendor/
+/public/assets/vendor/
 
 # CodeIgniter writable folders (keep the folder structure only)
 /writable/cache/*
@@ -18,13 +19,17 @@ google-sa*.json
 /writable/session/*
 /writable/uploads/*
 /writable/debugbar/*
+/writable/*.json
 !/writable/**/index.html
 !/writable/**/.htaccess
 
-# Tests and tooling
+# Tests, tooling and release packages
 /build/
+/dist/
 .phpunit.cache/
 .phpunit.result.cache
+/tests/e2e/node_modules/
+/tests/e2e/*.png
 
 # Backups and dumps
 *.sql.gz
