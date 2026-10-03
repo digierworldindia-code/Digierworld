@@ -1,0 +1,39 @@
+# Environment and secrets: never commit
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*service-account*.json
+*credentials*.json
+google-sa*.json
+
+# Composer
+/vendor/
+
+# CodeIgniter writable folders (keep the folder structure only)
+/writable/cache/*
+/writable/logs/*
+/writable/session/*
+/writable/uploads/*
+/writable/debugbar/*
+!/writable/**/index.html
+!/writable/**/.htaccess
+
+# Tests and tooling
+/build/
+.phpunit.cache/
+.phpunit.result.cache
+
+# Backups and dumps
+*.sql.gz
+*.sql.zst
+*.age
+/backups/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

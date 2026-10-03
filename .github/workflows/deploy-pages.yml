@@ -31,6 +31,9 @@ jobs:
         with:
           enablement: true
 
+      - name: Exclude non-website projects (QMS application source)
+        run: rm -rf qms
+
       - name: Upload site
         uses: actions/upload-pages-artifact@v3
         with:
