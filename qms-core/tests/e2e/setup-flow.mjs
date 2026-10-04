@@ -17,7 +17,7 @@ const check = (ok, label) => {
 };
 
 const browser = await chromium.launch({ executablePath: process.env.CHROMIUM_PATH || undefined, args: ['--no-sandbox'] });
-const page = await (await browser.newContext({ viewport: { width: 1200, height: 900 } })).newPage();
+const page = await (await browser.newContext({ viewport: { width: 1200, height: 900 }, ignoreHTTPSErrors: process.env.QMS_INSECURE === '1' })).newPage();
 const errors = [];
 page.on('pageerror', (e) => errors.push(String(e)));
 page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
@@ -59,7 +59,7 @@ check(page.url().endsWith('/dashboard'), 'administrator signs in and lands on th
 const templates = await page.goto(`${BASE}/templates`);
 check(templates.status() === 200 && (await page.content()).includes('PUBLISHED'), 'demo templates are published');
 
-const again = await (await browser.newContext()).newPage();
+const again = await (await browser.newContext({ ignoreHTTPSErrors: process.env.QMS_INSECURE === '1' })).newPage();
 await again.goto(`${BASE}/`);
 check(again.url().endsWith('/login') && !(await again.content()).includes('Server check'), 'setup page is switched off after installation');
 

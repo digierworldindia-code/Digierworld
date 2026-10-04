@@ -2,6 +2,7 @@
  * End-to-end check of a running QMS in a real browser (Chromium via Playwright).
  *
  *   QMS_URL=https://qms.example.com QMS_PASSWORD='...' node full-flow.mjs
+ *   (add QMS_INSECURE=1 for a test server with a self-signed certificate)
  *
  * Needs four test users (operator, production engineer, quality engineer, QA admin)
  * with the same password, demo master data and published demo templates:
@@ -18,6 +19,7 @@ if (!PW) {
 }
 const USERS = { op: process.env.QMS_OPERATOR || 'op1', pe: process.env.QMS_PE || 'pe1', qe: process.env.QMS_QE || 'qe1', qa: process.env.QMS_QA || 'qa1' };
 const executablePath = process.env.CHROMIUM_PATH || undefined;
+const INSECURE = process.env.QMS_INSECURE === '1'; // self-signed test certificates only
 let failures = 0;
 
 const check = (ok, label) => {
@@ -27,7 +29,7 @@ const check = (ok, label) => {
 
 async function session(user) {
   const browser = await chromium.launch({ executablePath, args: ['--no-sandbox'] });
-  const page = await (await browser.newContext({ viewport: { width: 1280, height: 900 } })).newPage();
+  const page = await (await browser.newContext({ viewport: { width: 1280, height: 900 }, ignoreHTTPSErrors: INSECURE })).newPage();
   const errors = [];
   page.on('pageerror', (e) => errors.push(String(e)));
   page.on('console', (m) => { if (m.type() === 'error' && !m.text().includes('404')) errors.push(m.text()); });

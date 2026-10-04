@@ -50,6 +50,7 @@ final class Installer
             }
             $checks[] = ['label' => "Writable folder {$dir}/", 'ok' => is_dir($path) && is_writable($path), 'detail' => is_writable($path) ? 'writable' : 'not writable by PHP', 'required' => true];
         }
+        $checks[] = self::documentRootCheck();
         $checks[] = [
             'label'    => 'PDF library (mPDF in vendor/)',
             'ok'       => class_exists(\Mpdf\Mpdf::class),
@@ -64,6 +65,37 @@ final class Installer
         ];
 
         return $checks;
+    }
+
+    /**
+     * The safe layout is "document root = public/". When the whole project
+     * folder is inside the web root, the .htaccess files must be active,
+     * otherwise .env and storage/ could be downloaded: setup refuses to run.
+     *
+     * @return array{label: string, ok: bool, detail: string, required: bool}
+     */
+    private static function documentRootCheck(): array
+    {
+        $label   = 'Private files outside the web root';
+        $docroot = realpath((string) ($_SERVER['DOCUMENT_ROOT'] ?? ''));
+        $public  = realpath(FCPATH);
+        $root    = realpath(ROOTPATH);
+        if (PHP_SAPI === 'cli' || $docroot === false || $public === false || $root === false) {
+            return ['label' => $label, 'ok' => true, 'detail' => 'not checked', 'required' => false];
+        }
+        if ($docroot === $public || ! str_starts_with($root . DIRECTORY_SEPARATOR, $docroot . DIRECTORY_SEPARATOR)) {
+            return ['label' => $label, 'ok' => true, 'detail' => 'document root is the public/ folder', 'required' => true];
+        }
+
+        $prefix = '/' . trim(str_replace('\\', '/', substr($public, strlen($docroot))), '/');
+        $uri    = (string) parse_url((string) ($_SERVER['REQUEST_URI'] ?? '/'), PHP_URL_PATH);
+        if ($uri === $prefix || str_starts_with($uri, $prefix . '/')) {
+            return ['label' => $label, 'ok' => false, 'required' => true,
+                'detail' => 'the server ignores the QMS .htaccess files: set the document root of the (sub)domain to the public/ folder'];
+        }
+
+        return ['label' => $label, 'ok' => false, 'required' => false,
+            'detail' => 'protected by .htaccess; after setup check that ' . config('App')->baseURL . '.env shows an error page'];
     }
 
     /**

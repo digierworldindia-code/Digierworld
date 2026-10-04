@@ -44,6 +44,7 @@ use App\Core\Response;
 use App\Core\Router;
 use App\Core\Session;
 use App\Core\Throttler;
+use App\Core\Validator;
 use App\Core\View;
 use Throwable;
 
@@ -81,6 +82,12 @@ class Services extends BaseServices
     public static function renderer(bool $getShared = true): View
     {
         return $getShared ? static::getSharedInstance('renderer') : new View(APPPATH . 'Views');
+    }
+
+    /** A new rule validator every time (validators keep the last errors). */
+    public static function validation(mixed ...$ignored): Validator
+    {
+        return new Validator();
     }
 
     public static function throttler(bool $getShared = true): Throttler
