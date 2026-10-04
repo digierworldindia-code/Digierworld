@@ -87,5 +87,6 @@ $unread   = (int) db_connect()->table('notifications')->where(['user_id' => $ctx
 </div>
 <script src="<?= base_url('assets/vendor/bootstrap/js/bootstrap.bundle.min.js') ?>" defer></script>
 <script src="<?= base_url('assets/js/console.js') ?>" defer></script>
+<script src="<?= base_url('assets/js/auth.js') ?>" defer></script>
 </body>
 </html>

@@ -7,6 +7,8 @@ use App\Libraries\Audit;
 use App\Libraries\Crypto;
 use App\Libraries\PasswordPolicy;
 use App\Libraries\Rbac;
+use App\Libraries\Settings;
+use App\Libraries\Totp;
 use App\Libraries\Tx;
 use CodeIgniter\Database\BaseConnection;
 use CodeIgniter\Session\Session;
@@ -32,7 +34,25 @@ final class AuthService
 {
     private const SEEN_WRITE_INTERVAL = 60;
 
-    public const GENERIC_FAILURE = 'That email and password combination was not recognised.';
+    public const GENERIC_FAILURE = 'Incorrect email or password. Please try again.';
+
+    /** How long a sign-in may sit waiting for a code, when two-factor is on. */
+    private const PENDING_MFA_TTL = 300;
+
+    /**
+     * The master switch, from Settings → Security. Off unless an administrator
+     * turns it on.
+     *
+     * While it is off the second factor does not exist as far as signing in is
+     * concerned: an account whose row still says mfa_enabled = 1 — because it
+     * enrolled under an earlier build — signs in on its password alone. That is
+     * deliberate. Honouring a stale flag is exactly how an account ends up
+     * unable to get in and unable to turn the thing off.
+     */
+    public static function twoFactorAvailable(): bool
+    {
+        return Settings::flag('security.two_factor_enabled', false);
+    }
 
     public function __construct(
         private readonly BaseConnection $db,
@@ -53,7 +73,7 @@ final class AuthService
     /**
      * Email and password. There is no second step.
      *
-     * @return array{status: 'signed_in', user_id: string}
+     * @return array{status: 'signed_in'|'mfa_required', user_id: string}
      */
     public function attemptPassword(string $email, string $password, Session $session): array
     {
@@ -65,13 +85,6 @@ final class AuthService
             $this->noteFailure($email, 'unknown_account');
 
             throw new AppException(self::GENERIC_FAILURE, 401, 'unknown account');
-        }
-
-        if ($user['locked_until'] !== null && strtotime($user['locked_until'] . ' UTC') > time()) {
-            $this->noteFailure($email, 'locked');
-            $minutes = (int) ceil((strtotime($user['locked_until'] . ' UTC') - time()) / 60);
-
-            throw new AppException("Too many attempts. This account is locked for {$minutes} more minute(s).", 423, 'locked');
         }
 
         if (! PasswordPolicy::verify($user['password_hash'], $password)) {
@@ -96,10 +109,54 @@ final class AuthService
             $this->db->table('users')->where('id', $user['id'])->update(['password_hash' => PasswordPolicy::hash($password)]);
         }
 
+        if (self::twoFactorAvailable() && (bool) $user['mfa_enabled']) {
+            // The password was right; the code is still owed. Remembered for a
+            // few minutes, bound to this browser session only.
+            $session->regenerate(true);
+            $session->set('auth_pending', ['user_id' => $user['id'], 'expires' => time() + self::PENDING_MFA_TTL]);
+
+            return ['status' => 'mfa_required', 'user_id' => $user['id']];
+        }
+
         $this->completeSignIn($user, $session);
 
         return ['status' => 'signed_in', 'user_id' => $user['id']];
     }
+
+    /** Step two, when two-factor is enabled: a code from the app, or a recovery code. */
+    public function attemptSecondFactor(string $code, Session $session): void
+    {
+        $pending = $session->get('auth_pending');
+        if (! is_array($pending) || ($pending['expires'] ?? 0) < time()) {
+            $session->remove('auth_pending');
+
+            throw new AppException('That sign-in has expired. Enter your email and password again.', 401);
+        }
+
+        $user = $this->findUserForLogin(null, $pending['user_id']);
+        if ($user === null || $user['status'] !== 'ACTIVE') {
+            $session->remove('auth_pending');
+
+            throw new AppException(self::GENERIC_FAILURE, 401, 'pending user no longer active');
+        }
+
+        $code = trim($code);
+        $ok   = str_contains($code, '-') || preg_match('/[A-Za-z]/', $code)
+            ? $this->consumeRecoveryCode($user, $code)
+            : ($user['mfa_secret_encrypted'] !== null && Totp::verify($this->crypto->decrypt($user['mfa_secret_encrypted']), $code));
+
+        if (! $ok) {
+            $this->noteFailure($user['email'], 'mfa_failed');
+            $this->registerFailedAttempt($user['id'], $user['email'], false);
+
+            throw new AppException('That code was not accepted. Check your authenticator app and try again.', 401, 'mfa failed');
+        }
+
+        $session->remove('auth_pending');
+        $this->completeSignIn($user, $session);
+    }
+
+
 
     private function completeSignIn(array $user, Session $session): void
     {
@@ -182,6 +239,7 @@ final class AuthService
             'roles'                => $user['roles'],
             'dealer_id'            => $user['dealer_id'],
             'dealer_name'          => $user['dealer_name'],
+            'mfa_enabled'          => (bool) $user['mfa_enabled'],
             'must_change_password' => (bool) $user['must_change_password'],
             'session_id'           => $record['id'],
         ];
@@ -326,6 +384,87 @@ final class AuthService
     }
 
     // =========================================================================
+    // Two-factor authentication
+    // =========================================================================
+
+    /** @return array{secret:string, otpauth:string} */
+    public function startMfaEnrolment(string $userId, string $password): array
+    {
+        $user = $this->db->table('users')->where('id', $userId)->get()->getRowArray();
+        if (! PasswordPolicy::verify($user['password_hash'], $password)) {
+            throw new AppException('Your password was not correct.', 422);
+        }
+
+        $secret = Totp::generateSecret();
+        // Stored encrypted and not yet enabled: an abandoned setup locks no one out.
+        $this->db->table('users')->where('id', $userId)->update([
+            'mfa_secret_encrypted' => $this->crypto->encrypt($secret),
+            'mfa_enabled'          => 0,
+        ]);
+
+        return ['secret' => $secret, 'otpauth' => Totp::otpauthUrl($secret, $user['email'])];
+    }
+
+    /** @return list<string> recovery codes, shown once and never again */
+    public function confirmMfaEnrolment(string $userId, string $code): array
+    {
+        $user = $this->db->table('users')->where('id', $userId)->get()->getRowArray();
+        if ($user['mfa_secret_encrypted'] === null) {
+            throw AppException::rule('Start two-factor setup before confirming it.');
+        }
+        if (! Totp::verify($this->crypto->decrypt($user['mfa_secret_encrypted']), $code)) {
+            throw AppException::rule('That code was not accepted. Check the time on your phone is set automatically, then try again.');
+        }
+
+        $codes = Totp::recoveryCodes();
+        Tx::run(function (BaseConnection $db) use ($userId, $codes): void {
+            $db->table('users')->where('id', $userId)->update([
+                'mfa_enabled'        => 1,
+                'mfa_enrolled_at'    => utc_now(),
+                'mfa_recovery_codes' => json_encode(array_map(static fn ($c) => hash('sha256', $c), $codes)),
+            ]);
+            Audit::instance($db)->record('MFA_ENABLED', 'user', $userId);
+        }, $this->db);
+
+        return $codes;
+    }
+
+    /**
+     * Switches two-factor off for one account.
+     *
+     * A recovery code is accepted in place of the code from the app, so losing
+     * the phone is not a dead end. Between this, an administrator's reset and
+     * the master switch, there is always a way back in without going into the
+     * database by hand — which is what the previous arrangement left as the
+     * only option.
+     */
+    public function disableMfa(string $userId, string $password, string $code): void
+    {
+        $user = $this->db->table('users')->where('id', $userId)->get()->getRowArray();
+        if (! PasswordPolicy::verify($user['password_hash'], $password)) {
+            throw new AppException('Your password was not correct.', 422);
+        }
+
+        $code     = trim($code);
+        $byApp    = $user['mfa_secret_encrypted'] !== null
+            && Totp::verify($this->crypto->decrypt($user['mfa_secret_encrypted']), $code);
+        $accepted = $byApp || $this->consumeRecoveryCode($user, $code);
+
+        if (! $accepted) {
+            throw AppException::rule('That code was not accepted. Use the code from your authenticator app, or one of your recovery codes.');
+        }
+
+        Tx::run(function (BaseConnection $db) use ($userId): void {
+            $db->table('users')->where('id', $userId)->update([
+                'mfa_enabled' => 0, 'mfa_secret_encrypted' => null, 'mfa_recovery_codes' => null, 'mfa_enrolled_at' => null,
+            ]);
+            Audit::instance($db)->record('MFA_DISABLED', 'user', $userId);
+        }, $this->db);
+
+        $this->revokeAllSessions($userId, 'two-factor authentication disabled');
+    }
+
+    // =========================================================================
     // Internals
     // =========================================================================
 
@@ -355,18 +494,41 @@ final class AuthService
         return $user;
     }
 
+    /**
+     * Counts a wrong password and leaves the account usable.
+     *
+     * Locking an account after a few wrong passwords punishes the person who
+     * mistyped, not an attacker: anyone can lock a colleague out knowing only
+     * their email address, and the colleague then waits a quarter of an hour
+     * to do their job. Brute force is held off per address instead, by the
+     * throttle filter on the sign-in routes, which an ordinary typing mistake
+     * does not come close to.
+     *
+     * The count is still kept. It costs nothing, it is the signal a real
+     * attack shows up in, and it is visible in the security log and on the
+     * account's own page.
+     */
+    private function consumeRecoveryCode(array $user, string $code): bool
+    {
+        $stored  = json_decode((string) $user['mfa_recovery_codes'], true) ?: [];
+        $offered = hash('sha256', strtoupper(trim($code)));
+        foreach ($stored as $i => $hash) {
+            if (hash_equals($hash, $offered)) {
+                unset($stored[$i]);
+                $this->db->table('users')->where('id', $user['id'])
+                    ->update(['mfa_recovery_codes' => json_encode(array_values($stored))]);
+                log_message('notice', 'security.MFA_RECOVERY_CODE_USED user={user}', ['user' => $user['id']]);
+
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private function registerFailedAttempt(string $userId, string $email, bool $note = true): void
     {
         $this->db->query('UPDATE users SET failed_login_count = failed_login_count + 1 WHERE id = ?', [$userId]);
-        $count = (int) $this->db->table('users')->select('failed_login_count')->where('id', $userId)->get()->getRow()->failed_login_count;
-
-        if ($count >= $this->config->loginMaxAttempts) {
-            $this->db->table('users')->where('id', $userId)->update([
-                'locked_until'       => gmdate('Y-m-d H:i:s', time() + $this->config->loginLockoutSeconds) . '.000000',
-                'failed_login_count' => 0,
-            ]);
-            log_message('warning', 'security.ACCOUNT_LOCKED user={user}', ['user' => $userId]);
-        }
 
         if ($note) {
             $this->noteFailure($email, 'bad_password');

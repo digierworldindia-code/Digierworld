@@ -11,7 +11,13 @@
     </div>
     <div class="mb-3">
         <label class="form-label" for="password">Password</label>
-        <input class="form-control form-control-lg" id="password" name="password" type="password" autocomplete="current-password" required maxlength="200">
+        <div class="input-group input-group-lg">
+            <input class="form-control" id="password" name="password" type="password" autocomplete="current-password" required maxlength="200">
+            <!-- hidden until auth.js wires it up, so it is never a dead button -->
+            <button class="btn btn-outline-secondary" type="button" data-password-toggle="password" hidden>
+                <i class="bi bi-eye" aria-hidden="true"></i>
+            </button>
+        </div>
     </div>
     <button class="btn btn-primary btn-lg w-100" type="submit">Sign in</button>
 </form>

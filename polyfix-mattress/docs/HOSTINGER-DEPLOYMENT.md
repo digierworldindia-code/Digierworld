@@ -356,9 +356,11 @@ Now test in a browser:
 3. Sign in with the address and the one-time password.
 4. You are asked to **choose a new password** — that is the forced
    first-sign-in password change, and it is meant to happen.
-5. You then land on the dashboard. **There is no second step of any kind** —
-   no authenticator app, no code, no setup page. Two-factor authentication has
-   been removed from this build.
+5. You then land on the dashboard. **There is no second step** — no
+   authenticator app, no code, no setup page. Two-factor authentication is off
+   unless an administrator switches it on under Settings → Security, and it is
+   optional even then.
+   A wrong password shows one plain message and never locks the account.
 6. Check the dealer panel loads at `https://your-domain.com/dealer/login`.
 7. Sign out from the menu, and confirm `/admin` sends you back to the sign-in
    page.
@@ -411,6 +413,7 @@ Other causes worth checking:
 | Directory listing, or the project's files are visible | document root is not `public/` and the root `.htaccess` is missing (step 4) |
 | Signed out every few minutes | the `ci_sessions` table is missing — re-import, or run the migrations (step 7) |
 | QR codes on labels point at the wrong address | `app.baseURL` was changed after the labels were printed (step 8) |
+| Nobody can sign in because two-factor is on and the phone is gone | `php spark polyfix:unlock --two-factor-off`, then sign in with the password |
 | "A stored encrypted value could not be decrypted" | `polyfix.encryptionKey` is not the key the data was written with. Restore the original key; do not generate a new one |
 
 ### Before you call it done

@@ -81,7 +81,7 @@ class Users extends AdminController
     public function show(string $id): string
     {
         $db   = db_connect();
-        $user = $db->table('users u')->select('u.id, u.email, u.full_name, u.phone, u.status,
+        $user = $db->table('users u')->select('u.id, u.email, u.full_name, u.phone, u.status, u.mfa_enabled, u.mfa_enrolled_at,
                     u.must_change_password, u.password_changed_at, u.failed_login_count, u.locked_until, u.last_login_at, u.last_login_ip, u.created_at, d.business_name dealer, d.id dealer_id')
             ->join('dealer_users du', 'du.user_id = u.id', 'left')->join('dealers d', 'd.id = du.dealer_id', 'left')
             ->where(['u.id' => $id, 'u.deleted_at' => null])->get()->getRowArray() ?? $this->notFound();
@@ -133,6 +133,16 @@ class Users extends AdminController
 
             return $password;
         }, 'Password reset. The temporary password is shown below — hand it over in person or by phone.', site_url('admin/users/' . $id));
+    }
+
+    /** Clears a colleague's two-factor, for a replaced or lost phone. */
+    public function resetMfa(string $id): RedirectResponse
+    {
+        return $this->act(
+            fn () => UserService::instance()->resetMfa($id, $this->post('reason', 500), $this->ctx->roles()),
+            'Two-factor authentication has been cleared for that account.',
+            site_url('admin/users/' . $id),
+        );
     }
 
 

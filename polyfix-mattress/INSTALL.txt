@@ -37,8 +37,9 @@ layout and permissions differ. Otherwise:
         mysql -u root -p polyfix_mattress < database/sql/verify-privileges.sql
   7.  php spark polyfix:create-user --email you@your-domain --name "Your Name" --role SUPER_ADMIN
       It prints a one-time password, once. You will be made to change it at first
-      sign-in. There is no two-factor step: signing in is an email address and
-      a password.
+      sign-in. Signing in is an email address and a password; two-factor is off
+      unless an administrator turns it on under Settings -> Security, and even
+      then nobody is forced to enrol. A wrong password never locks an account.
   8.  Check the deployment before opening it to anyone:
         php spark polyfix:doctor
       It tests the PHP build, the writable folders, the secrets, the database

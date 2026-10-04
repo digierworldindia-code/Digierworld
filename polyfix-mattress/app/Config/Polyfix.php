@@ -7,8 +7,8 @@ use RuntimeException;
 
 /**
  * Application policy. Every value can be overridden per environment from .env
- * with the `polyfix.` prefix (CodeIgniter maps `polyfix.loginMaxAttempts` onto
- * $loginMaxAttempts automatically).
+ * with the `polyfix.` prefix (CodeIgniter maps `polyfix.sessionIdleSeconds` onto
+ * $sessionIdleSeconds automatically).
  *
  * Secrets have no default. validate() refuses to let a production request run
  * with a missing, placeholder or undersized secret, so a half-configured
@@ -24,8 +24,6 @@ class Polyfix extends BaseConfig
     public string $signingSecret = '';
 
     // --- authentication -------------------------------------------------------
-    public int $loginMaxAttempts      = 5;
-    public int $loginLockoutSeconds   = 900;
     public int $sessionIdleSeconds    = 3600;
     public int $sessionAbsoluteSeconds = 43200;
     public int $passwordResetTtlSeconds = 3600;
@@ -46,7 +44,17 @@ class Polyfix extends BaseConfig
     public string $gscVerification  = '';
 
     // --- rate limits (requests per window, per client address) -----------------
-    public int $rateLoginPerMinute      = 5;
+    /*
+     * Sign-in attempts per client address per minute.
+     *
+     * Deliberately generous. A whole office usually shares one address, so a
+     * handful per minute is nothing: twenty people arriving at nine o'clock
+     * would exhaust a small budget between them, and someone who mistypes
+     * their password twice would find the door shut. This is the only brake
+     * on repeated sign-ins now that a wrong password no longer locks the
+     * account, so it is set where automation hits it and people do not.
+     */
+    public int $rateLoginPerMinute      = 30;
     public int $rateVerifyPerMinute     = 20;
     public int $ratePublicFormPerHour   = 5;
     public int $ratePasswordResetPer15m = 3;

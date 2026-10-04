@@ -16,40 +16,40 @@ and contain neither the person's own details nor a predictable word.
 comparable time: an unknown account still runs a dummy verify. Whether an
 address has an account is not something an anonymous caller gets to learn.
 
-**Lockout**: five failures locks the account for fifteen minutes (both figures
-in `.env`).
+**No account lockout.** A wrong password is counted and logged; it never locks
+the account. Locking punished whoever mistyped and let anybody shut a colleague
+out knowing only their email address, which is a denial of service dressed as a
+control. Repeated sign-ins are held off per client address instead, by the
+throttle on the sign-in routes, set well above what a person does by hand
+(`polyfix.rateLoginPerMinute`).
 
-**Two-factor authentication has been removed.** Signing in is an email address
-and a password; authorisation is then decided by role and permission alone.
+That is a real trade. Without a lockout, an attacker from one address gets as
+many guesses a minute as the throttle allows rather than five in a quarter of
+an hour. What carries the weight instead is the password policy — twelve
+characters, mixed classes, at least six distinct — and Argon2id, which is slow
+on purpose. If this installation ever needs the stronger control back, add it
+per address and per hour, not per account.
 
-This is recorded here as a deliberate decision, not an oversight, and it is a
-real reduction in security: for any account, a password alone is what stands
-between an attacker and the console. It replaced an arrangement that was worse
-in practice. Enrolment was compulsory for the senior roles, the gate only
-cleared once an authenticator code had been accepted, and anything that stopped
-a code being accepted — a server clock a minute out, a mistyped setup key, a
-replaced phone — left the account redirected to the setup page from every
-screen, with the switch-off button refused because the role required it. The
-account was locked out of its own console with no way back except the database.
+**Two-factor authentication is optional and off by default**, switched on for
+the whole installation under Settings → Security
+(`security.two_factor_enabled`). While it is off, no code is ever asked for,
+including from an account whose row still says it enrolled — honouring a stale
+flag is how an account gets stranded.
 
-What follows from that decision:
+With it on, each person may enrol from Password & security; nobody is made to.
+Enrolment is TOTP (SHA1, 6 digits, 30 seconds, one step of tolerance) with ten
+single-use recovery codes stored as hashes.
 
-- Password quality and Argon2id hashing carry more weight than before. The
-  twelve-character policy and the forced change of a temporary password are
-  not negotiable.
-- The five sensitive permissions that used to need a satisfied second factor
-  (`system:backup`, `system:export`, `system:sql:read`,
-  `system:settings:write`, `user:role:assign`) are now granted by role alone.
-  Keep the senior roles to as few people as possible.
-- A stolen session cookie is worth more. Sessions remain server-side and
-  revocable, with idle and absolute expiry, and every account can sign out its
-  other sessions from Password & security.
-- If two-factor is ever wanted again, it should come back as something a person
-  can turn off themselves, and with an administrator able to clear it without
-  touching the database.
+Nothing about it can lock anyone out, which is the lesson from the arrangement
+it replaced. Enrolment is never compulsory, so no screen is withheld until a
+code is produced. Switching it off takes the password and either a code or a
+recovery code. An administrator can clear it for any account from that
+account's page. `php spark polyfix:unlock --two-factor-off` switches the whole
+feature off from the server, and `--clear-2fa --email …` clears one account.
 
-The `mfa_*` columns stay in `users` and `sessions` so existing rows and older
-backups still load. Nothing reads or writes them.
+No permission is gated on a second factor. Authorisation is role and
+permission only, so turning two-factor on or off never changes what anyone can
+do.
 
 **Sessions** live in the database, not in the cookie. The cookie carries an
 opaque id and a random token whose SHA-256 is what is stored, so reading the
@@ -69,11 +69,14 @@ Three rules are enforced in `UserService`, not in the interface:
 - nobody can change their own roles;
 - a dealer login holds the `DEALER` role only, tied to one dealership.
 
-Five abilities used to need a second factor satisfied in the current session:
+Five abilities once needed a second factor satisfied in the current session:
 `system:backup`, `system:export`, `system:sql:read`, `system:settings:write`,
-`user:role:assign`. They are now granted by role alone, so a borrowed session
+`user:role:assign`. They are granted by role alone now, so a borrowed session
 cookie for a senior account can reach them. Keep those roles to as few people
 as possible, and revoke sessions from Password & security if one is suspected.
+They are deliberately not re-gated when two-factor is switched on: a permission
+that comes and goes with a setting is how an administrator silently loses the
+ability to fix the setting.
 
 Every route declares its permission in a filter, on the group as well as the
 route, so a new admin route cannot forget the check. Hiding a link in a template

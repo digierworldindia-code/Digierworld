@@ -49,6 +49,10 @@ $routes->group('', ['filter' => 'noindex'], static function (RouteCollection $ro
     $routes->get('dealer/login', 'Auth::login/dealer');
     $routes->post('dealer/login', 'Auth::attempt/dealer', ['filter' => 'throttle:login']);
     $routes->addRedirect('login', 'admin/login');
+    // Reached only when Settings → Security has two-factor switched on and the
+    // account has enrolled; the controller sends anyone else back to sign-in.
+    $routes->get('login/verify', 'Auth::secondFactor');
+    $routes->post('login/verify', 'Auth::verifySecondFactor', ['filter' => 'throttle:login']);
     $routes->get('forgot-password', 'Auth::forgot');
     $routes->post('forgot-password', 'Auth::sendReset', ['filter' => 'throttle:reset']);
     $routes->get('reset-password', 'Auth::reset');
@@ -58,6 +62,9 @@ $routes->group('', ['filter' => 'noindex'], static function (RouteCollection $ro
     $routes->group('account', ['filter' => 'auth'], static function (RouteCollection $routes): void {
         $routes->get('security', 'Account::security');
         $routes->post('password', 'Account::changePassword');
+        $routes->post('mfa/start', 'Account::startMfa');
+        $routes->post('mfa/confirm', 'Account::confirmMfa');
+        $routes->post('mfa/disable', 'Account::disableMfa');
         $routes->post('sessions/revoke-others', 'Account::revokeOthers');
     });
 
@@ -151,6 +158,9 @@ $routes->group('admin', ['filter' => ['auth', 'staff', 'noindex'], 'namespace' =
     $routes->post('users/(:uuid)', 'Users::update/$1', ['filter' => 'can:user.write']);
     $routes->post('users/(:uuid)/roles', 'Users::roles/$1', ['filter' => 'can:user.role.assign']);
     $routes->post('users/(:uuid)/force-password-reset', 'Users::forceReset/$1', ['filter' => 'can:user.reset_password']);
+    // So an administrator can clear a colleague's two-factor when the phone is
+    // gone, rather than anyone having to edit the database.
+    $routes->post('users/(:uuid)/reset-mfa', 'Users::resetMfa/$1', ['filter' => 'can:user.reset_password']);
     $routes->get('roles', 'Users::roleMatrix', ['filter' => 'can:user.read']);
     $routes->get('notifications', 'Notifications::index', ['filter' => 'can:dashboard.view']);
     $routes->post('notifications/(:uuid)/read', 'Notifications::read/$1', ['filter' => 'can:dashboard.view']);

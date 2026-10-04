@@ -19,5 +19,6 @@
         <?= $this->renderSection('content') ?>
     </div>
 </main>
+<script src="<?= base_url('assets/js/auth.js') ?>" defer></script>
 </body>
 </html>

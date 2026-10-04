@@ -131,30 +131,45 @@ run.
 ## Admin login flow
 
 1. Open `/admin/login`
-2. Enter the admin username/email and password
-3. Click Login
+2. Enter the admin email address and password
+3. Click **Sign In**
 4. The admin dashboard opens
 5. All admin modules are accessible according to the account's permissions
 
-**No 2FA is required.**
+**No 2FA is required by default.**
 
-Two-factor authentication has been removed from this build. There is no
-authenticator app, no setup step, no code to enter and no verification page.
-An account signs in with an email address and a password, and authorisation is
-decided by role and permission alone.
+The password field has a show/hide control, so a mistyped password is easy to
+spot. A wrong password shows one message — *Incorrect email or password. Please
+try again.* — keeps the address filled in, and **does not lock the account**,
+however many times it happens. Repeated sign-ins from one address are slowed
+only by a per-address throttle set well above anything a person does by hand.
 
-Everything else about signing in is unchanged: Argon2id password hashing, a
-forced change of a temporary password at first sign-in, server-side sessions
-with a regenerated identifier, CSRF protection on every form, role checks on
-every route, rate limiting and account lockout on repeated failures, idle and
-absolute session expiry, secure cookies, and sign-out.
+Dealers sign in the same way at `/dealer/login`.
 
-The `mfa_*` columns remain in the `users` and `sessions` tables so existing
-rows and older backups still load, but nothing reads or writes them. An older
-`.env` may still set `polyfix.mfaRequiredRoles`; that setting no longer exists
-and is ignored, so it is safe to leave in place or delete.
+## Optional 2FA
 
----
+**Settings → Security → Two-Factor Authentication. Default = OFF.**
+
+While it is off, a password is all that is ever asked for, and an account that
+enrolled under an older build is not asked for a code either — a stale flag
+must not be able to strand anybody.
+
+Turn it on and two-factor becomes available, not compulsory: each person may
+enrol from **Password & security**, and nobody is made to. An account that
+enrols is asked for a code at each sign-in, and is given ten single-use
+recovery codes.
+
+There is always a way back in, which is the point of the arrangement:
+
+| Situation | Way out |
+|---|---|
+| Phone lost, recovery codes to hand | Sign in with a recovery code, or use one to switch two-factor off |
+| Phone and codes both gone | Another administrator clears it from the account's page in **Users** |
+| Only one administrator, and locked out | `php spark polyfix:unlock --two-factor-off`, or `--clear-2fa --email you@example.com` |
+
+Authorisation is by role and permission alone. No permission is withheld
+because a second factor has not been used, so switching two-factor on or off
+never silently changes what anyone can do.
 
 ## Day to day
 

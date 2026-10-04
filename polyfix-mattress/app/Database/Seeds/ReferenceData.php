@@ -31,6 +31,7 @@ class ReferenceData extends Seeder
         ['social.facebook', '""', 'social', 'Facebook page URL'],
         ['social.linkedin', '""', 'social', 'LinkedIn page URL'],
         ['social.youtube', '""', 'social', 'YouTube channel URL'],
+        ['security.two_factor_enabled', 'false', 'security', 'Offer two-factor authentication to staff and dealers. Off means a password is all that is asked for. Nobody is ever forced to enrol, and anyone who turns it on can turn it off again.'],
         ['seo.robots_allow_indexing', 'true', 'seo', 'Allow search engines to index the website. Off on a staging copy.'],
         ['seo.sitemap_enabled', 'true', 'seo', 'Serve /sitemap.xml'],
         ['website.contact_form_enabled', 'true', 'website', 'Accept enquiries from the contact form'],

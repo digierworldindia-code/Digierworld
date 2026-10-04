@@ -42,7 +42,8 @@ $self = $u['id'] === $ctx->userId();
 
         <div class="panel"><div class="panel-head"><h2>Security</h2></div><div class="panel-body"><dl class="dl-grid">
             <dt>Password changed</dt><dd><?= esc(local_time($u['password_changed_at'])) ?><?= $u['must_change_password'] ? ' · must change at next sign-in' : '' ?></dd>
-            <dt>Failed attempts</dt><dd><?= (int) $u['failed_login_count'] ?><?= $u['locked_until'] && strtotime($u['locked_until'] . ' UTC') > time() ? ' · locked until ' . esc(local_time($u['locked_until'])) : '' ?></dd>
+            <dt>Two-factor</dt><dd><?= $u['mfa_enabled'] ? 'On since ' . esc(local_date($u['mfa_enrolled_at'])) : 'Off' ?></dd>
+            <dt>Failed attempts</dt><dd><?= (int) $u['failed_login_count'] ?><?= (int) $u['failed_login_count'] > 0 ? ' · the account is not locked by these' : '' ?></dd>
             <dt>Last sign-in</dt><dd><?= esc(local_time($u['last_login_at'])) ?><?= $u['last_login_ip'] ? ' from ' . esc($u['last_login_ip']) : '' ?></dd>
             <dt>Created</dt><dd><?= esc(local_time($u['created_at'])) ?></dd>
         </dl></div></div>
@@ -92,4 +93,16 @@ $self = $u['id'] === $ctx->userId();
         </div>
     </div>
 </div>
+
+<?php if ($u['mfa_enabled']): ?>
+<form class="panel mt-3" method="post" action="<?= site_url('admin/users/' . $u['id'] . '/reset-mfa') ?>" data-confirm="Clear two-factor authentication for this account?">
+    <div class="panel-head"><h2>Clear two-factor</h2></div>
+    <div class="panel-body">
+        <?= csrf_field() ?>
+        <p class="small text-muted mb-2">For a replaced or lost phone. The account keeps its password and can enrol again, or carry on without.</p>
+        <div class="d-flex gap-2"><input class="form-control" name="reason" maxlength="500" placeholder="Reason"><button class="btn btn-light" type="submit">Clear two-factor</button></div>
+    </div>
+</form>
+<?php endif ?>
+
 <?= $this->endSection() ?>

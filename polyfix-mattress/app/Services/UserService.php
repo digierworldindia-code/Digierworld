@@ -227,4 +227,22 @@ final class UserService
 
         return $password;
     }
+
+    /** Clears two-factor so the person can enrol a new phone at next sign-in. */
+    public function resetMfa(string $id, string $reason, array $actorRoles): void
+    {
+        $user = $this->find($id);
+        $this->assertManageable($user, $actorRoles);
+        if ($id === service('requestContext')->userId()) {
+            throw AppException::forbidden('Ask another administrator to reset your own two-factor authentication.');
+        }
+
+        Tx::run(function (BaseConnection $db) use ($id, $reason): void {
+            $db->table('users')->where('id', $id)->update([
+                'mfa_enabled' => 0, 'mfa_secret_encrypted' => null, 'mfa_recovery_codes' => null, 'mfa_enrolled_at' => null,
+            ]);
+            (new AuthService($db, config('Polyfix'), Crypto::instance()))->revokeAllSessions($id, 'two-factor reset by administrator');
+            Audit::instance($db)->record('USER_MFA_RESET_BY_ADMIN', 'user', $id, null, null, $reason);
+        }, $this->db);
+    }
 }

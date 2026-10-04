@@ -11,7 +11,12 @@
     <input type="hidden" name="token" value="<?= esc($token, 'attr') ?>">
     <div class="mb-3">
         <label class="form-label" for="password">New password</label>
-        <input class="form-control form-control-lg" id="password" name="password" type="password" autocomplete="new-password" required minlength="12" maxlength="200">
+        <div class="input-group input-group-lg">
+            <input class="form-control" id="password" name="password" type="password" autocomplete="new-password" required minlength="12" maxlength="200">
+            <button class="btn btn-outline-secondary" type="button" data-password-toggle="password" hidden>
+                <i class="bi bi-eye" aria-hidden="true"></i>
+            </button>
+        </div>
     </div>
     <div class="mb-3">
         <label class="form-label" for="password_confirm">Repeat it</label>

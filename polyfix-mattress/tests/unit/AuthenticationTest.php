@@ -4,6 +4,8 @@ namespace Tests\Unit;
 
 use App\Exceptions\AppException;
 use App\Libraries\Crypto;
+use App\Libraries\Settings;
+use App\Libraries\Totp;
 use App\Services\AuthService;
 use CodeIgniter\Session\Handlers\ArrayHandler;
 use CodeIgniter\Session\Session;
@@ -65,20 +67,47 @@ final class AuthenticationTest extends PolyfixTestCase
         $this->assertSame($unknown, $wrong);
     }
 
-    public function testRepeatedFailuresLockTheAccount(): void
+    /**
+     * Test B from the brief, and the behaviour that caused the complaint.
+     *
+     * An employee who mistypes their password several times must still be able
+     * to get in with the right one. Locking the account punished the person
+     * who fumbled, and let anyone lock out a colleague knowing only their
+     * email address.
+     */
+    public function testRepeatedWrongPasswordsDoNotLockTheAccount(): void
     {
         $userId = $this->makeUser();
         $email  = $this->db->table('users')->select('email')->where('id', $userId)->get()->getRow()->email;
-        $limit  = config(Polyfix::class)->loginMaxAttempts;
 
-        for ($attempt = 0; $attempt < $limit; $attempt++) {
+        for ($attempt = 0; $attempt < 12; $attempt++) {
+            $message = $this->refusal(fn () => $this->auth->attemptPassword($email, 'wrong-password-here', $this->session()));
+            $this->assertSame(AuthService::GENERIC_FAILURE, $message, 'every failure reads the same, however many there have been');
+        }
+
+        // The right password still works, immediately.
+        $result = $this->auth->attemptPassword($email, self::password(), $this->session());
+        $this->assertSame('signed_in', $result['status']);
+
+        $row = $this->db->table('users')->select('locked_until, failed_login_count')
+            ->where('id', $userId)->get()->getRow();
+        $this->assertNull($row->locked_until, 'nothing may write a lock');
+        $this->assertSame(0, (int) $row->failed_login_count, 'a successful sign-in clears the count');
+    }
+
+    /** The failures are still counted, because that is the signal an attack shows up in. */
+    public function testWrongPasswordsAreStillCounted(): void
+    {
+        $userId = $this->makeUser();
+        $email  = $this->db->table('users')->select('email')->where('id', $userId)->get()->getRow()->email;
+
+        for ($attempt = 0; $attempt < 3; $attempt++) {
             $this->refusal(fn () => $this->auth->attemptPassword($email, 'wrong-password-here', $this->session()));
         }
 
-        // The right password no longer helps while the lock holds.
-        $message = $this->refusal(fn () => $this->auth->attemptPassword($email, self::password(), $this->session()));
-        $this->assertStringContainsString('locked', $message);
-        $this->assertNotNull($this->db->table('users')->select('locked_until')->where('id', $userId)->get()->getRow()->locked_until);
+        $this->assertSame(3, (int) $this->db->table('users')->select('failed_login_count')
+            ->where('id', $userId)->get()->getRow()->failed_login_count);
+        $this->assertSame(3, $this->db->table('failed_login_attempts')->countAllResults());
     }
 
     /**
@@ -120,19 +149,96 @@ final class AuthenticationTest extends PolyfixTestCase
         }
     }
 
-    /** The second-factor entry point is gone, not merely unreachable. */
-    public function testTheSecondFactorStepNoLongerExists(): void
+    /**
+     * Two-factor exists again, as something an administrator may switch on.
+     * Off is the default, and while it is off a stale mfa_enabled on a row
+     * must not ask anybody for a code — that is how an account gets stranded.
+     */
+    public function testTwoFactorIsOffUntilAnAdministratorTurnsItOn(): void
     {
-        $this->assertFalse(method_exists($this->auth, 'attemptSecondFactor'));
-        $this->assertFalse(method_exists($this->auth, 'startMfaEnrolment'));
-        $this->assertFalse(method_exists($this->auth, 'confirmMfaEnrolment'));
-        $this->assertFalse(method_exists($this->auth, 'disableMfa'));
-        // Checked as a file rather than with class_exists(), which would ask
-        // the autoloader to include it and fail on a stale classmap instead of
-        // reporting cleanly.
-        $this->assertFileDoesNotExist(APPPATH . 'Libraries/Totp.php', 'the TOTP library is removed');
-        $this->assertFileDoesNotExist(APPPATH . 'Views/auth/second_factor.php', 'the second-factor page is removed');
+        $this->assertFalse(AuthService::twoFactorAvailable(), 'off unless the setting says otherwise');
+
+        $userId = $this->makeUser(['SUPER_ADMIN'], null, ['mfa_enabled' => 1, 'mfa_enrolled_at' => utc_now()]);
+        $email  = $this->db->table('users')->select('email')->where('id', $userId)->get()->getRow()->email;
+
+        $result = $this->auth->attemptPassword($email, self::password(), $this->session());
+        $this->assertSame('signed_in', $result['status'], 'an enrolled account signs straight in while the feature is off');
     }
+
+    public function testWithTheFeatureOnAnEnrolledAccountIsAskedForACode(): void
+    {
+        $this->enableTwoFactor();
+
+        $secret = Totp::generateSecret();
+        $userId = $this->makeUser(['ADMIN'], null, [
+            'mfa_enabled'          => 1,
+            'mfa_secret_encrypted' => Crypto::instance()->encrypt($secret),
+            'mfa_enrolled_at'      => utc_now(),
+        ]);
+        $email   = $this->db->table('users')->select('email')->where('id', $userId)->get()->getRow()->email;
+        $session = $this->session();
+
+        $result = $this->auth->attemptPassword($email, self::password(), $session);
+        $this->assertSame('mfa_required', $result['status']);
+        $this->assertSame(0, $this->db->table('sessions')->where('user_id', $userId)->countAllResults(), 'no session before the code');
+
+        $this->auth->attemptSecondFactor(Totp::code($secret), $session);
+        $this->assertSame(1, $this->db->table('sessions')->where('user_id', $userId)->countAllResults());
+    }
+
+    public function testAnAccountThatHasNotEnrolledIsNeverAskedForACode(): void
+    {
+        $this->enableTwoFactor();
+
+        $email = $this->db->table('users')->select('email')
+            ->where('id', $this->makeUser(['SUPER_ADMIN']))->get()->getRow()->email;
+
+        $this->assertSame('signed_in', $this->auth->attemptPassword($email, self::password(), $this->session())['status']);
+    }
+
+    /** A recovery code switches it off, so a lost phone is not a dead end. */
+    public function testARecoveryCodeCanSwitchTwoFactorOff(): void
+    {
+        $this->enableTwoFactor();
+
+        $secret = Totp::generateSecret();
+        $codes  = Totp::recoveryCodes(3);
+        $userId = $this->makeUser(['ADMIN'], null, [
+            'mfa_enabled'          => 1,
+            'mfa_secret_encrypted' => Crypto::instance()->encrypt($secret),
+            'mfa_recovery_codes'   => json_encode(array_map(static fn ($c) => hash('sha256', $c), $codes)),
+        ]);
+
+        $this->auth->disableMfa($userId, self::password(), $codes[0]);
+
+        $row = $this->db->table('users')->select('mfa_enabled, mfa_secret_encrypted')->where('id', $userId)->get()->getRow();
+        $this->assertSame(0, (int) $row->mfa_enabled);
+        $this->assertNull($row->mfa_secret_encrypted);
+    }
+
+    /**
+     * Turns the feature on for one test. Inserts the row when it is absent, so
+     * the test does not quietly pass against a database seeded before the
+     * setting existed — which is exactly how it first went green by accident.
+     */
+    private function enableTwoFactor(): void
+    {
+        $table = $this->db->table('system_settings');
+
+        $table->where('key', 'security.two_factor_enabled')->countAllResults() > 0
+            ? $table->where('key', 'security.two_factor_enabled')->update(['value' => 'true'])
+            : $table->insert([
+                'key'        => 'security.two_factor_enabled',
+                'value'      => 'true',
+                'category'   => 'security',
+                'is_secret'  => 0,
+                'updated_at' => utc_now(),
+            ]);
+
+        Settings::forget();
+        $this->assertTrue(AuthService::twoFactorAvailable(), 'the switch must actually be on for this test to mean anything');
+    }
+
 
     public function testResolveRejectsATamperedSessionToken(): void
     {

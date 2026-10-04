@@ -141,13 +141,13 @@ final class DeploymentChecksTest extends PolyfixTestCase
         );
     }
 
-    // --- two-factor authentication is gone ------------------------------------
+    // --- compulsory two-factor stays gone -------------------------------------
 
     /**
-     * The setting that caused the lock-out. Its presence in an old .env is
-     * harmless — CodeIgniter ignores a key with no matching property — but it
-     * must not come back as a property, or the enrolment gate could be
-     * switched on again by editing a file.
+     * Two-factor itself is back as an optional feature, switched on from
+     * Settings → Security. What must never come back is the setting that made
+     * it compulsory per role: that is what redirected an account to the setup
+     * page from every screen and would not let it leave.
      */
     public function testTheCompulsoryTwoFactorSettingNoLongerExists(): void
     {
@@ -155,11 +155,33 @@ final class DeploymentChecksTest extends PolyfixTestCase
         $this->assertFalse(method_exists(Polyfix::class, 'mfaRoles'));
     }
 
-    public function testNothingInTheConfigMentionsASecondFactor(): void
+    public function testNoConfigFileCanMakeTwoFactorCompulsory(): void
     {
         $source = (string) file_get_contents(APPPATH . 'Config/Polyfix.php');
 
         $this->assertDoesNotMatchRegularExpression('/\$mfa|mfaRoles|mfaRequired/', $source);
+    }
+
+    /** Nothing may publish an enrolment obligation to the filters again. */
+    public function testTheAuthFilterHasNoEnrolmentGate(): void
+    {
+        $source = (string) file_get_contents(APPPATH . 'Filters/AuthFilter.php');
+
+        $this->assertStringNotContainsString('must_enrol_mfa', $source);
+    }
+
+    /** A wrong password must have no way of locking an account. */
+    public function testNothingCanLockAnAccountForAWrongPassword(): void
+    {
+        $source = (string) file_get_contents(APPPATH . 'Services/AuthService.php');
+
+        $this->assertDoesNotMatchRegularExpression(
+            "/'locked_until'\s*=>\s*gmdate/",
+            $source,
+            'a lock expiry must never be written',
+        );
+        $this->assertFalse(property_exists(Polyfix::class, 'loginMaxAttempts'));
+        $this->assertFalse(property_exists(Polyfix::class, 'loginLockoutSeconds'));
     }
 
 }
