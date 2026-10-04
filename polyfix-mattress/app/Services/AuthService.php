@@ -438,7 +438,7 @@ final class AuthService
      * database by hand — which is what the previous arrangement left as the
      * only option.
      */
-    public function disableMfa(string $userId, string $password, string $code): void
+    public function disableMfa(string $userId, string $password, string $code, ?string $keepSessionId = null): void
     {
         $user = $this->db->table('users')->where('id', $userId)->get()->getRowArray();
         if (! PasswordPolicy::verify($user['password_hash'], $password)) {
@@ -461,7 +461,14 @@ final class AuthService
             Audit::instance($db)->record('MFA_DISABLED', 'user', $userId);
         }, $this->db);
 
-        $this->revokeAllSessions($userId, 'two-factor authentication disabled');
+        /*
+         * Every other session goes, but not this one. Signing the person out
+         * of the browser they are standing in front of sends them back to the
+         * sign-in page with "Please sign in to continue" and no sign that the
+         * thing they just asked for worked. Changing a password keeps the
+         * current session for the same reason.
+         */
+        $this->revokeAllSessions($userId, 'two-factor authentication disabled', $keepSessionId);
     }
 
     // =========================================================================

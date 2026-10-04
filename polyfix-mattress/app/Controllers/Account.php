@@ -89,7 +89,7 @@ class Account extends BaseController
     public function disableMfa(): RedirectResponse
     {
         return $this->act(
-            fn () => AuthService::instance()->disableMfa($this->ctx->userId(), (string) $this->request->getPost('password'), trim((string) $this->request->getPost('code'))),
+            fn () => AuthService::instance()->disableMfa($this->ctx->userId(), (string) $this->request->getPost('password'), trim((string) $this->request->getPost('code')), $this->ctx->sessionId()),
             'Two-factor authentication is off.',
             site_url('account/security'),
         );
