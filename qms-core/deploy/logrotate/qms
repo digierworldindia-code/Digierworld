@@ -1,0 +1,10 @@
+/var/log/qms/*.log {
+    weekly
+    rotate 12
+    compress
+    delaycompress
+    missingok
+    notifempty
+    create 0640 qms qms
+    su qms qms
+}

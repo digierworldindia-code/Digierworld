@@ -1,0 +1,29 @@
+# Secrets and local configuration - never commit
+/.env
+/.env.*
+!/.env.example
+*.pem
+*-sa.json
+
+# Third-party code (installed by Composer, shipped in the release zip)
+/vendor/
+/public/assets/vendor/
+
+# Runtime data
+/storage/*
+!/storage/.htaccess
+!/storage/index.html
+!/storage/logs/
+!/storage/cache/
+!/storage/uploads/
+/storage/logs/*
+/storage/cache/*
+/storage/uploads/*
+!/storage/*/.gitkeep
+
+# Build output and tools
+/dist/
+/tests/e2e/node_modules/
+/tests/e2e/*.png
+/.phpunit.cache/
+.phpunit.result.cache

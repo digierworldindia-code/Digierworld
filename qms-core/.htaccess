@@ -1,0 +1,20 @@
+# QMS - only used when the web server's document root is this project folder
+# instead of public/ (some shared hosts). Every request is sent into public/;
+# the application code, .env and storage/ can never be downloaded.
+
+Options -Indexes
+ServerSignature Off
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
+
+<IfModule !mod_rewrite.c>
+    # Without mod_rewrite this layout is not safe: refuse everything.
+    Require all denied
+</IfModule>
+
+<FilesMatch "^\.">
+    Require all denied
+</FilesMatch>

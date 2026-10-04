@@ -1,0 +1,39 @@
+{
+    "name": "digierworld/qms-core",
+    "description": "Paperless Quality Inspection System - plain PHP 8.2+, MySQL 8, Bootstrap 5 (no framework)",
+    "type": "project",
+    "license": "proprietary",
+    "require": {
+        "php": "^8.2",
+        "ext-fileinfo": "*",
+        "ext-gd": "*",
+        "ext-json": "*",
+        "ext-mbstring": "*",
+        "ext-openssl": "*",
+        "ext-pdo_mysql": "*",
+        "mpdf/mpdf": "^8.3",
+        "twbs/bootstrap": "5.3.8",
+        "twbs/bootstrap-icons": "^1.13"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^10.5.16"
+    },
+    "suggest": {
+        "ext-curl": "Needed for the Google Sheets synchronisation"
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "preferred-install": "dist",
+        "sort-packages": true
+    },
+    "scripts": {
+        "post-install-cmd": "@php bin/publish-assets.php",
+        "post-update-cmd": "@php bin/publish-assets.php",
+        "test": "phpunit"
+    }
+}

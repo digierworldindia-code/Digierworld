@@ -1,0 +1,52 @@
+# QMS - Apache rules for the public/ folder (the site's document root).
+# Works on shared hosting (cPanel, Plesk, DirectAdmin) with mod_rewrite.
+
+Options -Indexes -MultiViews
+DirectoryIndex index.php
+ServerSignature Off
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Only needed when the rules do not work in a sub-folder installation:
+    # RewriteBase /qms/
+
+    # Every request that is not an existing file goes to the front controller.
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^ index.php [L,QSA]
+</IfModule>
+
+<IfModule !mod_rewrite.c>
+    # Without mod_rewrite every unknown address is handled by index.php.
+    ErrorDocument 404 /index.php
+</IfModule>
+
+# Never serve hidden files, scripts other than index.php, logs or backups.
+<FilesMatch "(^\.|\.(php|phtml|phar|inc|sql|log|env|ini|sh|bak|swp|dist)$)">
+    Require all denied
+</FilesMatch>
+<Files "index.php">
+    Require all granted
+</Files>
+
+# Static files carry ?v=<timestamp>, so browsers may cache them for long.
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType text/css "access plus 30 days"
+    ExpiresByType application/javascript "access plus 30 days"
+    ExpiresByType text/javascript "access plus 30 days"
+    ExpiresByType font/woff2 "access plus 1 year"
+    ExpiresByType font/woff "access plus 1 year"
+</IfModule>
+
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always unset X-Powered-By
+    Header unset X-Powered-By
+</IfModule>
+
+<IfModule mod_php.c>
+    php_flag expose_php Off
+    php_value upload_max_filesize 8M
+    php_value post_max_size 10M
+</IfModule>

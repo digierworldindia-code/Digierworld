@@ -1,0 +1,88 @@
+/*
+ * A4 inspection report printouts (browser print and mPDF).
+ * Black on white, hairline borders, no colour needed to read results:
+ * out-of-spec values are bold, underlined and marked with ✗.
+ */
+/* Page size lives in print-portrait.css / print-landscape.css (browser only: mPDF sets its own page). */
+
+* { box-sizing: border-box; }
+body.sheet { margin: 0; background: #fff; color: #000; font-family: "DejaVu Sans", Arial, Helvetica, sans-serif; font-size: 8pt; line-height: 1.25; }
+table { border-collapse: collapse; width: 100%; }
+th, td { border: 0.6pt solid #000; padding: 2pt 3pt; vertical-align: middle; text-align: left; }
+th { font-weight: bold; }
+.num { text-align: center; white-space: nowrap; }
+
+/* Document header -------------------------------------------------------- */
+.doc-head { margin-bottom: 3pt; }
+.doc-head .logo { width: 30mm; text-align: center; }
+.doc-head .logo img { max-height: 16mm; max-width: 28mm; }
+.co-name { font-size: 12pt; font-weight: bold; }
+.co-addr { font-size: 7.5pt; }
+.doc-head .title { font-size: 12pt; font-weight: bold; text-align: center; letter-spacing: 0.5pt; }
+.doc-head .doc-ctl { width: 52mm; padding: 0; }
+.ctl th, .ctl td { border: 0; border-bottom: 0.4pt solid #000; font-size: 7.5pt; padding: 1.5pt 3pt; }
+.ctl tr:last-child th, .ctl tr:last-child td { border-bottom: 0; }
+.ctl th { font-weight: normal; width: 45%; }
+
+.details { margin-bottom: 4pt; }
+.details th { background: #eeeeee; width: 13%; font-size: 7.5pt; }
+.details td { width: 20%; }
+
+/* Parameter table ----------------------------------------------------------- */
+.params th, .grid th { background: #e5e5e5; font-size: 7pt; text-align: center; }
+.params td { font-size: 7.5pt; }
+.params .c-sr, .grid .c-sr { width: 6mm; text-align: center; }
+.params .c-name { width: 32mm; }
+.params .c-spec { width: 24mm; }
+.params .c-lim { width: 13mm; }
+.params .c-unit { width: 9mm; text-align: center; }
+.params .c-method { width: 13mm; text-align: center; }
+.params .c-inst { width: 20mm; }
+.params .c-gauge { width: 16mm; }
+.params .c-obs { width: 14mm; }
+.params .c-res { width: 11mm; text-align: center; font-weight: bold; }
+.params .c-rem { width: auto; }
+.section-row td { background: #f2f2f2; font-weight: bold; font-size: 8pt; }
+.na { background: #f2f2f2; }
+.oos { font-weight: bold; text-decoration: underline; }
+
+/* In-Process grid ------------------------------------------------------------- */
+.grid td { font-size: 7pt; }
+.grid .c-name { width: 30mm; }
+.grid .c-spec { width: 26mm; }
+.grid .c-method { width: 12mm; text-align: center; }
+.grid .g-cell { text-align: center; min-width: 11mm; }
+.grid-foot th { background: #f2f2f2; text-align: left; font-size: 7pt; }
+.grid-foot td { font-size: 6.5pt; }
+
+/* Remarks, signatures, legend --------------------------------------------------- */
+.remarks { margin-top: 4pt; }
+.remarks th { width: 20mm; background: #eeeeee; }
+.sign { margin-top: 6pt; page-break-inside: avoid; }
+.sign th { background: #e5e5e5; text-align: center; font-size: 7.5pt; }
+.sign td { height: 15mm; text-align: center; vertical-align: top; }
+.sig-name { font-weight: bold; }
+.sig-meta { font-size: 7pt; }
+.legend, .printed { font-size: 6.5pt; margin: 4pt 0 0; }
+thead { display: table-header-group; }
+.pdf-footer td { border: 0; border-top: 0.5pt solid #000; font-size: 7pt; padding: 2pt 0; }
+.pdf-footer td.right { text-align: right; }
+tr { page-break-inside: avoid; }
+
+/* Screen preview only ------------------------------------------------------------ */
+.watermark { display: none; }
+@media screen {
+  body.sheet { background: #d1d5db; }
+  .page-wrap { background: #fff; width: 210mm; min-height: 297mm; margin: 12px auto; padding: 8mm; box-shadow: 0 2px 12px rgba(0, 0, 0, .25); }
+  body.sheet-landscape .page-wrap { width: 297mm; min-height: 210mm; }
+  .toolbar { position: sticky; top: 0; z-index: 10; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 8px 12px; background: #0f172a; color: #fff; font-family: system-ui, sans-serif; font-size: 14px; }
+  .toolbar button, .toolbar a { background: #fff; color: #0f172a; border: 0; border-radius: 6px; padding: 8px 14px; font-weight: 600; text-decoration: none; cursor: pointer; font-size: 14px; }
+  .toolbar span { opacity: .8; }
+  .watermark { display: block; position: fixed; top: 42%; left: 0; right: 0; text-align: center; font-size: 96pt; font-weight: bold; color: rgba(0, 0, 0, .07); transform: rotate(-28deg); pointer-events: none; z-index: 5; }
+}
+@media print {
+  .no-print { display: none !important; }
+  .page-wrap { margin: 0; padding: 0; width: auto; box-shadow: none; }
+  .watermark { display: block; position: fixed; top: 42%; left: 0; right: 0; text-align: center; font-size: 96pt; font-weight: bold; color: #000; opacity: .07; transform: rotate(-28deg); }
+  body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}

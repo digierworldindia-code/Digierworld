@@ -1,0 +1,2 @@
+# Application files are never served by the web server.
+Require all denied
