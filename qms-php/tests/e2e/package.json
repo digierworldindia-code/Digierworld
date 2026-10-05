@@ -1,0 +1,13 @@
+{
+  "name": "qms-php-e2e",
+  "private": true,
+  "description": "Browser end-to-end checks of the QMS (optional; needs Node 18+ and Playwright).",
+  "type": "module",
+  "scripts": {
+    "setup": "node setup-flow.mjs",
+    "test": "node full-flow.mjs"
+  },
+  "devDependencies": {
+    "playwright": "^1.47.0"
+  }
+}

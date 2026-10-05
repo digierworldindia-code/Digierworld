@@ -1,0 +1,29 @@
+# Secrets and local configuration - never commit
+/config/config.php
+*.pem
+*-sa.json
+google-*.json
+
+# Runtime data written on the server (only the protective files are kept)
+/storage/*
+!/storage/.htaccess
+!/storage/index.html
+!/storage/logs/
+!/storage/sessions/
+!/storage/uploads/
+/storage/logs/*
+!/storage/logs/index.html
+/storage/sessions/*
+!/storage/sessions/index.html
+/storage/uploads/*
+!/storage/uploads/index.html
+!/storage/uploads/logo/
+!/storage/uploads/certificates/
+/storage/uploads/logo/*
+!/storage/uploads/logo/index.html
+/storage/uploads/certificates/*
+!/storage/uploads/certificates/index.html
+
+# Browser-test tools (npm install in tests/e2e)
+/tests/e2e/node_modules
+/tests/e2e/package-lock.json

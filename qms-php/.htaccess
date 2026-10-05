@@ -1,0 +1,32 @@
+# QMS - Apache rules (shared hosting). The whole folder can be the web root:
+# private folders are blocked below and contain no directly runnable code.
+
+Options -Indexes -MultiViews
+DirectoryIndex index.php
+ServerSignature Off
+
+# Never serve hidden files, SQL, logs, backups or text files with secrets.
+<FilesMatch "(^\.|\.(sql|log|ini|sh|bak|swp|dist|md|txt|lock|json)$)">
+    Require all denied
+</FilesMatch>
+<Files "robots.txt">
+    Require all granted
+</Files>
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    # Private folders: includes, config, storage, database, cron, tests
+    RewriteRule ^(includes|config|storage|database|cron|tests)(/|$) - [F,L]
+</IfModule>
+
+<IfModule mod_headers.c>
+    Header always unset X-Powered-By
+</IfModule>
+
+# PHP limits for Apache mod_php. Hosts that run PHP as FastCGI / PHP-FPM read .user.ini instead.
+<IfModule mod_php.c>
+    php_flag expose_php Off
+    php_value upload_max_filesize 8M
+    php_value post_max_size 10M
+    php_value memory_limit 256M
+</IfModule>
