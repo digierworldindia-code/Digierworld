@@ -4,7 +4,8 @@
  *
  *   * * * * * php /path/to/qms/cron/sheets_sync.php --quiet >> /path/to/qms/storage/logs/cron.log 2>&1
  *
- * Options: --limit=40 (jobs per run), --quiet (only the summary line).
+ * Options: --limit=40 (jobs per run), --quiet (for cron: one summary line, and only
+ * when jobs were sent or failed - nothing when there was nothing to do).
  */
 if (PHP_SAPI !== 'cli') {
     http_response_code(404);
@@ -20,7 +21,9 @@ $quiet   = isset($options['quiet']);
 // One run at a time on this server (the worker also takes a MySQL lock).
 $lock = fopen(QMS_ROOT . '/storage/sheets-sync.lock', 'c');
 if ($lock === false || ! flock($lock, LOCK_EX | LOCK_NB)) {
-    echo gmdate('Y-m-d H:i:s') . " another sync run is still busy\n";
+    if (! $quiet) {
+        echo gmdate('Y-m-d H:i:s') . " another sync run is still busy\n";
+    }
     exit(0);
 }
 
@@ -28,7 +31,11 @@ $summary = sheet_worker_run($limit, $quiet ? null : static function (string $lin
     echo gmdate('Y-m-d H:i:s') . ' ' . $line . "\n";
 });
 if ($summary['skipped'] !== null) {
-    echo gmdate('Y-m-d H:i:s') . ' skipped: ' . $summary['skipped'] . "\n";
+    if (! $quiet) {
+        echo gmdate('Y-m-d H:i:s') . ' skipped: ' . $summary['skipped'] . "\n";
+    }
     exit(0);
 }
-printf("%s processed=%d synced=%d failed=%d\n", gmdate('Y-m-d H:i:s'), $summary['processed'], $summary['synced'], $summary['failed']);
+if (! $quiet || $summary['processed'] > 0) {
+    printf("%s processed=%d synced=%d failed=%d\n", gmdate('Y-m-d H:i:s'), $summary['processed'], $summary['synced'], $summary['failed']);
+}
