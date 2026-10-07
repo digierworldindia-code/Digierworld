@@ -128,6 +128,13 @@ run.
 
 ---
 
+## How to use it
+
+**`docs/USER-GUIDE.md` is the manual** — every screen, both panels, the whole
+mattress lifecycle, the claim process, the reports and the settings, written
+for the people who will use it rather than for developers. Hand it to staff and
+to dealers.
+
 ## Admin login flow
 
 1. Open `/admin/login`

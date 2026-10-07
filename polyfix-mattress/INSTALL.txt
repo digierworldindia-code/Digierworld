@@ -9,6 +9,8 @@ Contents
                                     data, no audit trail — those belong to a running
                                     system and to its backups.
   README.md                         start here
+  docs/USER-GUIDE.md                the manual: how to use every screen. Give this
+                                    to staff and dealers.
   docs/                             database, migration, backup, restore, deployment,
                                     security, and HOSTINGER-DEPLOYMENT.md for shared
                                     hosting (Hostinger, cPanel, Plesk)
