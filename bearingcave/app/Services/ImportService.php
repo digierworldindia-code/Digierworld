@@ -11,7 +11,8 @@ use App\Models\CompanyModel;
 use App\Models\ImportJobModel;
 use App\Models\ImportJobRowModel;
 use App\Models\ProductModel;
-use CodeIgniter\HTTP\Files\UploadedFile;
+use App\Services\DocumentService;
+use CodeIgniter\Files\File;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
@@ -102,16 +103,13 @@ class ImportService
     /**
      * Stores the file and reads raw rows.
      */
-    public function upload(UploadedFile $file, string $type, ?int $companyId, int $userId): array
+    public function upload(File $file, string $type, ?int $companyId, int $userId): array
     {
         service('documents')->validate($file, ['csv', 'xlsx', 'xls']);
-        $dir = WRITEPATH . 'uploads/imports';
-        if (! is_dir($dir)) {
-            mkdir($dir, 0750, true);
-        }
-        $name     = bin2hex(random_bytes(16)) . '.' . strtolower($file->getClientExtension());
-        $original = mb_substr($file->getClientName(), 0, 191);
-        $file->move($dir, $name);
+        $dir      = WRITEPATH . 'uploads/imports';
+        $name     = bin2hex(random_bytes(16)) . '.' . DocumentService::extension($file);
+        $original = DocumentService::originalName($file);
+        DocumentService::place($file, $dir, $name);
         $path = $dir . '/' . $name;
 
         [$headers, $data] = $this->read($path);

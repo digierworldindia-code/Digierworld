@@ -76,6 +76,8 @@ class ProductService
      */
     public function save(array $company, array $data, ?array $existing = null, bool $byStaff = false): array
     {
+        $data += ['brand_id' => null, 'oem_part_number' => '', 'unit_price' => '', 'lot_price' => '', 'lot_quantity' => '', 'description' => null,
+            'warehouse_city' => null, 'warehouse_country' => '', 'unit_of_measure' => 'pcs', 'price_visibility' => 'show', 'visibility' => 'public', 'country_mode' => 'all'];
         $ent = service('entitlements');
 
         if (in_array($data['sale_mode'], ['piece', 'both'], true) && ! $byStaff && ! $ent->has($company, 'per_piece_pricing')) {

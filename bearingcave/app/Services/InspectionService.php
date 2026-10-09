@@ -164,9 +164,12 @@ class InspectionService
         $this->requests->update($req['id'], ['status' => 'in_progress']);
     }
 
-    public function uploadReport(array $req, array $data, \CodeIgniter\HTTP\Files\UploadedFile $file, int $userId): void
+    public function uploadReport(array $req, array $data, ?\CodeIgniter\Files\File $file, int $userId): void
     {
         $this->assertStatus($req, ['assigned', 'in_progress']);
+        if ($file === null) {
+            throw new BusinessRuleException('Attach the signed inspection report or evidence file.');
+        }
         if (! in_array($data['result'] ?? '', ['pass', 'fail', 'conditional'], true) || trim((string) ($data['summary'] ?? '')) === '' || empty($data['inspected_on'])) {
             throw new BusinessRuleException('Result, inspection date and summary are required.');
         }

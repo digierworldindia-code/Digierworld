@@ -7,6 +7,7 @@ namespace App\Services;
 use App\Exceptions\BusinessRuleException;
 use App\Libraries\Viewer;
 use App\Models\DocumentModel;
+use CodeIgniter\Files\File;
 use CodeIgniter\HTTP\Files\UploadedFile;
 
 /**
@@ -32,16 +33,19 @@ class DocumentService
     {
     }
 
-    public function validate(?UploadedFile $file, ?array $allowedExt = null): void
+    /**
+     * Validates an upload (or a server-side file, e.g. generated reports / CLI imports).
+     */
+    public function validate(?File $file, ?array $allowedExt = null): void
     {
-        if ($file === null || ! $file->isValid()) {
+        if ($file === null || ($file instanceof UploadedFile ? ! $file->isValid() : ! $file->isFile())) {
             throw new BusinessRuleException('Please choose a valid file to upload.');
         }
         $maxMb = (int) service('settings_store')->get('documents.max_upload_mb', 10);
         if ($file->getSize() > $maxMb * 1024 * 1024) {
             throw new BusinessRuleException("The file is larger than the {$maxMb} MB limit.");
         }
-        $ext     = strtolower($file->getClientExtension());
+        $ext     = self::extension($file);
         $allowed = $allowedExt ?? array_keys(self::ALLOWED);
         if (! in_array($ext, $allowed, true) || ! isset(self::ALLOWED[$ext])) {
             throw new BusinessRuleException('File type not allowed. Allowed: ' . implode(', ', $allowed) . '.');
@@ -52,25 +56,46 @@ class DocumentService
         }
     }
 
-    /**
-     * @param array{company_id?:?int,entity_type:string,entity_id?:?int,doc_type:string,title?:string,expires_on?:?string,issued_on?:?string,visibility?:string,previous_version_id?:?int,review_status?:string} $meta
-     */
-    public function store(UploadedFile $file, array $meta, ?array $allowedExt = null): array
+    public static function extension(File $file): string
     {
-        $this->validate($file, $allowedExt);
+        return strtolower($file instanceof UploadedFile ? $file->getClientExtension() : $file->getExtension());
+    }
 
-        $dir = WRITEPATH . 'uploads/private/' . date('Y/m');
+    public static function originalName(File $file): string
+    {
+        return mb_substr($file instanceof UploadedFile ? $file->getClientName() : $file->getBasename(), 0, 191);
+    }
+
+    /**
+     * Moves an upload (or copies a server-side file) into private storage.
+     */
+    public static function place(File $file, string $dir, string $name): void
+    {
         if (! is_dir($dir)) {
             mkdir($dir, 0750, true);
         }
-        $ext      = strtolower($file->getClientExtension());
+        if ($file instanceof UploadedFile) {
+            $file->move($dir, $name);
+        } elseif (! copy($file->getRealPath() ?: $file->getPathname(), $dir . '/' . $name)) {
+            throw new BusinessRuleException('Could not store the file.');
+        }
+    }
+
+    /**
+     * @param array{company_id?:?int,entity_type:string,entity_id?:?int,doc_type:string,title?:string,expires_on?:?string,issued_on?:?string,visibility?:string,previous_version_id?:?int,review_status?:string} $meta
+     */
+    public function store(File $file, array $meta, ?array $allowedExt = null): array
+    {
+        $this->validate($file, $allowedExt);
+
+        $dir      = WRITEPATH . 'uploads/private/' . date('Y/m');
+        $ext      = self::extension($file);
         $name     = bin2hex(random_bytes(16)) . '.' . $ext;
-        $tmpPath  = $file->getTempName();
-        $sha      = hash_file('sha256', $tmpPath);
+        $sha      = hash_file('sha256', $file instanceof UploadedFile ? $file->getTempName() : $file->getPathname());
         $size     = $file->getSize();
         $mime     = $file->getMimeType();
-        $original = mb_substr($file->getClientName(), 0, 191);
-        $file->move($dir, $name);
+        $original = self::originalName($file);
+        self::place($file, $dir, $name);
 
         $version = 1;
         if (! empty($meta['previous_version_id'])) {
