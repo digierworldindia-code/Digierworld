@@ -132,3 +132,4 @@ _modules/*
 /public/uploads/products/*
 !/public/uploads/products/.gitkeep
 /build/
+/node_modules

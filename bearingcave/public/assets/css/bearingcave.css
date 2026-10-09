@@ -246,3 +246,9 @@ fieldset.bc-fieldset > legend { float: none; width: auto; font-size: .95rem; fon
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 @media print { .app-sidebar, .app-topbar, .site-header, .site-footer, .topbar, .no-print { display: none !important; } .app-content { padding: 0; } body { background: #fff; } }
+
+/* Wide gutters (g-5 = 3rem) exceed the 12px container padding on phones and
+   cause horizontal scrolling; cap them below the sm breakpoint. */
+@media (max-width: 575.98px) {
+  .g-5, .gx-5 { --bs-gutter-x: 1.5rem; }
+}
