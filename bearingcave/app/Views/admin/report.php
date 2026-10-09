@@ -1,0 +1,10 @@
+<?= $this->extend('layouts/dashboard') ?>
+<?= $this->section('content') ?>
+<?php $qs = http_build_query(['from' => $from, 'to' => $to]); ?>
+<?= view('components/page_header', ['title' => $title, 'subtitle' => $desc, 'breadcrumbs' => ['Reports' => 'admin/reports', $title => null], 'actions' => $canExport ? '<a class="btn btn-sm btn-light" href="' . site_url('admin/reports/' . $key . '/export?' . $qs) . '"><i class="bi bi-filetype-csv me-1" aria-hidden="true"></i>CSV</a><a class="btn btn-sm btn-light" href="' . site_url('admin/reports/' . $key . '/export?' . $qs . '&format=xlsx') . '"><i class="bi bi-file-earmark-excel me-1" aria-hidden="true"></i>Excel</a>' : '']) ?>
+<form class="row g-2 mb-3 align-items-end" method="get"><div class="col-auto"><label class="form-label" for="rf">From</label><input id="rf" class="form-control form-control-sm" type="date" name="from" value="<?= esc($from, 'attr') ?>"></div><div class="col-auto"><label class="form-label" for="rt">To</label><input id="rt" class="form-control form-control-sm" type="date" name="to" value="<?= esc($to, 'attr') ?>"></div><div class="col-auto"><button class="btn btn-sm btn-primary" type="submit">Apply</button></div></form>
+<div class="bc-card"><?php if (! $data['rows']): ?><?= empty_state('bi-bar-chart', 'No data for this period', 'Reports only show recorded activity; nothing is estimated.') ?><?php else: ?>
+<div class="table-responsive"><table class="table table-bc table-stack mb-0 small"><thead><tr><?php foreach ($data['columns'] as $c): ?><th><?= esc(str_replace('_', ' ', $c)) ?></th><?php endforeach ?></tr></thead><tbody>
+<?php foreach ($data['rows'] as $r): ?><tr><?php foreach ($r as $k => $v): ?><td data-label="<?= esc(str_replace('_', ' ', $k), 'attr') ?>"><?= is_numeric($v) && ! preg_match('/^\d{4}/', (string) $v) ? esc(rtrim(rtrim(number_format((float) $v, 2), '0'), '.')) : esc((string) ($v ?? '—')) ?></td><?php endforeach ?></tr><?php endforeach ?>
+</tbody></table></div><?php endif ?></div>
+<?= $this->endSection() ?>

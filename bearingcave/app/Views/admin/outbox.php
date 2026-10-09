@@ -1,0 +1,10 @@
+<?= $this->extend('layouts/dashboard') ?>
+<?= $this->section('content') ?>
+<?= view('components/page_header', ['title' => 'Email outbox', 'subtitle' => 'Every notification email is recorded here. "Sent" means the mail server accepted it.']) ?>
+<?php if (! $enabled): ?><div class="alert alert-warning small">Email delivery is <strong>disabled</strong> (Platform settings → notifications). Emails are stored with status "disabled" and nothing is sent until SMTP is configured in <span class="part-no">.env</span> and delivery is enabled.</div><?php endif ?>
+<div class="d-flex flex-wrap gap-2 mb-3 small"><?php foreach (['queued', 'sent', 'failed', 'disabled'] as $s): ?><a class="btn btn-sm <?= service('request')->getGet('status') === $s ? 'btn-primary' : 'btn-light' ?>" href="<?= site_url('admin/notifications?status=' . $s) ?>"><?= ucfirst($s) ?> (<?= (int) ($counts[$s] ?? 0) ?>)</a><?php endforeach ?>
+<span class="ms-auto text-muted">SMS provider: <?= esc($sms) ?> · WhatsApp provider: <?= esc($whatsapp) ?> (integration points only)</span></div>
+<div class="bc-card"><?php if (! $rows): ?><?= empty_state('bi-envelope', 'No emails') ?><?php else: ?><div class="table-responsive"><table class="table table-bc table-stack mb-0 small"><thead><tr><th>Created</th><th>To</th><th>Subject</th><th>Status</th><th>Attempts</th><th>Error</th><th></th></tr></thead><tbody>
+<?php foreach ($rows as $e): ?><tr><td data-label="Created"><?= fdt($e['created_at']) ?></td><td data-label="To"><?= esc($e['to_email']) ?></td><td data-label="Subject"><?= esc($e['subject']) ?></td><td data-label="Status"><?= status_badge($e['status']) ?></td><td data-label="Attempts"><?= (int) $e['attempts'] ?></td><td data-label="Error" class="text-danger"><?= esc(mb_strimwidth((string) $e['last_error'], 0, 80, '…')) ?></td><td><?php if (in_array($e['status'], ['failed', 'disabled', 'queued'], true)): ?><?= post_button('admin/notifications/' . $e['id'] . '/retry', 'Send now', 'btn btn-sm btn-light') ?><?php endif ?></td></tr><?php endforeach ?>
+</tbody></table></div><?= $pager->links() ?><?php endif ?></div>
+<?= $this->endSection() ?>

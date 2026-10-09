@@ -1,0 +1,10 @@
+<?= $this->extend('layouts/dashboard') ?>
+<?= $this->section('content') ?>
+<?= view('components/page_header', ['title' => $user->email, 'breadcrumbs' => ['Users' => 'admin/users', 'User' => null]]) ?>
+<div class="row g-4">
+    <div class="col-lg-5"><div class="bc-card mb-3"><div class="bc-card-body"><dl class="dl-grid small mb-0"><dt>Status</dt><dd><?= $user->active ? status_badge('active') : status_badge('suspended', 'Inactive') ?></dd><dt>Roles</dt><dd><?= esc(implode(', ', $groups)) ?></dd><dt>Created</dt><dd><?= fdt((string) $user->created_at) ?></dd><dt>Last active</dt><dd><?= fdt((string) $user->last_active) ?></dd></dl></div></div>
+        <div class="bc-card"><div class="bc-card-header"><h2>Company memberships</h2></div><ul class="list-group list-group-flush small"><?php foreach ($membership as $m): ?><li class="list-group-item"><a href="<?= site_url('admin/companies/' . $m['company_id']) ?>"><?= esc($m['legal_name']) ?></a> · <?= esc($m['company_type']) ?> · <?= esc($m['member_role']) ?> · <?= status_badge($m['status']) ?></li><?php endforeach ?><?php if (! $membership): ?><li class="list-group-item text-muted">None</li><?php endif ?></ul></div></div>
+    <div class="col-lg-7"><div class="bc-card mb-3"><div class="bc-card-header"><h2>Sign-in attempts</h2></div><div class="table-responsive"><table class="table table-bc mb-0 small"><thead><tr><th>When</th><th>IP</th><th>Result</th></tr></thead><tbody><?php foreach ($logins as $l): ?><tr><td><?= fdt($l['date']) ?></td><td><?= esc($l['ip_address']) ?></td><td><?= $l['success'] ? status_badge('succeeded', 'Success') : status_badge('failed') ?></td></tr><?php endforeach ?></tbody></table></div></div>
+        <div class="bc-card"><div class="bc-card-header"><h2>Activity</h2></div><ul class="list-group list-group-flush small"><?php foreach ($audit as $a): ?><li class="list-group-item"><?= status_badge($a['severity'] === 'security' ? 'failed' : 'neutral', $a['event']) ?> <?= esc($a['description'] ?? '') ?> <span class="text-muted">· <?= fdt($a['created_at']) ?></span></li><?php endforeach ?></ul></div></div>
+</div>
+<?= $this->endSection() ?>

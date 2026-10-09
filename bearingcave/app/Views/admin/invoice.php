@@ -1,0 +1,16 @@
+<?= $this->extend('layouts/dashboard') ?>
+<?= $this->section('content') ?>
+<?= view('components/page_header', ['title' => 'Invoice ' . $inv['invoice_number'], 'subtitle' => $company['legal_name'], 'breadcrumbs' => ['Invoices' => 'admin/invoices', $inv['invoice_number'] => null]]) ?>
+<div class="row g-4">
+    <div class="col-lg-7"><div class="bc-card"><div class="bc-card-body"><dl class="dl-grid small mb-0">
+        <dt>Status</dt><dd><?= status_badge($inv['status']) ?></dd><dt>Type</dt><dd><?= esc(ucfirst($inv['invoice_type'])) ?> <?= $inv['reference_type'] ? '· ' . esc($inv['reference_type']) . ' #' . (int) $inv['reference_id'] : '' ?></dd>
+        <dt>Subtotal</dt><dd><?= money($inv['subtotal'], $inv['currency']) ?></dd><dt>Tax</dt><dd><?= money($inv['tax_amount'], $inv['currency']) ?> (<?= esc((string) $inv['tax_rate']) ?>%) <?= $inv['tax_note'] ? '<span class="text-warning">' . esc($inv['tax_note']) . '</span>' : '' ?></dd>
+        <dt>Total</dt><dd class="fw-bold"><?= money($inv['total'], $inv['currency']) ?></dd><dt>Issued / due</dt><dd><?= fdate($inv['issued_at']) ?> / <?= fdate($inv['due_at']) ?></dd><dt>Paid</dt><dd><?= fdate($inv['paid_at']) ?></dd><dt>Notes</dt><dd><?= esc($inv['notes'] ?? '') ?></dd>
+    </dl></div></div>
+    <div class="bc-card mt-4"><div class="bc-card-header"><h2>Payments</h2></div><ul class="list-group list-group-flush small"><?php foreach ($payments as $p): ?><li class="list-group-item d-flex justify-content-between"><span><?= esc($p['provider']) ?> · <?= esc($p['provider_reference'] ?? '') ?> <?= $p['is_sandbox'] ? '<span class="badge-sample">SANDBOX</span>' : '' ?></span><span><?= money($p['amount'], $p['currency']) ?> <?= status_badge($p['status']) ?></span></li><?php endforeach ?><?php if (! $payments): ?><li class="list-group-item text-muted">No payments.</li><?php endif ?></ul></div></div>
+    <div class="col-lg-5"><?php if ($canRecord && $inv['status'] === 'issued'): ?>
+        <div class="bc-card mb-3"><div class="bc-card-header"><h2>Record bank receipt</h2></div><div class="bc-card-body"><p class="small text-muted">Only record a payment after confirming it on the bank statement.</p><form method="post" action="<?= site_url('admin/invoices/' . $inv['id'] . '/record') ?>" novalidate><?= csrf_field() ?><?= field('amount', 'Amount received', $inv['total'], ['required' => true]) ?><?= field('reference', 'Bank / UTR reference', null, ['required' => true]) ?><?= field('paid_on', 'Received on', date('Y-m-d'), ['type' => 'date', 'required' => true]) ?><?= field('notes', 'Notes', null) ?><button class="btn btn-sm btn-primary" type="submit" data-confirm="Confirm the money has been received in the bank account?">Record payment</button></form></div></div>
+        <div class="bc-card"><div class="bc-card-body"><form method="post" action="<?= site_url('admin/invoices/' . $inv['id'] . '/void') ?>" data-confirm="Void this invoice?"><?= csrf_field() ?><label class="form-label" for="vr">Void reason</label><input id="vr" class="form-control form-control-sm mb-2" name="reason" required><button class="btn btn-sm btn-outline-danger" type="submit">Void invoice</button></form></div></div>
+    <?php endif ?></div>
+</div>
+<?= $this->endSection() ?>

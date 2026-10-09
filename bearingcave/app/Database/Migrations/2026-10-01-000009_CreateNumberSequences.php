@@ -16,7 +16,7 @@ class CreateNumberSequences extends Migration
         $this->forge->addField([
             'seq_key'    => ['type' => 'VARCHAR', 'constraint' => 40],
             'seq_year'   => ['type' => 'SMALLINT', 'unsigned' => true],
-            'last_value' => ['type' => 'INT', 'unsigned' => true, 'default' => 0],
+            'counter' => ['type' => 'INT', 'unsigned' => true, 'default' => 0],
         ]);
         $this->forge->addPrimaryKey(['seq_key', 'seq_year']);
         $this->forge->createTable('number_sequences', true, ['ENGINE' => 'InnoDB']);

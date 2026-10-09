@@ -260,6 +260,7 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin', 'filter' => 'st
 
     $routes->group('imports', ['filter' => 'permission:imports.manage'], static function ($routes) {
         $routes->get('/', 'Imports::index');
+        $routes->get('template', 'Imports::template');
         $routes->post('/', 'Imports::upload');
         $routes->get('(:segment)', 'Imports::show/$1');
         $routes->post('(:segment)/map', 'Imports::map/$1');

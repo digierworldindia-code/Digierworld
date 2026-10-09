@@ -1,0 +1,19 @@
+<?= $this->extend('layouts/dashboard') ?>
+<?= $this->section('content') ?>
+<?php $groups = []; foreach ($fields as $f) { $groups[$f['field_group']][] = $f; } $unconfirmed = count(array_filter($fields, static fn ($f) => ! $f['is_confirmed'])); ?>
+<?= view('components/page_header', ['title' => 'Supplier master data', 'subtitle' => count($fields) . ' fields · ' . (int) $records['companies'] . ' suppliers with master data', 'actions' => '<a class="btn btn-sm btn-light" href="' . site_url('admin/supplier-master/template') . '"><i class="bi bi-download me-1" aria-hidden="true"></i>CSV template</a>']) ?>
+<?php if ($unconfirmed): ?><div class="alert alert-warning small"><strong><?= $unconfirmed ?> fields are a proposed structure.</strong> The client's “Suppiler list” sheet (86 headings) could not be read from the build environment. Upload the real sheet: unmatched headings are registered automatically, so every source column is preserved. Then confirm or retarget fields below.</div><?php endif ?>
+<div class="row g-4">
+    <div class="col-xl-4"><div class="bc-card mb-4"><div class="bc-card-header"><h2>Import supplier list</h2></div><div class="bc-card-body">
+        <form method="post" action="<?= site_url('admin/supplier-master/upload') ?>" enctype="multipart/form-data"><?= csrf_field() ?><label class="form-label" for="sm">CSV / XLSX</label><input id="sm" class="form-control mb-2" type="file" name="file" accept=".csv,.xlsx,.xls" required><button class="btn btn-primary w-100" type="submit">Upload &amp; map</button></form>
+        <p class="small text-muted mt-2 mb-0">Imported suppliers are created as unverified directory records without logins. Do not import fabricated data.</p>
+    </div></div>
+    <div class="bc-card"><div class="bc-card-header"><h2>Imports</h2></div><ul class="list-group list-group-flush small"><?php foreach ($jobs as $j): ?><li class="list-group-item d-flex justify-content-between"><a href="<?= site_url('admin/supplier-master/' . $j['uuid']) ?>"><?= esc($j['original_name']) ?></a><?= status_badge($j['status']) ?></li><?php endforeach ?><?php if (! $jobs): ?><li class="list-group-item text-muted">None yet</li><?php endif ?></ul></div></div>
+    <div class="col-xl-8"><div class="bc-card"><div class="bc-card-header"><h2>Field map</h2></div><div class="table-responsive" style="max-height:70vh"><table class="table table-bc mb-0 small"><thead class="sticky-top"><tr><th>#</th><th>Source heading</th><th>Group</th><th>Normalized target</th><th></th></tr></thead><tbody>
+    <?php foreach ($groups as $g => $list): foreach ($list as $f): ?><tr><td><?= (int) $f['sort_order'] + 1 ?></td><td colspan="4"><form method="post" action="<?= site_url('admin/supplier-master/fields/' . $f['id']) ?>" class="row g-1 align-items-center"><?= csrf_field() ?>
+        <div class="col-md-4"><input class="form-control form-control-sm" name="source_heading" value="<?= esc($f['source_heading'], 'attr') ?>" aria-label="Heading"></div><div class="col-md-2"><input class="form-control form-control-sm" name="field_group" value="<?= esc($f['field_group'], 'attr') ?>" aria-label="Group"></div>
+        <div class="col-md-4"><select class="form-select form-select-sm" name="target" aria-label="Target"><option value="">Attribute only</option><?php foreach ($targets as $t): ?><option value="<?= $t ?>"<?= $f['target'] === $t ? ' selected' : '' ?>><?= esc($t) ?></option><?php endforeach ?></select></div>
+        <div class="col-md-2 d-flex gap-1 align-items-center"><button class="btn btn-sm btn-light" type="submit">Save</button><?= $f['is_confirmed'] ? '<i class="bi bi-check2 text-success" title="Confirmed" aria-label="Confirmed"></i>' : '<i class="bi bi-question-circle text-warning" title="Proposed" aria-label="Proposed"></i>' ?></div></form></td></tr><?php endforeach; endforeach ?>
+    </tbody></table></div></div></div>
+</div>
+<?= $this->endSection() ?>
