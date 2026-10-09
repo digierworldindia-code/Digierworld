@@ -135,6 +135,11 @@ mattress lifecycle, the claim process, the reports and the settings, written
 for the people who will use it rather than for developers. Hand it to staff and
 to dealers.
 
+**`docs/USE-CASES.md` is the specification** — 92 use cases with actors,
+preconditions, main and alternate flows, postconditions, 45 business rules, the
+state models, and a traceability matrix from every use case to its permission
+and route. For analysts, testers, auditors and anyone extending the system.
+
 ## Admin login flow
 
 1. Open `/admin/login`

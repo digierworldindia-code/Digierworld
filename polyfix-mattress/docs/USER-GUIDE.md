@@ -584,9 +584,11 @@ create or edit an account more senior than their own.
 password, see every device signed in as you, and **sign out other sessions** —
 which is what to do the moment you suspect someone else has your password.
 
-Passwords must be at least 12 characters with upper and lower case, a digit and
-a symbol. They cannot contain your own name, email address or the company name,
-and a list of twenty obvious ones is refused outright. They are stored hashed with
+Passwords must be 12 to 128 characters, with an upper-case letter, a lower-case
+letter, a digit and a symbol. They cannot contain your name, your email address
+or the company name, nor any of nine predictable words such as `password` or
+`qwerty`. They must also use at least six different characters, so padding one
+letter out to the required length will not do. They are stored hashed with
 Argon2id and cannot be recovered by anyone, including whoever runs the server —
 only reset.
 
@@ -721,7 +723,9 @@ detail goes to that file.
 has ever restored is a hope, not a backup. `docs/backup.md` and
 `docs/restore.md` cover both.
 
-Other documentation: `docs/HOSTINGER-DEPLOYMENT.md` (deployment),
+Other documentation: `docs/USE-CASES.md` (the formal specification: actors,
+flows, business rules, state models and a permission matrix),
+`docs/HOSTINGER-DEPLOYMENT.md` (deployment),
 `docs/database.md` (schema and accounts), `docs/security.md` (what is protected
 and the trade-offs made), `docs/migration.md` (bringing data from the previous
 platform).
