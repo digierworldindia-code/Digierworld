@@ -65,6 +65,7 @@ class Product extends BaseController
             'showIdentity' => $vis->canSeeSupplierIdentity($supplier, $product, $viewer),
             'showContact' => $vis->canSeeSupplierContact($supplier, $product, $viewer),
             'supplierVerified' => service('entitlements')->isVerifiedSupplier($supplier),
+            'acceptsEnquiries' => service('entitlements')->has($supplier, 'direct_enquiries'),
             'brand'      => $product['brand_id'] ? $db->table('brands')->where('id', $product['brand_id'])->get()->getRowArray() : null,
             'category'   => $db->table('categories')->where('id', $product['category_id'])->get()->getRowArray(),
             'images'     => $images,
@@ -112,6 +113,9 @@ class Product extends BaseController
             return $r;
         }
         $supplier = model(CompanyModel::class)->find($product['company_id']);
+        if (! service('entitlements')->has($supplier, 'direct_enquiries')) {
+            return redirect()->back()->withInput()->with('error', 'This supplier does not take direct enquiries. Please submit an RFQ instead.');
+        }
         model(ProductEnquiryModel::class)->insert([
             'product_id' => $id, 'buyer_company_id' => service('companyContext')->companyId(), 'user_id' => $this->userId(),
             'quantity' => $this->request->getPost('quantity') ?: null, 'message' => $this->request->getPost('message'), 'status' => 'open',

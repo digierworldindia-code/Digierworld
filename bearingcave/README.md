@@ -1,69 +1,44 @@
-# CodeIgniter 4 Application Starter
+# BearingCave
 
-## What is CodeIgniter?
+Global B2B marketplace for automotive surplus inventory: supplier verification, inventory management, RFQ procurement and enterprise administration.
 
-CodeIgniter is a PHP full-stack web framework that is light, fast, flexible and secure.
-More information can be found at the [official site](https://codeigniter.com).
+**Stack:** CodeIgniter 4.7 · PHP 8.2+ · MySQL 8 · CodeIgniter Shield · Bootstrap 5.3, self-hosted · server-rendered views and vanilla Fetch API.
 
-This repository holds a composer-installable app starter.
-It has been built from the
-[development repository](https://github.com/codeigniter4/CodeIgniter4).
+## Quick start
 
-More information about the plans for version 4 can be found in [CodeIgniter 4](https://forum.codeigniter.com/forumdisplay.php?fid=28) on the forums.
+```bash
+composer install
+cp .env.example .env && php spark key:generate      # then set DB credentials in .env
+php spark migrate --all
+php spark db:seed DatabaseSeeder                     # reference data and settings only
+php spark bearingcave:create-admin you@example.com   # first super admin
+php spark db:seed DemoSeeder                         # optional, non-production: [SAMPLE] data, passwords in writable/demo/credentials.txt
+php spark serve
+```
 
-You can read the [user guide](https://codeigniter.com/user_guide/)
-corresponding to the latest version of the framework.
+Run the tests with `vendor/bin/phpunit` (22 tests, using the separate `bearingcave_test` database). For browser checks, run `node tests/e2e/responsive.mjs`.
 
-## Installation & updates
+## Status at a glance
 
-`composer create-project codeigniter4/appstarter` then `composer update` whenever
-there is a new release of the framework.
+- Every core workflow is implemented and tested: verification, membership, catalog and search, inventory, bulk import, RFQ and matching, cart and orders, inspection, logistics, disputes, the admin modules, reports and the API. See `docs/TESTING_REPORT.md`.
+- These have **no external provider yet**, so the app never claims they happen: email delivery, escrow/payment gateway, sanctions screening and SMS. See `docs/07_PENDING_INTEGRATIONS.md`.
+- **Business policies** that are still open (tax, logistics base, refund terms and others) are configurable and marked *Pending approval*. See `docs/06_CLIENT_DECISIONS_REGISTER.md`.
+- The source Google Sheet could not be accessed. Requirements come from the written brief. See `docs/01_REQUIREMENTS_TRACEABILITY.md`.
 
-When updating, check the release notes to see if there are any changes you might need to apply
-to your `app` folder. The affected files can be copied or merged from
-`vendor/codeigniter4/framework/app`.
+All documentation is indexed in [`docs/README.md`](docs/README.md).
 
-## Setup
+## Layout
 
-Copy `env` to `.env` and tailor for your app, specifically the baseURL
-and any database settings.
+```
+app/Config         routes, filters, Shield groups and permissions, services
+app/Controllers    Web/, Account/, Buyer/, Supplier/, Admin/, Api/V1/
+app/Services       business rules (visibility, entitlements, inventory, RFQ, orders, …)
+app/Database       migrations, seeders (reference, settings, plans, demo)
+app/Views          layouts, components, web/, buyer/, supplier/, admin/
+public/            web root (assets, vendor CSS/JS, uploads/products)
+writable/          logs, sessions, private uploads (KYC documents), demo credentials
+tests/             PHPUnit unit and feature tests, e2e/ browser and crawl scripts
+tools/             ER diagram and permissions matrix generators, packaging
+```
 
-## Important Change with index.php
-
-`index.php` is no longer in the root of the project! It has been moved inside the *public* folder,
-for better security and separation of components.
-
-This means that you should configure your web server to "point" to your project's *public* folder, and
-not to the project root. A better practice would be to configure a virtual host to point there. A poor practice would be to point your web server to the project root and expect to enter *public/...*, as the rest of your logic and the
-framework are exposed.
-
-**Please** read the user guide for a better explanation of how CI4 works!
-
-## Repository Management
-
-We use GitHub issues, in our main repository, to track **BUGS** and to track approved **DEVELOPMENT** work packages.
-We use our [forum](http://forum.codeigniter.com) to provide SUPPORT and to discuss
-FEATURE REQUESTS.
-
-This repository is a "distribution" one, built by our release preparation script.
-Problems with it can be raised on our forum, or as issues in the main repository.
-
-## Server Requirements
-
-PHP version 8.2 or higher is required, with the following extensions installed:
-
-- [intl](http://php.net/manual/en/intl.requirements.php)
-- [mbstring](http://php.net/manual/en/mbstring.installation.php)
-
-> [!WARNING]
-> - The end of life date for PHP 7.4 was November 28, 2022.
-> - The end of life date for PHP 8.0 was November 26, 2023.
-> - The end of life date for PHP 8.1 was December 31, 2025.
-> - If you are still using below PHP 8.2, you should upgrade immediately.
-> - The end of life date for PHP 8.2 will be December 31, 2026.
-
-Additionally, make sure that the following extensions are enabled in your PHP:
-
-- json (enabled by default - don't turn it off)
-- [mysqlnd](http://php.net/manual/en/mysqlnd.install.php) if you plan to use MySQL
-- [libcurl](http://php.net/manual/en/curl.requirements.php) if you plan to use the HTTP\CURLRequest library
+`LICENSE` is the CodeIgniter appstarter's MIT licence, which covers the framework skeleton. The licence for the BearingCave application code is for the client to decide.

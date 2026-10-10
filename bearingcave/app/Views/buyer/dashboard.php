@@ -34,11 +34,20 @@
             <h2 class="h6">Buyer status</h2>
             <p class="mb-2"><?= $verified ? verified_badge($company) : status_badge($company['verification_status']) ?></p>
             <?php if (! $verified): ?><p class="small text-muted">Verify your company to get the Verified Buyer badge, become eligible for restricted inventory and unlock advanced comparison.</p><a class="btn btn-sm btn-outline-primary" href="<?= site_url('buyer/verification') ?>">Verification</a>
+            <?php elseif (! $analytics): ?>
+                <dl class="dl-grid small mb-0"><dt>Restricted access</dt><dd><?= ! empty($profile['restricted_inventory_access']) ? status_badge('approved') : '<span class="text-muted">Not granted</span>' ?></dd></dl>
             <?php else: ?>
                 <dl class="dl-grid small mb-0"><dt>Engagement</dt><dd><?= esc($profile['engagement_score'] ?? '0') ?>/100</dd><dt>RFQ genuineness</dt><dd><?= esc($profile['rfq_genuineness_score'] ?? '0') ?>/100</dd><dt>Transactions</dt><dd><?= esc($profile['transaction_score'] ?? '0') ?>/100</dd><dt>Restricted access</dt><dd><?= ! empty($profile['restricted_inventory_access']) ? status_badge('approved') : '<span class="text-muted">Not granted</span>' ?></dd></dl>
                 <p class="small text-muted mt-2 mb-0">Scores are computed from your platform activity<?= $profile['scores_computed_at'] ? ' on ' . fdate($profile['scores_computed_at']) : ' (not yet computed)' ?>.</p>
             <?php endif ?>
         </div></div>
+        <?php if ($analytics): ?>
+        <div class="bc-card mb-4"><div class="bc-card-header"><h2>Your searches (90 days)</h2></div><div class="bc-card-body">
+            <?php if (! $searches): ?><p class="small text-muted mb-0">No searches recorded yet.</p><?php else: ?>
+            <ul class="list-unstyled small mb-0 d-grid gap-1"><?php foreach ($searches as $s): ?><li class="d-flex justify-content-between gap-2"><a class="part-no text-truncate" href="<?= site_url('marketplace?q=' . rawurlencode($s['query'])) ?>"><?= esc($s['query']) ?></a><span class="text-muted text-nowrap"><?= (int) $s['searches'] ?>× · <?= (int) $s['max_results'] ?> results</span></li><?php endforeach ?></ul>
+            <?php endif ?>
+        </div></div>
+        <?php endif ?>
         <div class="bc-card"><div class="bc-card-header"><h2>Notifications</h2><a class="small" href="<?= site_url('notifications') ?>">All</a></div><div class="bc-card-body">
             <?php if (! $notifications): ?><p class="small text-muted mb-0">Nothing new.</p><?php endif ?>
             <ul class="list-unstyled mb-0 d-grid gap-2"><?php foreach ($notifications as $n): ?><li class="small"><span class="<?= $n['read_at'] ? 'text-muted' : 'fw-semibold' ?>"><?= esc($n['title']) ?></span><br><span class="text-muted"><?= fdt($n['created_at']) ?></span></li><?php endforeach ?></ul>

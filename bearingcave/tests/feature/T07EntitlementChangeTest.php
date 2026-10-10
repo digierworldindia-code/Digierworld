@@ -54,4 +54,36 @@ final class T07EntitlementChangeTest extends BCTestCase
         $this->assertTrue(service('entitlements')->has($free['company'], 'per_piece_pricing'));
         $this->assertSame(1, db_connect()->table('audit_logs')->where('event', 'membership.plan_updated')->where('entity_id', $fplan['id'])->countAllResults());
     }
+
+    public function testEnquiryBadgeAndBuyerAnalyticsFlagsAreEnforced(): void
+    {
+        $admin    = $this->staff('superadmin');
+        $supplier = $this->registerCompany('supplier');
+        $product  = $this->product($supplier['company']);
+        $buyer    = $this->registerCompany('buyer');
+        $fplan    = model(MembershipPlanModel::class)->where('code', 'supplier_free')->first();
+        $enquiries = static fn (): int => db_connect()->table('product_enquiries')->where('product_id', $product['id'])->countAllResults();
+
+        $this->postAs($buyer['user'], 'product/' . $product['id'] . '/enquire', ['message' => 'Is the batch date 2024 or later?'])->assertRedirect();
+        $this->assertSame(1, $enquiries());
+
+        $this->postPlan($admin, $fplan, ['direct_enquiries' => '0']);
+        $this->flush();
+        $this->getAs($buyer['user'], 'product/' . $product['slug'])->assertSee('receives requests through BearingCave RFQs only');
+        $this->postAs($buyer['user'], 'product/' . $product['id'] . '/enquire', ['message' => 'Second question about packaging?'])->assertRedirect();
+        $this->assertSame(1, $enquiries(), 'Enquiry must be refused when direct_enquiries is disabled');
+        $this->assertStringContainsString('does not take direct enquiries', (string) $this->flashError());
+
+        // Verified buyer: badge and search analytics follow the plan.
+        $vb    = $this->verifyCompany($buyer['company']);
+        $bplan = model(MembershipPlanModel::class)->where('code', 'buyer_verified')->first();
+        $this->flush();
+        $this->assertStringContainsString('Verified Buyer', verified_badge($vb));
+        $this->getAs($buyer['user'], 'buyer/dashboard')->assertSee('Your searches (90 days)');
+
+        $this->postPlan($admin, $bplan, ['buyer_badge' => '0', 'buyer_analytics' => '0']);
+        $this->flush();
+        $this->assertSame('', verified_badge($vb));
+        $this->getAs($buyer['user'], 'buyer/dashboard')->assertDontSee('Your searches (90 days)');
+    }
 }

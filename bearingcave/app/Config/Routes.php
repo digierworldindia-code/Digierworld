@@ -209,6 +209,7 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin', 'filter' => 'st
         $routes->get('users/(:num)', 'Users::show/$1');
     });
     $routes->post('users/(:num)/toggle', 'Users::toggle/$1', ['filter' => 'permission:users.manage']);
+    $routes->post('users/(:num)/temporary-password', 'Users::temporaryPassword/$1', ['filter' => 'permission:users.manage']);
     $routes->get('staff', 'Staff::index', ['filter' => 'permission:staff.manage']);
     $routes->post('staff', 'Staff::store', ['filter' => 'permission:staff.manage']);
     $routes->post('staff/(:num)/groups', 'Staff::groups/$1', ['filter' => 'permission:staff.manage']);

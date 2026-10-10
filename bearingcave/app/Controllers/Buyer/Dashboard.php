@@ -16,9 +16,15 @@ class Dashboard extends BaseController
         $one = static fn (string $sql, array $b) => (int) $db->query($sql, $b)->getRow()->v;
 
         $profile = $db->table('buyer_profiles')->where('company_id', $cid)->get()->getRowArray();
+        $analytics = entitled('buyer_analytics', $c);
+        $searches  = $analytics ? $db->query(
+            'SELECT query, COUNT(*) AS searches, MAX(results_count) AS max_results, MAX(created_at) AS last_at FROM search_logs
+             WHERE company_id = ? AND query IS NOT NULL AND query <> \'\' AND created_at >= ? GROUP BY query ORDER BY searches DESC, last_at DESC LIMIT 8',
+            [$cid, date('Y-m-d H:i:s', strtotime('-90 days'))]
+        )->getResultArray() : [];
 
         return view('buyer/dashboard', [
-            'title' => 'Buyer dashboard', 'area' => 'buyer', 'company' => $c, 'profile' => $profile,
+            'title' => 'Buyer dashboard', 'area' => 'buyer', 'company' => $c, 'profile' => $profile, 'analytics' => $analytics, 'searches' => $searches,
             'kpi' => [
                 'open_rfqs'   => $one("SELECT COUNT(*) v FROM rfqs WHERE buyer_company_id = ? AND status IN ('submitted','under_review','distributed','evaluation')", [$cid]),
                 'quotations'  => $one("SELECT COUNT(*) v FROM quotations q JOIN rfqs r ON r.id = q.rfq_id WHERE r.buyer_company_id = ? AND q.is_current = 1 AND q.status IN ('submitted','shortlisted')", [$cid]),

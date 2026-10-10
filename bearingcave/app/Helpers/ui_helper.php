@@ -244,7 +244,7 @@ if (! function_exists('verified_badge')) {
         if ($company['company_type'] === 'supplier' && $ent->isVerifiedSupplier($company)) {
             return '<span class="badge-verified" title="Verified by BearingCave"><i class="bi bi-patch-check-fill" aria-hidden="true"></i>' . ($withLabel ? 'Verified Supplier' : '<span class="visually-hidden">Verified</span>') . '</span>';
         }
-        if ($company['company_type'] === 'buyer' && $ent->isVerifiedBuyer($company)) {
+        if ($company['company_type'] === 'buyer' && $ent->isVerifiedBuyer($company) && $ent->has($company, 'buyer_badge')) {
             return '<span class="badge-verified" title="Verified buyer"><i class="bi bi-patch-check-fill" aria-hidden="true"></i>' . ($withLabel ? 'Verified Buyer' : '<span class="visually-hidden">Verified</span>') . '</span>';
         }
 

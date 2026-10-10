@@ -59,4 +59,27 @@ class Users extends AdminController
 
         return redirect()->back()->with('success', 'User ' . ($user->active ? 'activated' : 'deactivated') . '.');
     }
+
+    /**
+     * Account recovery without email: issues a one-time random password that
+     * the admin passes to the user through a verified channel. The password is
+     * shown once, never stored in plain text, and the action is audited.
+     */
+    public function temporaryPassword(int $id)
+    {
+        $users = model(UserModel::class);
+        $user  = $users->find($id);
+        if (! $user || (int) $user->id === $this->userId()) {
+            return redirect()->back()->with('error', 'You cannot reset this account here. Use Account settings for your own password.');
+        }
+        if ($user->inGroup('superadmin') && ! auth()->user()->inGroup('superadmin')) {
+            return redirect()->back()->with('error', 'Only a super admin can reset another super admin.');
+        }
+        $temp = 'Tmp-' . bin2hex(random_bytes(6)) . '!';
+        $user->fill(['password' => $temp]);
+        $users->save($user);
+        service('audit')->log('user.temporary_password_issued', ['entity_type' => 'user', 'entity_id' => $id, 'severity' => 'security', 'description' => 'Temporary password issued by an administrator']);
+
+        return redirect()->back()->with('temp_password', $temp)->with('success', 'Temporary password issued. Share it through a verified channel and ask the user to change it under Account settings.');
+    }
 }

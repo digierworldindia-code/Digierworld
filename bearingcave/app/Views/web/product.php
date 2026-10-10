@@ -199,6 +199,9 @@ $step     = $lotMode && (int) $p['lot_quantity'] > 0 ? (int) $p['lot_quantity'] 
             <section class="bc-card mb-4" aria-labelledby="enqH">
                 <div class="bc-card-header"><h2 id="enqH">Ask the supplier</h2></div>
                 <div class="bc-card-body">
+                    <?php if (! $acceptsEnquiries): ?>
+                    <p class="small mb-0">This supplier receives requests through BearingCave RFQs only. Use <strong>Request quotation</strong> to ask about this item.</p>
+                    <?php else: ?>
                     <form method="post" action="<?= site_url('product/' . $p['id'] . '/enquire') ?>">
                         <?= csrf_field() ?>
                         <?= field('quantity', 'Quantity needed', null, ['type' => 'number', 'attrs' => 'min="1"']) ?>
@@ -206,6 +209,7 @@ $step     = $lotMode && (int) $p['lot_quantity'] > 0 ? (int) $p['lot_quantity'] 
                         <button class="btn btn-outline-primary w-100" type="submit">Send enquiry</button>
                     </form>
                     <p class="small text-muted mt-2 mb-0">Messages are relayed by BearingCave. Your company details are shared only as needed for the transaction.</p>
+                    <?php endif ?>
                 </div>
             </section>
             <section class="bc-card mb-4" aria-labelledby="svcH">
