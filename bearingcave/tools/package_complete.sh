@@ -48,6 +48,19 @@ foreach (["CodeIgniter\\CodeIgniter", "CodeIgniter\\Shield\\Auth", "PhpOffice\\P
 }
 echo "autoload OK\n";'
 
+# Every local frontend asset referenced by views or by CSS url(...) must be in the package.
+missing=0
+for a in $(grep -rhoE "base_url\('assets/[^']+'\)" app/Views app/Helpers | sed -E "s/base_url\('//; s/'\)//" | sort -u); do
+    [ -f "public/$a" ] || { echo "MISSING asset public/$a" >&2; missing=1; }
+done
+for css in $(find public/assets -name '*.css'); do
+    dir="$(dirname "$css")"
+    for u in $(grep -oE 'url\(["'"'"']?[^)"'"'"']+' "$css" | sed -E 's/url\(["'"'"']?//; s/[?#].*//' | grep -vE '^(data:|https?:|//)' | sort -u); do
+        [ -f "$dir/$u" ] || { echo "MISSING asset $dir/$u (from $css)" >&2; missing=1; }
+    done
+done
+[ "$missing" = 0 ] && echo "frontend assets OK" || exit 1
+
 # writable/ must exist with its subfolders (they are tracked via index.html files).
 for d in cache logs session uploads debugbar; do mkdir -p "writable/$d"; done
 chmod -R u+rwX,go+rX . && chmod -R 0775 writable
