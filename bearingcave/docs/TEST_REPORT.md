@@ -27,7 +27,7 @@ Package `BEARINGCAVE_COMPLETE_WITH_VENDOR_AND_ALL_DEPENDENCIES.zip`, extracted i
 | — | Browser test (`responsive.mjs`) | 0 failures | **133 of 133** | Pass | — |
 | — | Demo seeder in production | refuses, with an error | refused, but printed "Seeded" | Pass after fix | Now raises an error, so the CLI cannot report success |
 
-Automated suite after this round's changes: see the PHPUnit row in the summary below.
+Automated suite after this round's changes (development `vendor/` with PHPUnit): **31 tests, 382 assertions, 0 failures, 0 errors** (`vendor/bin/phpunit`, 3 min 29 s).
 
 ## Round 2: workbook gap closure (2026-10-13)
 
