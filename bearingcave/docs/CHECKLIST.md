@@ -16,6 +16,7 @@ Status as of this delivery. "Done" means the feature is implemented, wired into 
 | 8 Enterprise admin | Done | 32 admin modules, reports with CSV/XLSX export, settings, CMS, SEO, outbox, audit |
 | 9 Testing and deployment | Done | 31 PHPUnit tests, E2E (133 checks), authenticated crawl, install and deployment docs |
 | 10 Workbook audit and gap closure (2026-10-13) | Done | 13 gaps closed; see `DEVELOPMENT_PROGRESS.md` |
+| 11 Self-contained package and clean-install test (2026-10-13) | Done | `vendor/` included; frontend assets fixed; Apache + MySQL clean install verified |
 
 ## Deliverables (prompt §34)
 
@@ -25,15 +26,15 @@ Status as of this delivery. "Done" means the feature is implemented, wired into 
 | 8 | Sample demo records, clearly marked | `DemoSeeder` (`[SAMPLE]`, `is_sample=1`, SAMPLE DATA badge) |
 | 9 | Import templates | Supplier → Bulk upload → template (XLSX); Admin → Supplier master data → template |
 | 10–11 | Auth and permissions, connected workflows | see `04`, `03` |
-| 12–13 | Install instructions, `.env.example` | `INSTALL.md`, `.env.example` |
+| 12–13 | Install instructions, `.env.example` | `INSTALLATION.md`, `.env.example` |
 | 14 | Deployment | `DEPLOYMENT.md` |
-| 15–17 | Admin, supplier and buyer guides | `guides/` |
+| 15–17 | Admin, supplier and buyer guides | `ADMIN_MANUAL.md`, `USER_MANUAL.md` |
 | 18 | API documentation | `API.md` |
 | 19 | Testing report | `TEST_REPORT.md` |
 | 20 | Traceability matrix | `01_REQUIREMENTS_TRACEABILITY.md` |
 | 21 | Pending integrations | `07_PENDING_INTEGRATIONS.md` |
 | 22 | Pending business decisions | `06_CLIENT_DECISIONS_REGISTER.md` |
-| 23 | ZIP package | `build/bearingcave-source.zip`, built by `tools/package.sh` (excludes `vendor/`, `.env`, uploads, logs, demo credentials) |
+| 23 | ZIP package | `BEARINGCAVE_COMPLETE_WITH_VENDOR_AND_ALL_DEPENDENCIES.zip`, built by `tools/package_complete.sh`: source **plus production `vendor/`** and frontend libraries; never includes `.env`, uploads, logs, backups or demo credentials |
 
 ## Remaining work (exact)
 

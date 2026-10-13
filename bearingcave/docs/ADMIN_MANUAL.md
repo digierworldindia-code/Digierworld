@@ -1,6 +1,6 @@
-# Admin guide (BearingCave staff)
+# Admin manual (BearingCave staff)
 
-Sign in at `/login`. Staff land on `/admin`. The left menu shows only the modules your role allows (see `../04_PERMISSIONS_MATRIX.md`).
+Sign in at `/login`. Staff land on `/admin`. The left menu shows only the modules your role allows (see `04_PERMISSIONS_MATRIX.md`).
 
 ## Daily routine
 
@@ -43,7 +43,7 @@ Admin → Membership plans → edit. You can change the fee, duration, active fl
 
 ## Platform settings
 
-Every business rule lives here, grouped by area. Settings marked **Pending client approval** are safe defaults. Change the value and set it to *Approved* once the client decides (see `../06_CLIENT_DECISIONS_REGISTER.md`).
+Every business rule lives here, grouped by area. Settings marked **Pending client approval** are safe defaults. Change the value and set it to *Approved* once the client decides (see `06_CLIENT_DECISIONS_REGISTER.md`).
 
 ## Users and staff
 

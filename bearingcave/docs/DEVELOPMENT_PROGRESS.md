@@ -2,6 +2,20 @@
 
 Last updated 2026-10-13, after auditing the existing application against the client's workbook (`BearingCave.pdf`, 9 tabs). The detailed row-by-row mapping is in `EXCEL_REQUIREMENTS_MAPPING.md`.
 
+## Round 3 (2026-10-13): complete, self-contained package
+
+The task this round was to deliver a package that installs without downloading anything.
+
+| Item | Status found | Work done | Status now |
+|---|---|---|---|
+| `vendor/` in the delivery | MISSING (the ZIP shipped source only) | Production install (`--no-dev --prefer-dist --optimize-autoloader`) built into the package by `tools/package_complete.sh` | COMPLETE |
+| Frontend libraries (Bootstrap, icons, font) | **BROKEN in every package**: never committed (`.gitignore` matched `public/assets/vendor/`) | Committed; the packager verifies every referenced asset | COMPLETE |
+| `composer.json` platform requirements | PARTIAL (`mysqli` etc. not declared) | Extensions declared; lock refreshed with no version changes | COMPLETE |
+| Clean-install verification | not done before | Apache + MySQL 8, production mode: crawl 439/439, browser 133/133, RFQ workflow 9/9 | COMPLETE |
+| Docs requested by name | `INSTALL.md` and `guides/` | `INSTALLATION.md`, `ADMIN_MANUAL.md`, `USER_MANUAL.md` (renamed and merged, nothing lost), `DEPENDENCY_VERIFICATION_REPORT.md`, beginner `README.md` with cPanel and VPS | COMPLETE |
+| `app/Entities/`, `app/Validation/` from the illustrative structure | Not used by this design | Not created. Models return arrays, and validation rules live next to the code that uses them (`BaseController::invalid()`, service rules such as `ProductService::rules()`). Empty folders would add nothing | n/a (by design) |
+| Workbook requirements | No PARTIAL, MISSING or BROKEN items (round 2); the Google Sheet link is still unreachable from the build environment, so the PDF export remains the source | — | unchanged |
+
 ## Where development stood, and where it continued
 
 | Milestone | Evidence | State |
@@ -53,7 +67,7 @@ No workbook requirement is **PENDING** or **FIX REQUIRED** any more. **BLOCKED**
 - `app/Controllers/Admin/Enquiries.php`, `app/Views/admin/enquiries.php`
 - migrations `2026-10-13-000010` to `000013`
 - tests: `SupplierMasterSheetImportTest`, `InventoryToolsTest`, `CheckoutServiceOptionsTest`, `WorkbookScoringDisputesBrandingTest`, `SiteAuditOutputsTest`
-- docs: `EXCEL_REQUIREMENTS_MAPPING.md`, `DEVELOPMENT_PROGRESS.md`, `FEATURE_MATRIX.md`, `DATABASE_GUIDE.md` (and `TEST_REPORT.md`, renamed from `TEST_REPORT.md`)
+- docs: `EXCEL_REQUIREMENTS_MAPPING.md`, `DEVELOPMENT_PROGRESS.md`, `FEATURE_MATRIX.md`, `DATABASE_GUIDE.md` (and `TEST_REPORT.md`, renamed from `TESTING_REPORT.md`)
 
 **Modified (59), in place, keeping existing behaviour:**
 

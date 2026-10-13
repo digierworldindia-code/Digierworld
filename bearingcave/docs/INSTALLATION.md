@@ -1,17 +1,24 @@
-# Installation (local / staging)
+# Installation
+
+This is the detailed reference. A beginner-friendly walkthrough, including **cPanel/shared hosting** and **VPS**, is in the main `README.md` (§3–§6).
 
 ## Requirements
 
 - PHP **8.2+** with these extensions: `intl`, `mbstring`, `mysqli`, `json`, `curl`, `gd`, `zip`, `xml`, `openssl`, `fileinfo`
 - MySQL **8.0+** (MariaDB is not tested: the schema uses CHECK constraints and `ANY_VALUE`)
-- Composer 2
+- Composer 2: **not needed** with `BEARINGCAVE_COMPLETE_WITH_VENDOR_AND_ALL_DEPENDENCIES.zip`, which already contains the production `vendor/`. Only needed if you work from the git repository or want to run the tests.
 - Optional, only for the browser E2E test: Node 18+ with Playwright and Chromium
 
 ## 1. Get the code and dependencies
 
+**From the complete package (recommended):** unzip `BEARINGCAVE_COMPLETE_WITH_VENDOR_AND_ALL_DEPENDENCIES.zip`. It contains `vendor/` (all PHP libraries) and `public/assets/vendor/` (Bootstrap, icons, fonts). Check it with `php spark`: if a list of commands appears, PHP and `vendor/` are working.
+
+**From the git repository (developers):**
+
 ```bash
 cd bearingcave
-composer install            # add --no-dev on production
+composer install                                              # with PHPUnit (tests)
+composer install --no-dev --prefer-dist --optimize-autoloader # production
 ```
 
 ## 2. Create the databases
@@ -38,7 +45,7 @@ Edit `.env`:
 
 Never commit `.env`.
 
-## 4. Schema and reference data
+## 4. Schema and reference data (choose ONE method)
 
 Without shell access, import `database/bearingcave.sql` into the empty database instead (phpMyAdmin → Import), then continue with step 5.
 

@@ -4,6 +4,31 @@ Every result below comes from runs actually executed in the build environment on
 - Ubuntu container, PHP 8.3.6, MySQL 8.0, Chromium (Playwright 1.56).
 - Commands are listed so the results can be reproduced.
 
+## Round 3: clean installation of the complete package (2026-10-13)
+
+Package `BEARINGCAVE_COMPLETE_WITH_VENDOR_AND_ALL_DEPENDENCIES.zip`, extracted into a fresh directory. Ubuntu 24.04, **Apache 2.4.58 + mod_php 8.3.6**, `mod_rewrite`, **MySQL 8.0**, document root `public/`, **`CI_ENVIRONMENT = production`**, dedicated MySQL user. Steps followed exactly as in `README.md` §3.
+
+| # | Check (as requested) | Expected | Actual | Result | Fix applied |
+|---|---|---|---|---|---|
+| 0 | ZIP contains `vendor/autoload.php`, framework, Shield, `.htaccess`, Bootstrap, SQL, `spark`, `.env.example`, `composer.*` | all present | all present | Pass | — |
+| 1 | Homepage loads | 200, styled | 200 | Pass after fix | **Bootstrap, Bootstrap Icons and Inter returned 404**: they had never been committed because `.gitignore` `vendor/` matched `public/assets/vendor/`. Fixed (rule anchored, assets committed, packager asset guard) |
+| 2 | Login works | staff → `/admin`, users → dashboards | every role logged in | Pass | — |
+| 3 | Buyer dashboard loads | 200 | 200 (2 buyers) | Pass | — |
+| 4 | Supplier dashboard loads | 200 | 200 (2 owners + employee) | Pass | — |
+| 5 | Admin panel loads | 200, all permitted modules | 8 staff roles | Pass | — |
+| 6 | Database queries work | live KPIs | dashboard figures from MySQL | Pass | — |
+| 7 | Product records load | marketplace + product pages | 200 | Pass | — |
+| 8 | RFQ workflow works | RFQ → match → distribute → quote → accept → order | `tests/e2e/rfq_flow.py`: 9 of 9 steps, order PO-2026-000001 created | Pass | — |
+| 9 | No missing-dependency errors | none | Apache error log empty; no application log entries | Pass | — |
+| 10 | No missing CSS/JS | all assets 200 | 8 of 8 asset URLs 200 with correct MIME types | Pass after fix (see 1) | — |
+| — | SQL import vs migrations consistent | nothing pending after import | `migrate --all`: nothing to run | Pass | — |
+| — | Private files not web-accessible | 404 | `/vendor/autoload.php`, `/.env`, `/../app/...`: 404 | Pass | — |
+| — | Authenticated crawl (`crawl.py`) | 0 failures | **439 of 439** pages, guest plus 14 accounts | Pass | — |
+| — | Browser test (`responsive.mjs`) | 0 failures | **133 of 133** | Pass | — |
+| — | Demo seeder in production | refuses, with an error | refused, but printed "Seeded" | Pass after fix | Now raises an error, so the CLI cannot report success |
+
+Automated suite after this round's changes: see the PHPUnit row in the summary below.
+
 ## Round 2: workbook gap closure (2026-10-13)
 
 All runs below were executed after the last code change of this round.

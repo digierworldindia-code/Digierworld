@@ -14,8 +14,9 @@
 | [05 Sitemap and screens](05_SITEMAP_AND_SCREENS.md) | Public, buyer, supplier and admin screens |
 | [06 Client decisions register](06_CLIENT_DECISIONS_REGISTER.md) | Open business decisions and their safe defaults |
 | [07 Pending integrations](07_PENDING_INTEGRATIONS.md) | Email, escrow, sanctions, SMS, MFA, … |
-| [INSTALL](INSTALL.md) / [DEPLOYMENT](DEPLOYMENT.md) | Setup, first admin, demo data, production, cron, backups |
-| [Guides](guides/) | Admin, supplier, buyer |
+| [INSTALL](INSTALLATION.md) / [DEPLOYMENT](DEPLOYMENT.md) | Setup, first admin, demo data, production, cron, backups |
+| [Admin manual](ADMIN_MANUAL.md) / [User manual](USER_MANUAL.md) | Staff; buyers and suppliers |
 | [API](API.md) | REST API v1 and webhooks |
-| [Testing report](TEST_REPORT.md) | Actual results of every test run |
+| [Testing report](TEST_REPORT.md) | Actual results of every test run, including the clean-installation test |
+| [Dependency verification](DEPENDENCY_VERIFICATION_REPORT.md) | What is in `vendor/` and the frontend libraries, and how the package was verified |
 | [Checklist](CHECKLIST.md) | Completed and remaining work |

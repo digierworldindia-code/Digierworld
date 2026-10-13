@@ -3,7 +3,7 @@
 ## Checklist
 
 1. A server with PHP 8.2+ (FPM), MySQL 8 and Nginx or Apache. HTTPS is required.
-2. `composer install --no-dev --optimize-autoloader`
+2. Upload and unzip the complete package (it includes `vendor/`). From git instead: `composer install --no-dev --prefer-dist --optimize-autoloader`.
 3. Configure `.env`:
    - `CI_ENVIRONMENT = production`
    - `app.baseURL = 'https://www.bearingcave.com/'`
@@ -11,7 +11,7 @@
    - a strong DB password
    - `encryption.key`, generated once and **backed up offline**
    - SMTP settings
-4. Run `php spark migrate --all`, then `php spark db:seed DatabaseSeeder`. Run this **only on first install**: the seeders are idempotent for reference data but must never be replaced by `DemoSeeder`.
+4. Initialise the database **once**, with either method: import `database/bearingcave.sql` into the empty database, **or** run `php spark migrate --all` and then `php spark db:seed DatabaseSeeder`. Never use `DemoSeeder` in production.
 5. Create the first admin with `php spark bearingcave:create-admin you@company.com`.
 6. The **web root must be `bearingcave/public/`**. Never point it at the project root.
 7. Permissions: `writable/` must be writable by PHP-FPM, and everything else read-only. `writable/uploads/private` (KYC and verification documents) is outside the web root.
@@ -65,8 +65,8 @@ Expiry takes effect at request time even if cron is late, because entitlements r
 ## Updating
 
 ```bash
-git pull   # or unpack a release ZIP
-composer install --no-dev --optimize-autoloader
+# unpack the new package over the old code, keeping .env, writable/ and public/uploads/
+# (or, from git: git pull && composer install --no-dev --prefer-dist --optimize-autoloader)
 php spark migrate --all
 php spark cache:clear
 ```
@@ -79,6 +79,15 @@ Take a database backup before every `migrate`.
 - HTTPS only. Secure-header filters are already global. Add HSTS at the web server once HTTPS is confirmed.
 - Restrict MySQL to localhost or a private network, and give the application user the privileges it needs: SELECT, INSERT, UPDATE, DELETE, plus CREATE, ALTER, INDEX and REFERENCES while migrating.
 - Review `audit_logs` entries with severity `security` regularly (Admin → Audit logs, filter "security").
+
+## cPanel / shared hosting
+
+A step-by-step guide, including what to do when the document root cannot be changed, is in `README.md` §4. Summary:
+- Keep the application folder **outside** `public_html`.
+- Point the domain's document root at `public/`.
+- Import `database/bearingcave.sql` with phpMyAdmin.
+- Create `.env`.
+- Run the key and admin commands in Terminal (or a one-off cron job).
 
 ## Important: this repository's GitHub Pages workflow
 

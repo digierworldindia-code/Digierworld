@@ -33,9 +33,8 @@ class DemoSeeder extends Seeder
     public function run(): void
     {
         if (ENVIRONMENT === 'production') {
-            CLI::error('DemoSeeder refuses to run in production.');
-
-            return;
+            // Throw (not return) so the CLI reports failure instead of "Seeded".
+            throw new \RuntimeException('DemoSeeder refuses to run in production (CI_ENVIRONMENT = production). Use a separate staging/demo database with CI_ENVIRONMENT = development.');
         }
         helper(['app']);
         if ($this->db->table('companies')->where('is_sample', 1)->countAllResults() > 0) {
