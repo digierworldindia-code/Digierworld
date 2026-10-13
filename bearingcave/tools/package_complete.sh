@@ -25,6 +25,19 @@ mkdir -p "$stage"
 
 cd "$stage/$name"
 COMPOSER_ALLOW_SUPERUSER=1 composer install --no-dev --prefer-dist --optimize-autoloader --no-interaction --no-progress
+# If a package had to be installed from source (e.g. the network blocks GitHub's
+# zipball API and Composer falls back to git clones), convert it to exactly what
+# the dist archive contains: `git archive` of the installed commit honours the
+# package's export-ignore rules and drops the .git history.
+for gitdir in $(find vendor -mindepth 3 -maxdepth 3 -type d -name .git); do
+    pkg="$(dirname "$gitdir")"
+    tmp="$(mktemp -d)"
+    git -C "$pkg" archive --format=tar HEAD | tar -x -C "$tmp"
+    rm -rf "$pkg" && mv "$tmp" "$pkg" && chmod 755 "$pkg"
+    echo "  dist-normalised $pkg"
+done
+COMPOSER_ALLOW_SUPERUSER=1 composer dump-autoload --no-dev --optimize --no-interaction
+if find vendor -name .git | grep -q .; then echo "vendor still contains .git directories" >&2; exit 1; fi
 COMPOSER_ALLOW_SUPERUSER=1 composer validate --no-check-publish
 COMPOSER_ALLOW_SUPERUSER=1 composer check-platform-reqs --no-dev
 
