@@ -85,7 +85,7 @@ php spark serve             # http://localhost:8080
 ## 8. Tests
 
 ```bash
-vendor/bin/phpunit                          # 22 tests; uses bearingcave_test, wipes it each run
+vendor/bin/phpunit                          # 31 tests; uses bearingcave_test, wipes it each run
 node tests/e2e/responsive.mjs               # needs server + DemoSeeder; screenshots in build/e2e/
 python3 tests/e2e/crawl.py                  # authenticated link crawl of every demo account
 ```

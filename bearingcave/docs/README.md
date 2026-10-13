@@ -2,6 +2,10 @@
 
 | Document | Purpose |
 |---|---|
+| [Workbook requirements mapping](EXCEL_REQUIREMENTS_MAPPING.md) | **Every row of the client's workbook**: implementation, status, test |
+| [Development progress](DEVELOPMENT_PROGRESS.md) | Audit result, gaps closed, files created/modified/preserved, remaining work |
+| [Feature matrix](FEATURE_MATRIX.md) | Who can use what (guest, buyers, suppliers, staff) |
+| [Database guide](DATABASE_GUIDE.md) | Migrations, safe upgrades, backups, sensitive columns |
 | [01 Requirements traceability](01_REQUIREMENTS_TRACEABILITY.md) | Requirements → module, data, screen, test; feature dependencies; source-availability note |
 | [02 Competitor research](02_COMPETITOR_RESEARCH.md) | Limited public-source comparison; adopt, improve, exclude |
 | [03 Architecture and workflows](03_ARCHITECTURE_AND_WORKFLOWS.md) | Stack, module map, design decisions, workflow diagrams |
@@ -13,5 +17,5 @@
 | [INSTALL](INSTALL.md) / [DEPLOYMENT](DEPLOYMENT.md) | Setup, first admin, demo data, production, cron, backups |
 | [Guides](guides/) | Admin, supplier, buyer |
 | [API](API.md) | REST API v1 and webhooks |
-| [Testing report](TESTING_REPORT.md) | Actual results of every test run |
+| [Testing report](TEST_REPORT.md) | Actual results of every test run |
 | [Checklist](CHECKLIST.md) | Completed and remaining work |

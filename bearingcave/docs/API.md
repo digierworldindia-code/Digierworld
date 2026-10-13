@@ -23,7 +23,7 @@ Query parameters (all optional):
 
 | Group | Parameters |
 |---|---|
-| Search and filters | `q`, `category` (slug), `brand` (slug), `condition`, `country` (ISO-2 stock location), `age` (`lt_6m`, `6_12m`, `gt_12m`), `verified` (`1`), `min_price`, `max_price`, `min_qty`, `in_stock` (`1`) |
+| Search and filters | `q`, `category` (slug), `brand` (slug), `condition`, `country` (ISO-2 stock location), `age` (`lt_6m`, `6_12m`, `gt_12m`), `verified` (`1`), `min_price`, `max_price`, `min_qty`, `in_stock` (`1`), `clearance` (`1`, clearance deals only) |
 | Dimensions | `id`, `od`, `w` (bore, outer diameter and width in mm) |
 | Vehicle fitment | `make`, `model`, `year` |
 | Other | `spec`, `sort` |
@@ -52,11 +52,16 @@ Field notes:
 - `match_type` is one of `part_number`, `oem`, `alternate`, `declared_cross_reference`, `verified_cross_reference`, `text` or `none`.
 - When the match came through a supplier-declared cross reference, `interchangeability_note` says the interchangeability is **not verified**.
 - `supplier.name` is the supplier's alias (for example "Supplier BC-S-…") unless the caller may see the real identity.
+- `clearance_pct` is the supplier's clearance markdown in percent, or `null`.
 - `price` is `null` when the caller may not see prices: guests, unless the setting allows it, and listings marked price on request.
 
 ### `GET /products/{uuid}`
 
 Returns the same fields plus `specifications[]`, `cross_references[]` (each with a `verified_interchange` boolean) and `fitments[]`. Returns 404 if the listing doesn't exist **or** the caller may not see it. The two cases are deliberately indistinguishable.
+
+### `GET /product/{uuid}/stock` (website endpoint, session-aware)
+
+Used by the product page for real-time stock: `{"available": 1180, "status": "published", "checked_at": "…"}`. It applies the same visibility rules as the page; restricted listings return 404. It is not part of `/api/v1`.
 
 ### `GET /categories`, `GET /brands`
 

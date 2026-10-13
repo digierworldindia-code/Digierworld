@@ -1,5 +1,7 @@
 # 01 — Requirements analysis & traceability matrix
 
+> **Update 2026-10-13:** the client's workbook has now been received and mapped row by row in [`EXCEL_REQUIREMENTS_MAPPING.md`](EXCEL_REQUIREMENTS_MAPPING.md), which takes precedence. This file is kept as the traceability of the original written brief. The "Sheet?" caveats below are resolved there (D-01 and D-02 closed).
+
 ## Source availability (read first)
 
 | Source | Status | Consequence |

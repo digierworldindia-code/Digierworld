@@ -4,13 +4,13 @@ No business rule was invented. Where the prompt left a decision open, the softwa
 
 | ID | Decision needed | Where configured | Current safe default | Effect until decided |
 |---|---|---|---|---|
-| D-01 | Provide the BearingCave Google Sheet (it was not accessible during the build) | — | Requirements taken from the written prompt | Spreadsheet-only requirements may be missing (see traceability doc) |
-| D-02 | Confirm the real 86 Supplier List column headings | Admin → Supplier master data (`supplier_master_fields.is_confirmed`) | 86 proposed fields, all unconfirmed | Template and import work; headings may differ from the sheet |
+| D-01 | ~~Provide the BearingCave workbook~~ **Resolved 2026-10-13**: workbook received as a PDF export | — | — | Mapped row by row in `EXCEL_REQUIREMENTS_MAPPING.md`. Remaining open points are D-30 to D-32 |
+| D-02 | ~~Confirm the 86 Supplier List headings~~ **Resolved 2026-10-13**: real headings taken from the workbook | Admin → Supplier master data | 86 sheet headings active and confirmed; earlier proposals retired (kept, inactive) | Optional: confirm the extra targets (e.g. "Land Line No." → company phone) |
 | D-03 | **Minimum charge for inspection fees** (prompt §31) | `inspection.in_house_min_fee` | `0` (no minimum) | Fee = 10 % of invoice value (`inspection.in_house_rate_pct`, approved per the prompt) |
 | D-04 | **Taxes on the ₹50,000 annual verification fee** (GST rate, place of supply, export of services) | `tax.subscription_rate_pct` (and `tax.inspection_rate_pct`, `tax.logistics_rate_pct`, `tax.proforma_rate_pct`) | 18 % GST on platform fees, 0 % on goods proformas | Invoices show tax as a separate line. **Needs a tax adviser's confirmation**; no GST e-invoicing integration exists |
 | D-05 | Membership fee itself (₹50,000) final approval | Admin → Membership plans → Verified Supplier | ₹50,000 / 12 months, `pending_approval` | Invoices are issued at this amount |
 | D-06 | **Logistics 10 % calculation base** (invoice value? freight cost? goods value excluding tax?) | `logistics.platform_fee_basis` (`manual_quote` / `goods_value` / `freight_cost`), `logistics.platform_fee_pct` = 10 | `manual_quote` | **No automatic 10 % charge.** Logistics managers quote manually; the UI shows "quoted by BearingCave" |
-| D-07 | **Shipping and consolidation privileges for verified buyers** | `logistics.consolidation_policy`; entitlement `consolidation_services` | Verified buyers may request consolidation; priced per shipment | Unverified buyers cannot choose consolidation |
+| D-07 | **Consolidation pricing for non-verified buyers** (workbook: verified YES; non-verified "NO, available at additional charges") | `logistics.consolidation_policy`; entitlement `consolidation_services` | All buyers can request consolidation; non-verified requests are flagged "additional charges apply"; every request is quoted manually | Decide the charge and whether verified buyers pay less |
 | D-08 | **Exact supplier contact disclosure conditions** | `supplier.contact_disclosure_policy`; supplier toggle `show_contact_public`; entitlement `public_contact` | Contact shown only for verified suppliers who opt in, only to signed-in buyers, never on confidential listings | As stated |
 | D-09 | **Buyer access to sensitive inventory** | `buyer.restricted_access_policy`; entitlement `restricted_inventory_access`; per-company grant by staff with `verification.approve` | Verified buyers granted individually | No buyer sees verified-buyer-only listings without an explicit grant |
 | D-10 | **Warranty and return terms** | `legal.warranty_terms`; CMS page drafts | Quality and warranty stay between buyer and supplier | Shown at checkout and on the raise-dispute page as provisional text |
@@ -27,12 +27,15 @@ No business rule was invented. Where the prompt left a decision open, the softwa
 | D-21 | Verification stages for suppliers and buyers | `verification.supplier_stages`, `verification.buyer_stages` | Supplier: 10 stages; buyer: 5 | Applied to new applications |
 | D-22 | Listing review policy (review all, or only unverified suppliers) | `catalog.review_policy` | `all` (every listing reviewed before publishing) | Procurement managers approve listings |
 | D-23 | Guests see prices? | `catalog.guest_can_see_prices` | Off | Guests see "Sign in for price" |
-| D-24 | What "direct enquiries" means for the free plan | entitlement `direct_enquiries` | On for both plans (TEST 2 requires enquiries to unverified suppliers) | Turning it off makes buyers use RFQs for that plan |
+| D-24 | Enquiry routing for unverified suppliers (workbook: direct enquiry = No for non-verified suppliers) | entitlement `direct_enquiries` (free plan **off**) | Buyer enquiries on those listings go to BearingCave (Admin → Product enquiries), which answers or passes them to the supplier | Confirm that BearingCave staff should mediate these enquiries |
 | D-25 | Brand colours, logo and final branding | `branding.primary_color`, `branding.accent_color` | Navy #0B1F3A, blue #1F5FBF (provisional) | Provisional styling |
 | D-26 | Legal pages (terms, privacy, refund, disclaimer) and cross-border trade and privacy review (GDPR, DPDP Act 2023, export controls) | Admin → CMS | Drafts marked pending | **Legal review required before launch**; compliance is not claimed |
 | D-27 | Search engine indexing go-live | `seo.indexing_enabled` | Off (`noindex` and robots disallow) | Site is not indexed |
 | D-28 | Blocked registration countries (sanctions or export policy) | `platform.blocked_countries` | Empty | All countries can register |
 | D-29 | Invoice payment terms | `billing.invoice_due_days` | 15 days | Shown on invoices |
+| D-30 | Client Features row 7 "BearingCave logistics: No (non-verified) / YES (verified)" | — | Read as a client-scoring factor (it sits among scoring rows 5–9); logistics stays available to all buyers | If non-verified buyers must not use BearingCave logistics, say so; this is a one-line policy change |
+| D-31 | Client score weights and services bonus (workbook gives no numbers) | `buyer.score_weights`, `buyer.services_bonus_per_use` | Engagement 40, transaction 40, services bonus 10, genuine-RFQ bonus 10; 25 points per service used | Shown to staff and verified buyers only |
+| D-32 | "Unlimited product listing visibility on the marketplace" (cells blank for both plans) | entitlement `max_active_products` | No listing limit on either plan | Set a limit per plan if wanted |
 
 ## How to approve
 

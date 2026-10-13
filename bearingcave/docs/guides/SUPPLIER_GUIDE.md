@@ -22,11 +22,20 @@ Cross references you enter are always shown to buyers as *supplier-declared, int
 
 ## 3. Enquiries, orders and services
 
-- **Product enquiries**: reply to buyer questions. Messages are relayed through BearingCave.
+- **Product enquiries**: reply to buyer questions. On the Verified plan, buyers' questions come to you directly. On the free plan they go to BearingCave first, which answers or passes them on to you; passed-on enquiries appear here.
 - **Orders**: confirm or cancel new orders. After payment is confirmed, ship by your chosen method and mark the order dispatched (stock leaves your lots first-in, first-out).
 - **Logistics**: platform-managed (quoted by BearingCave) or confidential. Supplier-direct shipping needs the Verified plan.
 - **Inspection**: see inspection requests on your orders and their results.
 - **Disputes**: respond with your evidence. Product quality and warranty remain your responsibility under the agreed terms.
+
+## 3a. Managing many listings and clearing aged stock
+
+On **Inventory**, tick listings (or the header box for the whole page), choose a **Bulk action** and click **Apply**:
+- **Submit / publish**, **Unpublish**, **Archive**. Each listing is checked separately. Any that cannot change, for example one with reserved stock, is reported by part number.
+- **Start clearance markdown**: enter a discount (1–90 %). Unit, lot and quantity-tier prices are reduced, and buyers see a *Clearance* badge and can filter for clearance deals. Running it again with a new percentage re-bases on the original price; discounts do not stack.
+- **End clearance**: restores the original prices exactly.
+
+Tip: filter by age *More than 12 months*, select all, and start a clearance. Editing a price by hand during a clearance makes the new price the regular price and ends the clearance for that listing.
 
 ## 4. Become a Verified Supplier
 
@@ -37,7 +46,9 @@ Cross references you enter are always shown to buyers as *supplier-declared, int
    - public profile and contact (both optional)
    - priority ranking and premium RFQ leads with bidding
    - per-piece pricing and country visibility
-   - **Bulk upload**, analytics and demand insights
+   - **Bulk upload**, analytics and demand insights (buyer searches and 12-month RFQ trends in your categories, for production and demand planning)
+   - direct enquiries from product pages
+   - optional branding: upload your logo under **Company profile** (shown only when your public profile is published)
    - a dedicated account manager
 5. You get renewal reminders 30 and 7 days before expiry. When the membership expires, premium features stop until you renew. Your listings stay, with free-plan limits.
 

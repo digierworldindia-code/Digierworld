@@ -11,7 +11,7 @@ Sign in at `/login`. Staff land on `/admin`. The left menu shows only the module
 | Inspection manager | Inspection | Quote third-party requests, assign the inspector, start the inspection, upload the report (result plus evidence), complete. |
 | Logistics manager | Logistics | Quote, accept, create the shipment (carrier, tracking number), add tracking events, mark delivered. |
 | Finance manager | Invoices, Payments | Match bank remittances to invoices and use **Record payment** with the UTR/reference. This activates subscriptions and moves orders to *paid*. |
-| Support executive | Disputes, Contact leads | Assign disputes to yourself, message the parties (shared or internal notes), resolve with a note, close. |
+| Support executive | Disputes, Product enquiries, Contact leads | Assign disputes to yourself, message the parties, resolve with a note, close. Answer enquiries routed to BearingCave (free-plan suppliers' listings) or **Pass to supplier**. A dispute shows whether BearingCave intervention applies (a paid inspection exists). |
 | Account manager | Suppliers (assigned) | Follow up with assigned verified suppliers. View their performance. |
 | Super admin | Dashboard, Settings, Staff | Everything above, plus users, staff roles, plans, settings, CMS, SEO and audit. |
 
@@ -23,6 +23,7 @@ Sign in at `/login`. Staff land on `/admin`. The left menu shows only the module
 4. **Management approval** (permission `verification.approve`) sets the company to *verified*. Suppliers are then invoiced for the Verified plan. The badge appears only once the invoice is paid.
 5. To suspend or reactivate a company, go to Companies → company. A reason is mandatory and the action is audited.
 6. For the Approved Vendor List, add category, brand or product approvals per supplier. The AVL feeds RFQ matching.
+6a. **Site audit**: rate the seven areas 1–5. The audit score is calculated from the ratings. Add corrective action requests and an approval recommendation.
 7. To give a buyer restricted inventory access, go to Companies → buyer → **Grant access** (needs `verification.approve`, held by Super Admin by default; **Revoke access** reverses it). The buyer must be verified first.
 
 ## Catalog and inventory
@@ -30,7 +31,7 @@ Sign in at `/login`. Staff land on `/admin`. The left menu shows only the module
 - Categories and brands are managed in the admin. Deactivating one hides it from new listings.
 - **Imports** let you upload a CSV or XLSX on behalf of a supplier. Choose the supplier, then follow the same map → preview → confirm steps the supplier would.
 - **Inventory movements** is a read-only ledger of every stock change.
-- **Supplier master data** is the 86-field directory. Download the template, import it, and confirm the field labels once the real spreadsheet headings are known.
+- **Supplier master data** follows the 86 columns of the client's *Suppiler list* sheet. Download the template, fill it in or upload the client's sheet as-is, check the automatic mapping, validate and import. Bank account numbers are encrypted and shown masked. Imported values are source data, not verification results.
 
 ## RFQs
 

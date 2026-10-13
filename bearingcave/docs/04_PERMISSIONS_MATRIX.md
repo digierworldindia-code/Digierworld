@@ -46,6 +46,7 @@ Access is decided in three layers. All three are configuration, not code:
 | `settings.manage` — Manage platform settings and business rules | ✔ |  |  |  |  |  |  |  |
 | `audit.view` — View audit logs | ✔ |  |  |  |  |  |  |  |
 | `leads.view` — View contact form leads | ✔ |  |  |  |  |  |  | ✔ |
+| `enquiries.manage` — Answer or forward product enquiries routed to BearingCave | ✔ |  | ✔ |  |  |  |  | ✔ |
 
 Staff accounts are created by a Super Admin (Admin → Staff & roles) or from the CLI (`php spark bearingcave:create-admin`). Public registration never creates staff.
 
@@ -57,12 +58,13 @@ Staff accounts are created by a Super Admin (Admin → Staff & roles) or from th
 | Verified-buyer-only listings | | | ✔ only after staff with `verification.approve` grant access (`restricted_inventory_access` plus a per-company flag) | | |
 | Submit RFQs (`rfq_submission`) | | ✔ (max 5 open, `max_open_rfqs`) | ✔ (unlimited) | | |
 | Advanced comparison | | | ✔ | | |
-| Consolidation services | | | ✔ | | |
+| Branding (logo), via `public_profile` | | | | | ✔ (optional) |
+| Consolidation services | | ✔ at additional charges | ✔ (privilege) | | |
 | Verified Buyer badge (`buyer_badge`) | | | ✔ | | |
 | Search and engagement analytics (`buyer_analytics`) | | | ✔ | | |
 | Cart, orders, inspection, logistics, disputes | | ✔ | ✔ | ✔ (as seller) | ✔ (as seller) |
 | List inventory, lot pricing, stock | | | | ✔ | ✔ |
-| Receive direct enquiries (`direct_enquiries`) | | | | ✔ | ✔ |
+| Receive direct enquiries (`direct_enquiries`) | | | | — routed via BearingCave (workbook) | ✔ |
 | Per-piece pricing | | | | | ✔ |
 | Verified Supplier badge, public profile, public contact | | | | | ✔ (each optional for the supplier) |
 | Priority ranking | | | | | ✔ (boost 50) |

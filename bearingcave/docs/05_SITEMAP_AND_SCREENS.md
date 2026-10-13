@@ -18,6 +18,7 @@ All routes are defined explicitly in `app/Config/Routes.php`; auto-routing is di
 | `/contact` | Contact form | Stored in `contact_leads`, rate-limited |
 | `/register`, `/register/buyer`, `/register/supplier` | Registration | Creates the company and its owner user |
 | `/login`, `/login/magic-link`, `/logout` | Shield auth | |
+| `/product/{uuid}/stock` | JSON stock for real-time refresh | Same visibility as the product page |
 | `/sitemap.xml`, `/robots.txt` | SEO | The sitemap lists only indexable public listings. Robots disallows everything while `seo.indexing_enabled=0` |
 
 ## Buyer workspace (`/buyer/...`)
@@ -26,13 +27,13 @@ Dashboard · Marketplace search · Saved inventory · Comparison · RFQs and quo
 
 ## Supplier workspace (`/supplier/...`)
 
-Dashboard (KPIs, stock ageing) · Analytics and performance 🔒 · Inventory list (filters, export) · Add/edit inventory (prices, tiers, lots, specifications, cross references, fitments, images, documents, countries) · Bulk upload 🔒 · Country visibility 🔒 · Product enquiries · RFQ leads and bidding 🔒 · My quotations 🔒 · Orders · Logistics · Inspection · Disputes · Company profile · Verification · Membership · Invoices and payments · Documents · Account manager 🔒 · Team · Notifications · Account settings.
+Dashboard (KPIs, stock ageing) · Analytics and performance 🔒 · Inventory list (filters incl. clearance, export, **bulk actions and clearance markdowns**) · Add/edit inventory (prices, tiers, lots, specifications, cross references, fitments, images, documents, countries) · Bulk upload 🔒 · Country visibility 🔒 · Product enquiries · RFQ leads and bidding 🔒 · My quotations 🔒 · Orders · Logistics · Inspection · Disputes · Company profile · Verification · Membership · Invoices and payments · Documents · Account manager 🔒 · Team · Notifications · Account settings.
 
 🔒 = depends on plan entitlements. If the plan lacks the feature, the menu item shows a lock and leads to Membership.
 
 ## Admin panel (`/admin/...`)
 
-Dashboard (KPIs) · Reports and analytics (15 reports, CSV/XLSX export) · Performance scores · Users · Buyers · Suppliers · Staff and roles · Verification queue (application with tabs for each module) · Approved Vendor List · Supplier master data (86-field directory, import) · Product review · Categories · Brands · Inventory movements · Imports (on behalf of suppliers) · RFQs and matching · Quotations / bids · Orders · Inspection · Logistics · Disputes · Invoices · Payments and escrow (gateway events) · Membership plans and entitlements · Subscriptions · CMS pages · SEO settings · Email outbox · Platform settings · Contact leads · Audit logs.
+Dashboard (KPIs) · Reports and analytics (15 reports, CSV/XLSX export) · Performance scores · Users · Buyers · Suppliers · Staff and roles · Verification queue (application with tabs for each module) · Approved Vendor List · Supplier master data (86-field directory, import) · Product review · Categories · Brands · Inventory movements · Imports (on behalf of suppliers) · RFQs and matching · Quotations / bids · Orders · Inspection · Logistics · Disputes · Invoices · Payments and escrow (gateway events) · Membership plans and entitlements · Subscriptions · CMS pages · SEO settings · Email outbox · Platform settings · Product enquiries (routed to BearingCave: answer / pass to supplier / close) · Contact leads · Audit logs.
 
 Each menu item appears only when the staff member holds the matching permission (see `04_PERMISSIONS_MATRIX.md`).
 

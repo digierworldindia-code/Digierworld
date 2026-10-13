@@ -1,6 +1,6 @@
 # Completed and pending checklist
 
-Status as of this delivery. "Done" means the feature is implemented, wired into the UI and exercised by an automated test, the E2E script or the authenticated crawl (see `TESTING_REPORT.md`).
+Status as of this delivery. "Done" means the feature is implemented, wired into the UI and exercised by an automated test, the E2E script or the authenticated crawl (see `TEST_REPORT.md`).
 
 ## Phases
 
@@ -14,7 +14,8 @@ Status as of this delivery. "Done" means the feature is implemented, wired into 
 | 6 Procurement | Done | RFQ, matching, distribution, quotations and revisions, comparison, cart, orders |
 | 7 Additional services | Done, providers pending | Inspection, logistics, disputes, payment abstraction. Escrow provider not selected |
 | 8 Enterprise admin | Done | 32 admin modules, reports with CSV/XLSX export, settings, CMS, SEO, outbox, audit |
-| 9 Testing and deployment | Done | 22 PHPUnit tests, E2E (110 checks), crawl (451 pages), install and deployment docs |
+| 9 Testing and deployment | Done | 31 PHPUnit tests, E2E (133 checks), authenticated crawl, install and deployment docs |
+| 10 Workbook audit and gap closure (2026-10-13) | Done | 13 gaps closed; see `DEVELOPMENT_PROGRESS.md` |
 
 ## Deliverables (prompt §34)
 
@@ -28,7 +29,7 @@ Status as of this delivery. "Done" means the feature is implemented, wired into 
 | 14 | Deployment | `DEPLOYMENT.md` |
 | 15–17 | Admin, supplier and buyer guides | `guides/` |
 | 18 | API documentation | `API.md` |
-| 19 | Testing report | `TESTING_REPORT.md` |
+| 19 | Testing report | `TEST_REPORT.md` |
 | 20 | Traceability matrix | `01_REQUIREMENTS_TRACEABILITY.md` |
 | 21 | Pending integrations | `07_PENDING_INTEGRATIONS.md` |
 | 22 | Pending business decisions | `06_CLIENT_DECISIONS_REGISTER.md` |
@@ -38,7 +39,8 @@ Status as of this delivery. "Done" means the feature is implemented, wired into 
 
 ### Blocked on the client
 
-- [ ] Share the Google Sheet (`.xlsx`). Reconcile the traceability matrix and confirm the 86 Supplier Master headings (D-01, D-02).
+- [x] ~~Share the workbook; reconcile requirements; confirm the 86 Supplier Master headings (D-01, D-02).~~ Done 2026-10-13.
+- [ ] Confirm the workbook interpretations D-24 and D-30 to D-32 and the client-score weights.
 - [ ] Decide D-03 to D-29 in the decisions register, at minimum: tax on fees, logistics base, escrow partner, refund/warranty terms, legal pages.
 - [ ] Final branding: logo and colours.
 

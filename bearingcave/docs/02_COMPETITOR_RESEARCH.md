@@ -1,5 +1,23 @@
 # 02 — Competitor research (limited)
 
+## 0. The client's assessment (workbook tab "comparative websites", supplied 2026-10-13)
+
+Reproduced as given by the client. This is the authoritative view; §1 onwards is supplementary third-party research.
+
+| Website | Country | Description | Products | Year | Employees | Type | Client remark |
+|---|---|---|---|---|---|---|---|
+| surpluss.co | — | Inventory liquidation platform | Not focused on autoparts | — | — | Corporate website | Similar segment; well-structured website with good content and an attractive layout |
+| forthclear.io | USA | Inventory liquidation platform, bids format | Not focused on autoparts | 2022 | 11–50 | Corporate website | Similar segment; well-structured website with good content and an attractive layout |
+| surplusmarket.com *(highlighted in the sheet)* | USA | Inventory liquidation platform | Wide range of products including auto parts; comprehensive portfolio | 2021 | 11–50 | Semi e-commerce website | **Very good website** |
+| excess2sell.com | India | Inventory liquidation platform, bids format | Wide range, not autoparts | 2016 | — | Semi e-commerce website | Client dislikes the design, but notes both a mobile app and web access, a good approach for brand presence and engagement |
+| surplusstockworldwide.com | UK | Inventory liquidation platform | Only autoparts | 2019 | 11–50 | Corporate website | Similar segment, but the website is only one page |
+| autoparts24.eu | Denmark | Liquidation platform for second-hand parts | Only autoparts | 2015 | 11–50 | E-commerce website | Very well developed, extensive catalog, but mainly used parts, which differs from BearingCave's model |
+
+What this means for BearingCave:
+- The client's preferred reference is surplusmarket.com: a semi e-commerce layout with a comprehensive catalog. BearingCave follows that pattern, with marketplace search and filters, product cards, cart and RFQ.
+- Two references use a **bids format**. BearingCave uses sealed RFQ quotations with revisions, which is confidential bidding as the workbook requires ("bids … remain confidential").
+- A **mobile app** (Excess2Sell) is noted positively. It is out of scope for this stack. The site is fully responsive (TEST 12), and the REST API (`docs/API.md`) is what an app would build on later.
+
 ## What could and could not be inspected
 
 All six reference sites failed DNS resolution from the build environment (`getaddrinfo ENOTFOUND` for surpluss.co, forthclear.io, surplusmarket.com, excess2sell.com, surplusstockworldwide.com, autoparts24.eu). **No competitor page, UI, registration flow or private feature was inspected.** The notes below come only from public third-party sources found by web search. They may be out of date, and nothing here describes any competitor's backend.

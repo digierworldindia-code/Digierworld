@@ -37,7 +37,7 @@ flowchart LR
 | Identity & companies | `CompanyService`, `CompanyContext`, `EntitlementService` | `Web\Register`, `Account\Profile`, `Account\Team`, `Admin\Users`, `Admin\Staff`, `Admin\Companies` |
 | Verification (12 modules) | `VerificationService`, `RiskService`, `DocumentService`, `SupplierMasterService` | `Account\Verification`, `Account\Documents`, `Admin\Verifications`, `Admin\Avl`, `Admin\SupplierMaster` |
 | Membership & billing | `MembershipService`, `BillingService`, `Libraries\Payments\*` | `Supplier\Membership`, `Account\Billing`, `Admin\Memberships`, `Admin\Payments`, `Api\Webhooks` |
-| Catalog & search | `ProductService`, `SearchService`, `VisibilityService`, `RankingService` | `Web\Catalog`, `Web\Product`, `Web\Compare`, `Web\Suppliers`, `Supplier\Products`, `Admin\Products`, `Admin\Categories`, `Admin\Brands` |
+| Catalog & search | `ProductService` (incl. bulk actions, clearance), `SearchService`, `VisibilityService`, `RankingService` | `Web\Catalog`, `Web\Product` (incl. enquiries, live stock), `Web\Compare`, `Web\Suppliers`, `Supplier\Products`, `Supplier\Enquiries`, `Admin\Products`, `Admin\Enquiries`, `Admin\Categories`, `Admin\Brands` |
 | Inventory | `InventoryService`, `ImportService` | `Supplier\Products` (lots), `Supplier\Imports`, `Admin\Inventory`, `Admin\Imports` |
 | Procurement | `RfqService`, `MatchingService`, `QuotationService`, `CartService`, `OrderService` | `Buyer\Rfqs`, `Buyer\Cart`, `Buyer\Orders`, `Supplier\Rfqs`, `Supplier\Orders`, `Admin\Rfqs`, `Admin\Orders` |
 | Services | `InspectionService`, `LogisticsService`, `DisputeService` | `Account\Inspections`, `Account\Logistics`, `Account\Disputes`, matching `Admin\*` |
@@ -121,6 +121,10 @@ Request (mode: supplier direct / platform managed / confidential / consolidation
 
 Upload (CSV/XLSX, at most `imports.max_rows` rows) → automatic column mapping (editable) → validation per row (required fields, category/brand lookup, condition, dates, numbers, countries, duplicate SKUs in the file and in the database) → preview with errors → confirm → products created with an opening lot and movement → optionally submitted for review.
 
+### Enquiries (workbook: direct enquiry only for verified suppliers)
+
+Buyer asks on a product page. If the supplier's plan has `direct_enquiries`, the enquiry goes straight to the supplier. Otherwise it goes to BearingCave (Admin → Product enquiries), where staff answer the buyer, or **pass it to the supplier** (the supplier then sees and answers it), or close it.
+
 ### Disputes
 
-Raised against an order (category, description, documents) → the other party responds → staff assign, investigate and add internal or shared messages → resolution note → closed. Every step is recorded in `dispute_messages` and `audit_logs`.
+Raised against an order (category, description, documents) → the other party responds → staff assign, investigate and add internal or shared messages → resolution note → closed. Every step is recorded in `dispute_messages` and `audit_logs`. When the dispute is created, `bc_intervention_eligible` is set if the order has an accepted or completed BearingCave inspection (workbook rule). The dispute page lists the order's inspection reports and the supplier's product documents that the viewer may open.
