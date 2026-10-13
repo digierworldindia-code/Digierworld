@@ -58,6 +58,10 @@ gunzip -c backup.sql.gz | mysql -u USER -p bearingcave
 
 ## Fresh installation
 
+**Option A: SQL file (shared hosting / phpMyAdmin).** Import `database/bearingcave.sql` into an **empty** utf8mb4 database. It contains the full schema (81 tables, 146 foreign keys) and the reference/configuration data, with no users, companies or secrets. Then run `php spark bearingcave:create-admin you@company.com`. The `migrations` table is included, so future upgrades with `php spark migrate --all` apply only new migrations. The file drops and recreates tables: **never import it over a database with real records.** Regenerate it after schema changes from a fresh migrate + `DatabaseSeeder` with `mysqldump --no-tablespaces --skip-dump-date`.
+
+**Option B: migrations (recommended when you have shell access):**
+
 ```bash
 php spark migrate --all
 php spark db:seed DatabaseSeeder          # reference data, 63 settings, plans, categories, CMS drafts, 86 supplier-master fields

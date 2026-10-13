@@ -40,6 +40,9 @@ Never commit `.env`.
 
 ## 4. Schema and reference data
 
+Without shell access, import `database/bearingcave.sql` into the empty database instead (phpMyAdmin → Import), then continue with step 5.
+
+
 ```bash
 php spark migrate --all     # runs Shield's and BearingCave's migrations
 php spark db:seed DatabaseSeeder
