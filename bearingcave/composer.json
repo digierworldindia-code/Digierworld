@@ -1,16 +1,19 @@
 {
-    "name": "codeigniter4/appstarter",
-    "description": "CodeIgniter4 starter app",
-    "license": "MIT",
+    "name": "bearingcave/bearingcave",
+    "description": "BearingCave: global B2B automotive surplus inventory marketplace (CodeIgniter 4, MySQL 8, Bootstrap 5.3)",
+    "license": "proprietary",
     "type": "project",
-    "homepage": "https://codeigniter.com",
-    "support": {
-        "forum": "https://forum.codeigniter.com/",
-        "source": "https://github.com/codeigniter4/CodeIgniter4",
-        "slack": "https://codeigniterchat.slack.com"
-    },
+    "homepage": "https://www.bearingcave.com",
     "require": {
         "php": "^8.2",
+        "ext-fileinfo": "*",
+        "ext-gd": "*",
+        "ext-intl": "*",
+        "ext-json": "*",
+        "ext-mbstring": "*",
+        "ext-mysqli": "*",
+        "ext-openssl": "*",
+        "ext-zip": "*",
         "codeigniter4/framework": "^4.7",
         "codeigniter4/shield": "^1.4",
         "phpoffice/phpspreadsheet": "^5.10"
