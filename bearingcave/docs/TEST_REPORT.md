@@ -1,10 +1,34 @@
-# Testing report
+# Test report
 
 Every result below comes from runs actually executed in the build environment on 2026-10-09/10:
 - Ubuntu container, PHP 8.3.6, MySQL 8.0, Chromium (Playwright 1.56).
 - Commands are listed so the results can be reproduced.
 
-## Summary
+## Round 2: workbook gap closure (2026-10-13)
+
+All runs below were executed after the last code change of this round.
+
+| Suite | Result |
+|---|---|
+| PHPUnit (`vendor/bin/phpunit`) | **31 tests, 382 assertions, 0 failures, 0 errors** (22 earlier tests unchanged except T02 and T07, which were updated to the workbook's enquiry rule; 9 new) |
+| Browser E2E (`node tests/e2e/responsive.mjs`) | **133 of 133 checks passed**: 42 screens × 3 widths (375, 768, 1366 px), 4 mobile menus, real CSV import, **real logo upload**, **bulk clearance markdown and restore through the UI** |
+| Authenticated crawl (`python3 tests/e2e/crawl.py`) | **460 of 460 pages OK** for guest plus 14 demo accounts (8 staff roles) |
+| Migration reversibility (dev database) | 000010/000011 rolled back (columns removed, entitlement restored) and re-applied; sample data unchanged (4 companies, products kept) |
+
+| Workbook requirement | Test | Expected | Actual | Result | Fix during testing |
+|---|---|---|---|---|---|
+| Supplier list, 86 columns | `SupplierMasterSheetImportTest` | All 86 headings auto-map; all 86 values kept; native fields filled; bank account encrypted, masked, never plain in import rows | As expected | Pass | `fieldExists()` cache made the alignment migration skip deactivation; switched to a live schema check |
+| Direct enquiry: No for unverified | T02, T07 | Free-plan enquiry routed to BearingCave; supplier sees it only after it is passed on; enabling the entitlement makes enquiries direct | As expected | Pass | — |
+| Liquidation and bulk tools | `InventoryToolsTest`, E2E | Markdown of 20 % then 50 % re-bases on the original price; tiers marked down; end restores prices exactly; another company's listing in the selection is refused and logged; per-item failure reporting | As expected | Pass | My test's expected audit count (4) was wrong; the code logs 3 events, which is correct |
+| Real-time stock | `InventoryToolsTest` | JSON stock respects visibility (404 for restricted listings) | As expected | Pass | — |
+| Inspection before purchase confirmation | `CheckoutServiceOptionsTest` | Request per order, 10 % of 1,000 = 100, order still awaiting supplier confirmation | As expected | Pass | — |
+| Consolidation, warranty text | `CheckoutServiceOptionsTest` | Non-verified flagged "additional charges", verified flagged as privilege, suppliers refused; tier-specific warranty text | As expected | Pass | — |
+| Supplier compliance and client scores | `WorkbookScoringDisputesBrandingTest` | Compliance 50 (1 of 2 valid certificates); services bonus 50; overall per weights | As expected | Pass | — |
+| Dispute intervention | same | Not eligible without inspection; eligible after an accepted inspection; shown to staff | As expected | Pass | — |
+| RFQ trends, branding | same | Aggregated trend; part requested by a single buyer hidden; logo refused on the free plan | As expected | Pass | SQL alias `lines` is reserved in MySQL 8; renamed |
+| Site audit outputs, document types | `SiteAuditOutputsTest` | Score derived (80) and typed value ignored; CAR and recommendation stored; MSME, IEC, NDA and test report types offered | As expected | Pass | — |
+
+## Round 1 summary (2026-10-09/10)
 
 | Suite | Command | Result |
 |---|---|---|
