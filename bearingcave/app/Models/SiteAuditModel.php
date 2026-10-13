@@ -19,6 +19,9 @@ class SiteAuditModel extends Model
     protected $createdField   = 'created_at';
     protected $updatedField   = 'updated_at';
     protected $allowedFields  = [
+        'audit_score',
+        'corrective_actions',
+        'recommendation',
         'company_id',
         'scheduled_on',
         'conducted_on',

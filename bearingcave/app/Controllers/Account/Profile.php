@@ -69,4 +69,44 @@ class Profile extends AreaController
 
         return redirect()->to(site_url($c['company_type'] . '/company'))->with('success', 'Company profile saved.');
     }
+
+    /**
+     * Workbook supplier feature "Branding & Marking": Verified Supplier — YES
+     * (optional). Logo shown only where the company's public profile is shown.
+     */
+    public function logo()
+    {
+        $c = $this->company();
+        if (! entitled('public_profile', $c)) {
+            return redirect()->back()->with('error', 'Branding is part of the Verified Supplier plan.');
+        }
+        if ($this->request->getPost('remove') === '1') {
+            $this->deleteLogo($c);
+            model(CompanyModel::class)->update($c['id'], ['logo_path' => null]);
+
+            return redirect()->back()->with('success', 'Logo removed.');
+        }
+        $file = $this->request->getFile('logo');
+        if (! $file || ! $file->isValid() || ! in_array($file->getMimeType(), ['image/jpeg', 'image/png', 'image/webp'], true) || $file->getSize() > 2 * 1024 * 1024) {
+            return redirect()->back()->with('error', 'Upload a JPG, PNG or WebP logo up to 2 MB.');
+        }
+        $dir = FCPATH . 'uploads/logos';
+        if (! is_dir($dir)) {
+            mkdir($dir, 0755, true);
+        }
+        $name = $c['uuid'] . '-' . bin2hex(random_bytes(4)) . '.png';
+        service('image')->withFile($file->getTempName())->resize(400, 400, true, 'auto')->convert(IMAGETYPE_PNG)->save($dir . '/' . $name);
+        $this->deleteLogo($c);
+        model(CompanyModel::class)->update($c['id'], ['logo_path' => 'uploads/logos/' . $name]);
+        service('audit')->log('company.logo_updated', ['entity_type' => 'company', 'entity_id' => (int) $c['id'], 'company_id' => (int) $c['id']]);
+
+        return redirect()->back()->with('success', 'Logo updated. It appears on your public profile and listings when your profile is published.');
+    }
+
+    private function deleteLogo(array $c): void
+    {
+        if (! empty($c['logo_path']) && str_starts_with($c['logo_path'], 'uploads/logos/') && is_file(FCPATH . $c['logo_path'])) {
+            unlink(FCPATH . $c['logo_path']);
+        }
+    }
 }

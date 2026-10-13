@@ -133,3 +133,5 @@ _modules/*
 !/public/uploads/products/.gitkeep
 /build/
 /node_modules
+/writable/backups/*
+/public/uploads/logos/*

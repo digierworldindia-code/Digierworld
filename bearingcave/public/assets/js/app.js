@@ -85,11 +85,12 @@
     });
   });
 
-  // Show/hide dependent fields: <select data-toggle-target="#id" data-toggle-hide-value="all">
+  // Show/hide dependent fields: <select data-toggle-target="#id" data-toggle-hide-value="all">,
+  // or <input type="checkbox" data-toggle-target="#id"> (shown while checked)
   $$('[data-toggle-target]').forEach((sel) => {
     const target = $(sel.dataset.toggleTarget);
     const hideVal = sel.dataset.toggleHideValue;
-    const sync = () => { if (target) target.classList.toggle('d-none', sel.value === hideVal); };
+    const sync = () => { if (target) target.classList.toggle('d-none', sel.type === 'checkbox' ? !sel.checked : sel.value === hideVal); };
     sel.addEventListener('change', sync); sync();
   });
 
@@ -121,6 +122,40 @@
       $$('[data-gallery-thumb]', g).forEach((b) => b.classList.remove('active'));
       btn.classList.add('active');
     }));
+  });
+
+  // Bulk selection on inventory lists: select-all + live count; refuse empty submit.
+  $$('[data-bulk]').forEach((form) => {
+    const items = () => $$('[data-bulk-item][form="' + form.id + '"]');
+    const count = $('[data-bulk-count]', form);
+    const all = $('[data-bulk-all]');
+    const update = () => { if (count) count.textContent = items().filter((c) => c.checked).length; };
+    if (all) all.addEventListener('change', () => { items().forEach((c) => { c.checked = all.checked; }); update(); });
+    items().forEach((c) => c.addEventListener('change', update));
+    form.addEventListener('submit', (e) => {
+      if (!items().some((c) => c.checked)) { e.preventDefault(); e.stopImmediatePropagation(); window.alert('Select at least one listing first.'); }
+    }, true);
+    update();
+  });
+
+  // Real-time stock on product pages: refresh every 30 s while the tab is visible.
+  $$('[data-stock-live]').forEach((el) => {
+    const note = $('[data-stock-updated]');
+    const refresh = () => {
+      if (document.hidden) return;
+      fetch(el.dataset.stockLive, { headers: { Accept: 'application/json' }, credentials: 'same-origin' })
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d) => {
+          if (!d) return;
+          el.textContent = Number(d.available).toLocaleString() + ' ' + (el.dataset.unit || '');
+          el.classList.toggle('text-success', d.available > 0);
+          el.classList.toggle('text-danger', d.available <= 0);
+          if (note) note.textContent = '· live';
+        })
+        .catch(() => {});
+    };
+    setInterval(refresh, 30000);
+    document.addEventListener('visibilitychange', refresh);
   });
 
   // Mobile sidebar

@@ -40,6 +40,20 @@ class Analytics extends BaseController
                 WHERE s.query IS NOT NULL AND s.created_at >= DATE_SUB(NOW(), INTERVAL 90 DAY)
                 AND (s.query IN (SELECT part_number FROM products WHERE company_id = ?) OR EXISTS (SELECT 1 FROM products p WHERE p.company_id = ? AND (p.part_number_norm LIKE CONCAT(REPLACE(UPPER(s.query), '-', ''), '%') OR p.name LIKE CONCAT('%', s.query, '%'))))
                 GROUP BY s.query ORDER BY searches DESC LIMIT 15", [$cid, $cid])->getResultArray();
+            // Workbook: "Future production and demand planning insights based on platform RFQ trends".
+            // RFQ lines in the supplier's categories/brands, aggregated; individual parts only
+            // when requested by at least two different buyers (no buyer can be singled out).
+            $scope = "(ri.category_id IN (SELECT DISTINCT category_id FROM products WHERE company_id = {$cid} AND deleted_at IS NULL)
+                OR ri.brand_id IN (SELECT DISTINCT brand_id FROM products WHERE company_id = {$cid} AND brand_id IS NOT NULL AND deleted_at IS NULL)
+                OR ri.part_number_norm IN (SELECT part_number_norm FROM products WHERE company_id = {$cid} AND deleted_at IS NULL))";
+            $data['rfqTrend'] = $db->query("SELECT DATE_FORMAT(r.created_at, '%Y-%m') m, COUNT(DISTINCT r.id) rfqs, COUNT(*) line_count, SUM(ri.quantity) qty
+                FROM rfq_items ri JOIN rfqs r ON r.id = ri.rfq_id
+                WHERE r.status NOT IN ('draft','cancelled') AND r.created_at >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH) AND {$scope}
+                GROUP BY m ORDER BY m")->getResultArray();
+            $data['rfqTop'] = $db->query("SELECT COALESCE(ri.part_number, ri.description) part, SUM(ri.quantity) qty, COUNT(DISTINCT r.id) rfqs
+                FROM rfq_items ri JOIN rfqs r ON r.id = ri.rfq_id
+                WHERE r.status NOT IN ('draft','cancelled') AND r.created_at >= DATE_SUB(CURDATE(), INTERVAL 180 DAY) AND {$scope}
+                GROUP BY part HAVING COUNT(DISTINCT r.buyer_company_id) >= 2 ORDER BY rfqs DESC, qty DESC LIMIT 10")->getResultArray();
             $data['unmet'] = $db->query("SELECT s.query, COUNT(*) searches FROM search_logs s WHERE s.results_count = 0 AND s.query IS NOT NULL AND s.created_at >= DATE_SUB(NOW(), INTERVAL 90 DAY) GROUP BY s.query ORDER BY searches DESC LIMIT 10")->getResultArray();
         }
 

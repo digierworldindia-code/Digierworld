@@ -64,15 +64,20 @@ final class T07EntitlementChangeTest extends BCTestCase
         $fplan    = model(MembershipPlanModel::class)->where('code', 'supplier_free')->first();
         $enquiries = static fn (): int => db_connect()->table('product_enquiries')->where('product_id', $product['id'])->countAllResults();
 
-        $this->postAs($buyer['user'], 'product/' . $product['id'] . '/enquire', ['message' => 'Is the batch date 2024 or later?'])->assertRedirect();
-        $this->assertSame(1, $enquiries());
+        $routing = static fn (): array => array_column(db_connect()->table('product_enquiries')->where('product_id', $product['id'])->orderBy('id')->get()->getResultArray(), 'routing');
 
-        $this->postPlan($admin, $fplan, ['direct_enquiries' => '0']);
+        // Workbook default: no direct enquiries for unverified suppliers → routed via BearingCave.
+        $this->getAs($buyer['user'], 'product/' . $product['slug'])->assertSee('Ask BearingCave about this listing');
+        $this->postAs($buyer['user'], 'product/' . $product['id'] . '/enquire', ['message' => 'Is the batch date 2024 or later?'])->assertRedirect();
+        $this->assertSame(['platform'], $routing());
+
+        // Admin enables the entitlement on the free plan → enquiries go straight to the supplier.
+        $this->postPlan($admin, $fplan, ['direct_enquiries' => '1']);
         $this->flush();
-        $this->getAs($buyer['user'], 'product/' . $product['slug'])->assertSee('receives requests through BearingCave RFQs only');
+        $this->getAs($buyer['user'], 'product/' . $product['slug'])->assertSee('Ask the supplier');
         $this->postAs($buyer['user'], 'product/' . $product['id'] . '/enquire', ['message' => 'Second question about packaging?'])->assertRedirect();
-        $this->assertSame(1, $enquiries(), 'Enquiry must be refused when direct_enquiries is disabled');
-        $this->assertStringContainsString('does not take direct enquiries', (string) $this->flashError());
+        $this->assertSame(['platform', 'direct'], $routing());
+        $this->assertSame(2, $enquiries());
 
         // Verified buyer: badge and search analytics follow the plan.
         $vb    = $this->verifyCompany($buyer['company']);

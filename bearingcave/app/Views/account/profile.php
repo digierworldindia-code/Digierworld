@@ -2,6 +2,19 @@
 <?= $this->section('content') ?>
 <?php $c = $company; $sup = $c['company_type'] === 'supplier'; $locked = $c['verification_status'] === 'verified'; ?>
 <?= view('components/page_header', ['title' => 'Company profile', 'subtitle' => 'Keep your company details accurate — they are used for verification, invoices and (if you opt in) your public profile.']) ?>
+<?php if ($sup): ?>
+<div class="bc-card mb-3"><div class="bc-card-body d-flex flex-wrap align-items-center gap-3">
+    <?php if ($c['logo_path']): ?><img src="<?= base_url($c['logo_path']) ?>" alt="Company logo" class="rounded border bg-white" style="width:64px;height:64px;object-fit:contain"><?php else: ?><span class="rounded border bg-light d-inline-flex align-items-center justify-content-center text-muted" style="width:64px;height:64px"><i class="bi bi-image" aria-hidden="true"></i></span><?php endif ?>
+    <div class="flex-grow-1"><div class="fw-semibold">Branding</div><div class="small text-muted"><?= $canPublic ? 'Optional logo for your public profile and listings (shown only when your profile is published).' : 'Branding &amp; marking is a Verified Supplier feature.' ?></div></div>
+    <?php if ($canPublic): ?>
+    <form method="post" action="<?= site_url($area . '/company/logo') ?>" enctype="multipart/form-data" class="d-flex flex-wrap gap-2 align-items-center"><?= csrf_field() ?>
+        <label class="visually-hidden" for="logoFile">Logo file</label><input id="logoFile" class="form-control form-control-sm" type="file" name="logo" accept="image/png,image/jpeg,image/webp" required style="max-width:15rem">
+        <button class="btn btn-sm btn-primary" type="submit">Upload logo</button>
+        <?php if ($c['logo_path']): ?><button class="btn btn-sm btn-light" type="submit" name="remove" value="1" formnovalidate data-confirm="Remove the logo?">Remove</button><?php endif ?>
+    </form>
+    <?php endif ?>
+</div></div>
+<?php endif ?>
 <form method="post" action="<?= site_url($area . '/company') ?>" novalidate>
     <?= csrf_field() ?>
     <div class="row g-4">

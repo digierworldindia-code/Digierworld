@@ -19,6 +19,10 @@ class ProductModel extends Model
     protected $createdField   = 'created_at';
     protected $updatedField   = 'updated_at';
     protected $allowedFields  = [
+        'clearance_pct',
+        'clearance_started_at',
+        'pre_clearance_unit_price',
+        'pre_clearance_lot_price',
         'uuid',
         'company_id',
         'category_id',

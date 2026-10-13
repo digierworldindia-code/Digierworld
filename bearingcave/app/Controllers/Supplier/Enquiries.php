@@ -13,7 +13,7 @@ class Enquiries extends BaseController
     {
         $rows = db_connect()->table('product_enquiries e')->select('e.*, p.name, p.part_number, p.slug, c.country_code AS buyer_country, c.verification_status AS buyer_verification')
             ->join('products p', 'p.id = e.product_id')->join('companies c', 'c.id = e.buyer_company_id')
-            ->where('p.company_id', $this->company()['id'])->orderBy('e.status = \'open\'', 'DESC', false)->orderBy('e.id', 'DESC')->limit(200)->get()->getResultArray();
+            ->where('p.company_id', $this->company()['id'])->where("(e.routing = 'direct' OR e.forwarded_at IS NOT NULL)", null, false)->orderBy('e.status = \'open\'', 'DESC', false)->orderBy('e.id', 'DESC')->limit(200)->get()->getResultArray();
 
         return view('supplier/enquiries', ['title' => 'Product enquiries', 'area' => 'supplier', 'rows' => $rows]);
     }
@@ -21,7 +21,7 @@ class Enquiries extends BaseController
     public function respond(int $id)
     {
         $e = db_connect()->table('product_enquiries e')->select('e.*')->join('products p', 'p.id = e.product_id')
-            ->where('e.id', $id)->where('p.company_id', $this->company()['id'])->get()->getRowArray();
+            ->where('e.id', $id)->where('p.company_id', $this->company()['id'])->where("(e.routing = 'direct' OR e.forwarded_at IS NOT NULL)", null, false)->get()->getRowArray();
         if (! $e) {
             service('audit')->security('access.denied', "Supplier tried to answer enquiry #{$id}");
             $this->notFound();

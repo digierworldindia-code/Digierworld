@@ -83,6 +83,35 @@ class Cart extends BaseController
             'escrow' => service('billing')->escrowAvailable(), 'refundPolicy' => policy('billing.refund_policy'), 'warranty' => policy('legal.warranty_terms')]);
     }
 
+    /**
+     * Workbook: "Option to request inspection services at an additional cost
+     * prior to purchase confirmation" — one request per supplier order.
+     *
+     * @return array{0:list<string>,1:list<string>} request numbers, failures
+     */
+    private function requestInspections(array $orders): array
+    {
+        $created = [];
+        $failed  = [];
+        foreach ($orders as $o) {
+            $country = db_connect()->table('order_items oi')->select('p.warehouse_country')->join('products p', 'p.id = oi.product_id')
+                ->where('oi.order_id', $o['id'])->get()->getRow()->warehouse_country ?? $this->company()['country_code'];
+
+            try {
+                $req = service('inspections')->create($this->company(), $this->userId(), [
+                    'inspection_type' => (string) $this->request->getPost('inspection_type'), 'scope' => (array) $this->request->getPost('inspection_scope'),
+                    'order_id' => $o['id'], 'location_country' => $country, 'notes' => 'Requested at checkout, before purchase confirmation.',
+                ]);
+                model(\App\Models\InspectionRequestModel::class)->update($req['id'], ['requested_at_checkout' => 1]);
+                $created[] = $req['request_number'];
+            } catch (\App\Exceptions\BusinessRuleException $e) {
+                $failed[] = $o['order_number'] . ' (' . $e->getMessage() . ')';
+            }
+        }
+
+        return [$created, $failed];
+    }
+
     public function placeOrder()
     {
         if ($r = $this->invalid(['delivery_country' => 'required|exact_length[2]', 'delivery_address' => 'required|max_length[1000]', 'logistics_mode' => 'required|in_list[platform_managed,confidential,buyer_arranged,supplier_direct]', 'accept_terms' => 'required', 'buyer_po_reference' => 'permit_empty|max_length[80]', 'incoterm' => 'permit_empty|max_length[20]'])) {
@@ -94,9 +123,18 @@ class Cart extends BaseController
         }, 'Order placed.');
 
         if ($orders) {
-            $nums = implode(', ', array_column($orders, 'order_number'));
+            $nums     = implode(', ', array_column($orders, 'order_number'));
+            $redirect = redirect()->to(site_url(count($orders) === 1 ? 'buyer/orders/' . $orders[0]['id'] : 'buyer/orders'));
+            $note     = '';
+            if ($this->request->getPost('request_inspection') === '1') {
+                [$created, $failed] = $this->requestInspections($orders);
+                $note = $created ? ' Inspection requested: ' . implode(', ', $created) . '.' : '';
+                if ($failed) {
+                    $redirect->with('error', 'Inspection could not be requested for ' . implode('; ', $failed) . '. You can request it from the order page.');
+                }
+            }
 
-            return redirect()->to(site_url(count($orders) === 1 ? 'buyer/orders/' . $orders[0]['id'] : 'buyer/orders'))->with('success', "Order(s) {$nums} placed. Stock has been reserved; each supplier must confirm before a proforma invoice is issued.");
+            return $redirect->with('success', "Order(s) {$nums} placed. Stock has been reserved; each supplier must confirm before a proforma invoice is issued.{$note}");
         }
 
         return $res;

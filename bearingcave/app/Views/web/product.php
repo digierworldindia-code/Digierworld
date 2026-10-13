@@ -63,9 +63,12 @@ $step     = $lotMode && (int) $p['lot_quantity'] > 0 ? (int) $p['lot_quantity'] 
                     <div class="bc-card p-3 mb-3">
                         <div class="small-caps mb-2">Supplier</div>
                         <div class="d-flex justify-content-between align-items-start gap-2">
-                            <div>
+                            <div class="d-flex align-items-center gap-2">
+                                <?php if ($showIdentity && $supplierVerified && $supplier['public_profile_enabled'] && ! empty($supplier['logo_path'])): ?><img src="<?= base_url($supplier['logo_path']) ?>" alt="" class="rounded border bg-white" style="width:40px;height:40px;object-fit:contain"><?php endif ?>
+                                <div>
                                 <div class="fw-semibold text-navy"><?= esc($supplierLabel) ?> <?= sample_badge($supplier) ?></div>
                                 <div class="small text-muted"><?= esc(country_name($supplier['country_code'])) ?><?= $showIdentity ? '' : ' · identity confidential' ?></div>
+                                </div>
                             </div>
                             <?= $supplierVerified ? '<span class="badge-verified"><i class="bi bi-patch-check-fill" aria-hidden="true"></i>Verified Supplier</span>' : '<span class="badge-soft neutral">Unverified supplier</span>' ?>
                         </div>
@@ -74,6 +77,10 @@ $step     = $lotMode && (int) $p['lot_quantity'] > 0 ? (int) $p['lot_quantity'] 
                         <?php endif ?>
                         <?php if ($showIdentity && $supplier['public_profile_enabled'] && $supplierVerified): ?><a class="small" href="<?= site_url('suppliers/' . $supplier['slug']) ?>">View company profile</a><?php endif ?>
                         <?php if (! $supplierVerified): ?><p class="small text-muted mb-0 mt-2">Transactions with unverified suppliers can be protected with BearingCave inspection and managed logistics.</p><?php endif ?>
+                        <details class="small mt-2"><summary>Warranty &amp; claims</summary>
+                            <p class="text-muted mb-1 mt-1"><?php if ($supplierVerified): ?>All product quality and warranty-related claims or disputes are the sole responsibility of the supplier and the client. BearingCave acts only as an intermediary for documentation and provides the client with test reports, inspection certificates and related documents furnished by the supplier or an authorised third-party inspection agency. BearingCave intervention applies when inspection services are opted for at an additional cost.<?php else: ?>No warranty. BearingCave intervention applies when inspection services are opted for at an additional cost.<?php endif ?></p>
+                            <?= pending_badge('Terms pending legal approval') ?>
+                        </details>
                     </div>
                 </div>
                 <div class="col-xl-5">
@@ -94,8 +101,9 @@ $step     = $lotMode && (int) $p['lot_quantity'] > 0 ? (int) $p['lot_quantity'] 
                         <?php endif ?>
 
                         <div class="d-flex justify-content-between small mb-3 border-top pt-2">
-                            <span>Available</span><span class="fw-semibold <?= $available > 0 ? 'text-success' : 'text-danger' ?>"><?= number_format($available) ?> <?= esc($p['unit_of_measure']) ?></span>
+                            <span>Available <span class="text-muted" data-stock-updated aria-live="polite"></span></span><span class="fw-semibold <?= $available > 0 ? 'text-success' : 'text-danger' ?>" data-stock-live="<?= site_url('product/' . $p['uuid'] . '/stock') ?>" data-unit="<?= esc($p['unit_of_measure'], 'attr') ?>"><?= number_format($available) ?> <?= esc($p['unit_of_measure']) ?></span>
                         </div>
+                        <?php if ($p['clearance_started_at']): ?><div class="alert alert-warning py-1 px-2 small mb-3"><i class="bi bi-tag me-1" aria-hidden="true"></i>Clearance: supplier has marked this stock down by <?= rtrim(rtrim(number_format((float) $p['clearance_pct'], 2), '0'), '.') ?>%.</div><?php endif ?>
                         <div class="d-flex justify-content-between small mb-3"><span>Minimum order</span><span class="fw-semibold"><?= number_format((int) $p['moq']) ?></span></div>
 
                         <?php if ($isBuyer): ?>
@@ -197,19 +205,15 @@ $step     = $lotMode && (int) $p['lot_quantity'] > 0 ? (int) $p['lot_quantity'] 
         <div class="col-lg-4">
             <?php if ($isBuyer): ?>
             <section class="bc-card mb-4" aria-labelledby="enqH">
-                <div class="bc-card-header"><h2 id="enqH">Ask the supplier</h2></div>
+                <div class="bc-card-header"><h2 id="enqH"><?= $directEnquiries ? 'Ask the supplier' : 'Ask BearingCave about this listing' ?></h2></div>
                 <div class="bc-card-body">
-                    <?php if (! $acceptsEnquiries): ?>
-                    <p class="small mb-0">This supplier receives requests through BearingCave RFQs only. Use <strong>Request quotation</strong> to ask about this item.</p>
-                    <?php else: ?>
                     <form method="post" action="<?= site_url('product/' . $p['id'] . '/enquire') ?>">
                         <?= csrf_field() ?>
                         <?= field('quantity', 'Quantity needed', null, ['type' => 'number', 'attrs' => 'min="1"']) ?>
                         <?= textarea_field('message', 'Your question', null, ['required' => true, 'rows' => 3, 'placeholder' => 'Packaging, batch date, certificates, delivery…']) ?>
                         <button class="btn btn-outline-primary w-100" type="submit">Send enquiry</button>
                     </form>
-                    <p class="small text-muted mt-2 mb-0">Messages are relayed by BearingCave. Your company details are shared only as needed for the transaction.</p>
-                    <?php endif ?>
+                    <p class="small text-muted mt-2 mb-0"><?= $directEnquiries ? 'Sent to the supplier through BearingCave. Your company details are shared only as needed for the transaction.' : 'This supplier does not take direct enquiries, so BearingCave receives your question and answers it or passes it on.' ?></p>
                 </div>
             </section>
             <section class="bc-card mb-4" aria-labelledby="svcH">

@@ -32,11 +32,31 @@ class SupplierMasterService
         'supplier_profiles.supplier_type', 'supplier_profiles.main_categories', 'supplier_profiles.brands_handled',
         'supplier_profiles.production_capacity', 'supplier_profiles.export_markets',
         'kyc_records.gst_number', 'kyc_records.pan_number', 'kyc_records.cin_number', 'kyc_records.vat_number', 'kyc_records.tax_id',
+        'kyc_records.bank_account_number',
     ];
 
-    public function fields(): array
+    /** Targets whose values are encrypted and never kept in plain text (import rows, attributes). */
+    public const SENSITIVE_TARGETS = ['kyc_records.bank_account_number'];
+
+    /**
+     * Active fields = the client's sheet headings (plus any headings registered
+     * by later imports). Retired proposals stay in the table, inactive.
+     */
+    public function fields(bool $activeOnly = true): array
     {
-        return model(SupplierMasterFieldModel::class)->orderBy('sort_order')->findAll();
+        $m = model(SupplierMasterFieldModel::class)->orderBy('sort_order')->orderBy('id');
+        if ($activeOnly) {
+            $m->where('is_active', 1);
+        }
+
+        return $m->findAll();
+    }
+
+    public static function mask(string $value): string
+    {
+        $digits = preg_replace('/\s+/', '', $value);
+
+        return str_repeat('•', max(0, min(8, strlen($digits) - 4))) . substr($digits, -4);
     }
 
     /**
@@ -49,6 +69,7 @@ class SupplierMasterService
         $headers = json_decode($job['headers'], true);
         $fieldsM = model(SupplierMasterFieldModel::class);
         $known   = array_column($this->fields(), null, 'field_key');
+        $all     = array_column($this->fields(false), null, 'field_key');
         $clean   = [];
         $max     = (int) ($fieldsM->selectMax('sort_order')->first()['sort_order'] ?? 0);
         foreach ($headers as $i => $heading) {
@@ -59,7 +80,11 @@ class SupplierMasterService
             if ($key === '' || ! isset($known[$key])) {
                 $key = substr(make_slug($heading, 90), 0, 90);
                 $key = str_replace('-', '_', $key);
-                if (! isset($known[$key])) {
+                if (! isset($known[$key]) && isset($all[$key])) {
+                    // A retired field matches this heading: reactivate it instead of duplicating.
+                    $fieldsM->update($all[$key]['id'], ['is_active' => 1, 'is_confirmed' => 1, 'source_heading' => mb_substr($heading, 0, 191)]);
+                    $known[$key] = $all[$key];
+                } elseif (! isset($known[$key])) {
                     $fieldsM->insert(['source_heading' => mb_substr($heading, 0, 191), 'field_key' => $key, 'field_group' => 'unclassified', 'target' => null, 'data_type' => 'string', 'sort_order' => ++$max, 'is_confirmed' => 1]);
                     $known[$key] = ['field_key' => $key, 'target' => null];
                 }
@@ -86,16 +111,31 @@ class SupplierMasterService
         $counts = ['valid' => 0, 'error' => 0, 'duplicate' => 0];
         $seen   = [];
         foreach ($rowsM->where('import_job_id', $job['id'])->orderBy('row_number')->findAll() as $row) {
-            $raw     = json_decode($row['data'], true);
-            $raw     = $raw['raw'] ?? $raw;
+            $decoded = json_decode($row['data'], true);
+            $raw     = $decoded['raw'] ?? $decoded;
+            $prior   = $decoded['targets'] ?? [];
             $values  = [];
             $targets = [];
             foreach ($map as $idx => $key) {
-                $v            = trim((string) ($raw[$idx] ?? ''));
-                $values[$key] = $v;
-                if (! empty($fields[$key]['target']) && $v !== '') {
-                    $targets[$fields[$key]['target']] = $v;
+                $v      = trim((string) ($raw[$idx] ?? ''));
+                $target = $fields[$key]['target'] ?? null;
+                if ($v !== '' && in_array($target, self::SENSITIVE_TARGETS, true)) {
+                    // Encrypt now and keep only a masked copy in the import row and attributes.
+                    $targets[$target] = base64_encode(service('encrypter')->encrypt($v));
+                    $targets[$target . '_last4'] = substr(preg_replace('/\s+/', '', $v), -4);
+                    $v = $raw[$idx] = self::mask($v);
+                } elseif ($v !== '' && str_starts_with($v, '•')) {
+                    // Masked by an earlier validation run: carry the encrypted value forward.
+                    foreach (self::SENSITIVE_TARGETS as $t) {
+                        if (isset($prior[$t])) {
+                            $targets[$t]            = $prior[$t];
+                            $targets[$t . '_last4'] = $prior[$t . '_last4'] ?? null;
+                        }
+                    }
+                } elseif (! empty($target) && $v !== '') {
+                    $targets[$target] = $v;
                 }
+                $values[$key] = $v;
             }
             $err = [];
             if (($targets['companies.legal_name'] ?? '') === '') {
@@ -189,6 +229,11 @@ class SupplierMasterService
                 default             => null,
             };
         }
+        if (isset($kyc['bank_account_number'])) {
+            $kyc['bank_account_number_enc'] = $kyc['bank_account_number'];
+            $kyc['bank_account_last4']      = $kyc['bank_account_number_last4'] ?? null;
+        }
+        unset($kyc['bank_account_number'], $kyc['bank_account_number_last4']);
         if (isset($company['year_established']) && ! ctype_digit($company['year_established'])) {
             unset($company['year_established']);
         }

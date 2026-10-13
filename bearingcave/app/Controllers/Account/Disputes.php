@@ -55,7 +55,7 @@ class Disputes extends AreaController
             'title' => 'Dispute ' . $d['dispute_number'], 'd' => $d, 'order' => $order,
             'messages' => service('disputes')->messages($id, false), 'documents' => service('documents')->forEntity('dispute', $id),
             'statuses' => DisputeService::STATUSES, 'categories' => DisputeService::CATEGORIES,
-            'mySide' => $this->area(),
+            'mySide' => $this->area(), 'evidence' => service('disputes')->evidence($d, service('visibility')->current()),
         ]);
     }
 

@@ -25,8 +25,12 @@ class Logistics extends AreaController
         $col    = $this->area() === 'buyer' ? 'buyer_company_id' : 'supplier_company_id';
         $orders = model(OrderModel::class)->where($col, $this->cid())->whereIn('status', ['confirmed', 'awaiting_payment', 'paid', 'in_fulfilment'])->orderBy('id', 'DESC')->findAll(50);
         $modes  = LogisticsService::MODES;
-        if (! entitled('consolidation_services')) {
+        // Workbook client features: consolidation — verified clients YES;
+        // non-verified "available at additional charges". Buyers only.
+        if ($this->company()['company_type'] !== 'buyer') {
             unset($modes['consolidation']);
+        } else {
+            $modes['consolidation'] .= entitled('consolidation_services') ? ' (verified buyer privilege)' : ' (additional charges apply)';
         }
         if ($this->area() === 'supplier' && ! entitled('direct_logistics')) {
             unset($modes['supplier_direct']);

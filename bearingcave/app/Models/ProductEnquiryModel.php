@@ -19,6 +19,9 @@ class ProductEnquiryModel extends Model
     protected $createdField   = 'created_at';
     protected $updatedField   = 'updated_at';
     protected $allowedFields  = [
+        'routing',
+        'forwarded_at',
+        'forwarded_by',
         'product_id',
         'buyer_company_id',
         'user_id',

@@ -9,7 +9,7 @@
 <div class="bc-card mb-4"><div class="bc-card-header"><h2>Supplier performance score</h2><?= $perf ? '<span class="small text-muted">Computed ' . fdt($perf['computed_at']) . ' · ' . fdate($perf['period_start']) . ' – ' . fdate($perf['period_end']) . '</span>' : '' ?></div><div class="bc-card-body">
 <?php if (! $perf): ?><p class="text-muted small mb-0">Not calculated yet. BearingCave recalculates performance scores regularly from completed orders, shipments, RFQ responses and disputes.</p><?php else: ?>
     <div class="row g-3 text-center">
-        <?php foreach (['overall_score' => ['Overall', '/100'], 'on_time_delivery_pct' => ['On-time delivery', '%'], 'quality_rejection_pct' => ['Quality rejections', '%'], 'cost_competitiveness' => ['Cost competitiveness', '/100'], 'avg_response_hours' => ['Avg. RFQ response', ' h'], 'rfq_response_rate_pct' => ['RFQ response rate', '%'], 'service_level' => ['Service level', '/100']] as $k => [$l, $u]): ?>
+        <?php foreach (['overall_score' => ['Overall', '/100'], 'on_time_delivery_pct' => ['On-time delivery', '%'], 'quality_rejection_pct' => ['Quality rejections', '%'], 'cost_competitiveness' => ['Cost competitiveness', '/100'], 'avg_response_hours' => ['Avg. RFQ response', ' h'], 'rfq_response_rate_pct' => ['RFQ response rate', '%'], 'service_level' => ['Service level', '/100'], 'compliance_score' => ['Compliance', '/100']] as $k => [$l, $u]): ?>
         <div class="col-6 col-md-3 col-xl"><div class="small text-muted"><?= $l ?></div><div class="fs-5 fw-bold text-navy"><?= $perf[$k] !== null ? esc($perf[$k]) . $u : '<span class="fs-6 text-muted">No data</span>' ?></div></div>
         <?php endforeach ?>
     </div>
@@ -31,6 +31,13 @@
     <div class="col-xl-5">
         <div class="bc-card mb-4"><div class="bc-card-body"><h2 class="h6">RFQ funnel</h2><dl class="dl-grid small mb-0"><dt>Invited</dt><dd><?= (int) $rfq['invited'] ?></dd><dt>Quoted</dt><dd><?= (int) $rfq['quoted'] ?></dd><dt>Declined</dt><dd><?= (int) $rfq['declined'] ?></dd><dt>Won</dt><dd><?= (int) $won ?></dd></dl></div></div>
         <?php if ($demand): ?>
+        <div class="bc-card mb-4"><div class="bc-card-header"><h2>RFQ demand trend in your categories (12 months)</h2></div>
+            <?php if (! $rfqTrend): ?><div class="bc-card-body small text-muted">No RFQs in your categories or brands yet.</div><?php else: $max = max(array_column($rfqTrend, 'rfqs')) ?: 1; ?>
+            <ul class="list-group list-group-flush small"><?php foreach ($rfqTrend as $t): ?><li class="list-group-item"><div class="d-flex justify-content-between"><span><?= esc($t['m']) ?></span><span><?= (int) $t['rfqs'] ?> RFQs · <?= number_format((int) $t['qty']) ?> units requested</span></div><div class="progress mt-1" style="height:4px" role="presentation"><div class="progress-bar" style="width:<?= round(100 * (int) $t['rfqs'] / $max) ?>%"></div></div></li><?php endforeach ?></ul>
+            <?php endif ?>
+            <?php if ($rfqTop): ?><div class="px-3 pt-2 small fw-semibold">Most requested (180 days)</div><ul class="list-group list-group-flush small"><?php foreach ($rfqTop as $t): ?><li class="list-group-item d-flex justify-content-between"><span class="part-no"><?= esc($t['part']) ?></span><span><?= (int) $t['rfqs'] ?> RFQs · <?= number_format((int) $t['qty']) ?> units</span></li><?php endforeach ?></ul><?php endif ?>
+            <div class="px-3 py-2 small text-muted">For production and demand planning. Aggregated; a part is listed only when at least two different buyers requested it.</div>
+        </div>
         <div class="bc-card mb-4"><div class="bc-card-header"><h2>Buyer demand for your parts (90 days)</h2></div><ul class="list-group list-group-flush small">
             <?php if (! $searches): ?><li class="list-group-item text-muted">No matching buyer searches yet.</li><?php endif ?>
             <?php foreach ($searches as $s): ?><li class="list-group-item d-flex justify-content-between"><span class="part-no"><?= esc($s['query']) ?></span><span><?= (int) $s['searches'] ?> searches</span></li><?php endforeach ?>

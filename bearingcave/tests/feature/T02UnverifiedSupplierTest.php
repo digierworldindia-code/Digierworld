@@ -47,10 +47,19 @@ final class T02UnverifiedSupplierTest extends BCTestCase
         $__r->assertOK();
         $__r->assertDontSee($s['company']['legal_name']);
 
-        // Buyer enquires, then orders a lot.
+        // Buyer enquires. Workbook: unverified suppliers get no direct enquiries,
+        // so the enquiry goes to BearingCave, which passes it to the supplier.
         $b = $this->registerCompany('buyer', 'IN');
         $this->postAs($b['user'], "product/{$p['id']}/enquire", ['quantity' => '500', 'message' => 'Please confirm batch date codes.'])->assertRedirect();
-        $this->assertSame(1, db_connect()->table('product_enquiries')->where('product_id', $p['id'])->countAllResults());
+        $enq = db_connect()->table('product_enquiries')->where('product_id', $p['id'])->get()->getRowArray();
+        $this->assertSame('platform', $enq['routing']);
+        $this->getAs($s['user'], 'supplier/enquiries')->assertDontSee('Please confirm batch date codes.');
+        $support = $this->staff('support_executive');
+        $this->getAs($support, 'admin/enquiries')->assertSee('Please confirm batch date codes.');
+        $this->postAs($support, "admin/enquiries/{$enq['id']}/forward")->assertRedirect();
+        $this->getAs($s['user'], 'supplier/enquiries')->assertSee('Please confirm batch date codes.');
+        $this->postAs($s['user'], "supplier/enquiries/{$enq['id']}/respond", ['response' => 'Batch codes are 2024-W11.'])->assertRedirect();
+        $this->getAs($b['user'], 'buyer/enquiries')->assertSee('Batch codes are 2024-W11.');
 
         $this->postAs($b['user'], "buyer/cart/add/{$p['id']}", ['quantity' => '750'])->assertRedirect();
         $this->postAs($b['user'], 'buyer/cart/checkout', ['delivery_country' => 'IN', 'delivery_address' => 'Delhi', 'logistics_mode' => 'platform_managed', 'accept_terms' => '1'])->assertRedirect();

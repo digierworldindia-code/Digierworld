@@ -18,7 +18,7 @@ class MembershipSeeder extends Seeder
     {
         $plans = [
             'supplier_free' => ['Unverified Supplier', 'supplier', 0, 0, 1, 'Free registration: private profile, lot-based listings, BearingCave-managed shipping, basic enquiry management.', 1,
-                ['direct_enquiries' => [1, null], 'max_active_products' => [1, null], 'priority_ranking' => [0, null]]],
+                ['direct_enquiries' => [0, null], 'max_active_products' => [1, null], 'priority_ranking' => [0, null]]],
             'supplier_verified' => ['Verified Supplier', 'supplier', 50000, 1, 0, 'Verified badge, public profile & branding, priority ranking, premium RFQ leads, bidding, per-piece pricing, country visibility, bulk upload, analytics and a dedicated account manager.', 2,
                 ['verified_badge' => [1, null], 'public_profile' => [1, null], 'public_contact' => [1, null], 'priority_ranking' => [1, 50], 'direct_enquiries' => [1, null],
                     'premium_rfq_leads' => [1, null], 'supplier_bidding' => [1, null], 'per_piece_pricing' => [1, null], 'country_visibility_control' => [1, null], 'bulk_import' => [1, null],

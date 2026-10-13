@@ -25,9 +25,9 @@ for (const line of fs.readFileSync('writable/demo/credentials.txt', 'utf8').spli
 
 const ROLES = {
     guest: { user: null, pages: ['/', '/marketplace', '__product__', '/suppliers', '/membership', '/how-it-works', '/services/inspection', '/trust-and-verification', '/compare', '/contact', '/login', '/register'] },
-    buyer: { user: 'demo.buyer.verified@example.com', pages: ['/buyer/dashboard', '/buyer/rfqs', '/buyer/rfqs/new', '/buyer/cart', '/buyer/orders', '/buyer/verification', '/buyer/billing'] },
-    supplier: { user: 'demo.supplier.verified@example.com', pages: ['/supplier/dashboard', '/supplier/products', '/supplier/products/new', '/supplier/imports', '/supplier/rfqs', '/supplier/orders', '/supplier/analytics', '/supplier/visibility'] },
-    admin: { user: 'demo.superadmin@example.com', pages: ['/admin', '/admin/companies', '/admin/verifications', '/admin/products', '/admin/orders', '/admin/settings', '/admin/reports', '/admin/audit'] },
+    buyer: { user: 'demo.buyer.verified@example.com', pages: ['/buyer/dashboard', '/buyer/rfqs', '/buyer/rfqs/new', '/buyer/cart', '/buyer/orders', '/buyer/verification', '/buyer/billing', '/buyer/enquiries', '/buyer/logistics/new'] },
+    supplier: { user: 'demo.supplier.verified@example.com', pages: ['/supplier/dashboard', '/supplier/products', '/supplier/products/new', '/supplier/imports', '/supplier/rfqs', '/supplier/orders', '/supplier/analytics', '/supplier/visibility', '/supplier/company', '/supplier/enquiries'] },
+    admin: { user: 'demo.superadmin@example.com', pages: ['/admin', '/admin/companies', '/admin/verifications', '/admin/products', '/admin/orders', '/admin/settings', '/admin/reports', '/admin/audit', '/admin/enquiries', '/admin/supplier-master', '/admin/performance'] },
 };
 
 const results = [];
@@ -90,6 +90,37 @@ for (const [role, cfg] of Object.entries(ROLES)) {
     }
 
     if (role === 'supplier') {
+        await page.setViewportSize({ width: 1366, height: 900 });
+        // Branding: real logo upload (verified supplier), then removal so demo data is unchanged.
+        const logo = path.join(OUT, 'e2e-logo.png');
+        await page.setContent('<div style="width:120px;height:120px;background:#1f5fbf"></div>');
+        await page.locator('div').screenshot({ path: logo });
+        await page.goto(BASE + '/supplier/company');
+        await page.setInputFiles('#logoFile', logo);
+        await Promise.all([page.waitForNavigation(), page.click('button:has-text("Upload logo")')]);
+        (await page.locator('img[alt="Company logo"]').count()) > 0 ? pass('supplier logo upload through UI') : fail('supplier logo upload through UI');
+        page.once('dialog', (d) => d.accept());
+        await Promise.all([page.waitForNavigation(), page.click('button[name=remove]')]);
+
+        // Bulk tools: select the first listing, 10% clearance, then restore.
+        await page.goto(BASE + '/supplier/products?status=published');
+        const first = page.locator('[data-bulk-item]').first();
+        const pid = await first.getAttribute('value');
+        const runBulk = async (action, pct) => {
+            await page.goto(BASE + '/supplier/products?status=published');
+            await page.locator(`[data-bulk-item][value="${pid}"]`).check();
+            await page.selectOption('#bulkAction', action);
+            if (pct) await page.fill('#bulkPct', pct);
+            page.once('dialog', (d) => d.accept());
+            await Promise.all([page.waitForNavigation(), page.click('#bulkForm button[type=submit]')]);
+        };
+        await runBulk('clearance_start', '10');
+        const badge = await page.locator(`tr:has([data-bulk-item][value="${pid}"]) .badge-soft.warning`).count();
+        await page.screenshot({ path: path.join(OUT, 'supplier_bulk_clearance_1366.png') });
+        await runBulk('clearance_end');
+        const after = await page.locator(`tr:has([data-bulk-item][value="${pid}"]) .badge-soft.warning`).count();
+        badge > 0 && after === 0 ? pass('bulk clearance markdown + restore through UI') : fail(`bulk clearance through UI: badge=${badge} after=${after}`);
+
         // Real multipart upload through the UI: upload → auto-map → validate → confirm.
         await page.setViewportSize({ width: 1366, height: 900 });
         const stamp = Date.now().toString(36).toUpperCase();

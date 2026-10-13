@@ -19,6 +19,8 @@ class BuyerProfileModel extends Model
     protected $createdField   = 'created_at';
     protected $updatedField   = 'updated_at';
     protected $allowedFields  = [
+        'services_bonus_score',
+        'overall_score',
         'company_id',
         'buyer_category',
         'annual_purchase_volume',

@@ -125,6 +125,7 @@ if (! function_exists('dashboard_menu')) {
                 ['SEO settings', 'admin/seo', 'bi-globe', false, $can('seo.manage')],
                 ['Email outbox', 'admin/notifications', 'bi-envelope', false, $can('notifications.manage')],
                 ['Platform settings', 'admin/settings', 'bi-sliders', false, $can('settings.manage')],
+                ['Product enquiries', 'admin/enquiries', 'bi-chat-left-text', false, $can('enquiries.manage')],
                 ['Contact leads', 'admin/leads', 'bi-inbox', false, $can('leads.view')],
                 ['Audit logs', 'admin/audit', 'bi-journal-text', false, $can('audit.view')],
             ],

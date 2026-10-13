@@ -84,6 +84,7 @@ class AuthGroups extends ShieldAuthGroups
         'settings.manage'     => 'Manage platform settings and business rules',
         'audit.view'          => 'View audit logs',
         'leads.view'          => 'View contact form leads',
+        'enquiries.manage'    => 'Answer or forward product enquiries routed to BearingCave',
     ];
 
     public array $matrix = [
@@ -91,14 +92,14 @@ class AuthGroups extends ShieldAuthGroups
             'admin.*', 'users.*', 'staff.*', 'companies.*', 'verification.*', 'kyc.*', 'avl.*', 'catalog.*',
             'products.*', 'inventory.*', 'imports.*', 'rfq.*', 'orders.*', 'inspection.*', 'logistics.*',
             'payments.*', 'memberships.*', 'subscriptions.*', 'performance.*', 'disputes.*', 'reports.*',
-            'cms.*', 'seo.*', 'notifications.*', 'settings.*', 'audit.*', 'leads.*',
+            'cms.*', 'seo.*', 'notifications.*', 'settings.*', 'audit.*', 'leads.*', 'enquiries.*',
         ],
         'verification_officer' => [
             'admin.access', 'companies.view', 'verification.view', 'verification.review', 'kyc.sensitive', 'avl.manage', 'reports.view',
         ],
         'procurement_manager' => [
             'admin.access', 'companies.view', 'catalog.manage', 'products.review', 'inventory.manage', 'imports.manage',
-            'rfq.view', 'rfq.manage', 'orders.view', 'orders.manage', 'avl.manage', 'reports.view', 'performance.manage',
+            'rfq.view', 'rfq.manage', 'orders.view', 'orders.manage', 'avl.manage', 'reports.view', 'performance.manage', 'enquiries.manage',
         ],
         'inspection_manager' => ['admin.access', 'companies.view', 'orders.view', 'inspection.manage'],
         'logistics_manager'  => ['admin.access', 'companies.view', 'orders.view', 'logistics.manage'],
@@ -107,7 +108,7 @@ class AuthGroups extends ShieldAuthGroups
             'subscriptions.manage', 'reports.view', 'reports.export',
         ],
         'account_manager' => ['admin.access', 'companies.view', 'verification.view', 'rfq.view', 'orders.view', 'performance.manage', 'reports.view'],
-        'support_executive' => ['admin.access', 'companies.view', 'orders.view', 'disputes.view', 'disputes.manage', 'leads.view'],
+        'support_executive' => ['admin.access', 'companies.view', 'orders.view', 'disputes.view', 'disputes.manage', 'leads.view', 'enquiries.manage'],
         'buyer'    => [],
         'supplier' => [],
     ];

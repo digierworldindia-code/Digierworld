@@ -19,6 +19,7 @@ class InspectionRequestModel extends Model
     protected $createdField   = 'created_at';
     protected $updatedField   = 'updated_at';
     protected $allowedFields  = [
+        'requested_at_checkout',
         'request_number',
         'company_id',
         'requested_by',

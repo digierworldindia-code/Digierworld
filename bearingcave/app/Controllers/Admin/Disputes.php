@@ -33,6 +33,7 @@ class Disputes extends AdminController
         return $this->page('dispute', ['title' => 'Dispute ' . $d['dispute_number'], 'd' => $d, 'order' => model(OrderModel::class)->find($d['order_id']),
             'raisedBy' => model(CompanyModel::class)->find($d['raised_by_company_id']), 'against' => model(CompanyModel::class)->find($d['against_company_id']),
             'messages' => service('disputes')->messages($id, true), 'documents' => service('documents')->forEntity('dispute', $id),
+            'evidence' => service('disputes')->evidence($d, service('visibility')->current()),
             'statuses' => DisputeService::STATUSES, 'categories' => DisputeService::CATEGORIES, 'agents' => $this->staffOptions(['support_executive'])]);
     }
 

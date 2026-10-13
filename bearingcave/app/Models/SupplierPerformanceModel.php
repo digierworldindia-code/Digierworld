@@ -19,6 +19,7 @@ class SupplierPerformanceModel extends Model
     protected $createdField   = 'created_at';
     protected $updatedField   = 'updated_at';
     protected $allowedFields  = [
+        'compliance_score',
         'company_id',
         'period_start',
         'period_end',

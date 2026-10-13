@@ -19,6 +19,7 @@ class SupplierMasterFieldModel extends Model
     protected $createdField   = 'created_at';
     protected $updatedField   = 'updated_at';
     protected $allowedFields  = [
+        'is_active',
         'source_heading',
         'field_key',
         'field_group',

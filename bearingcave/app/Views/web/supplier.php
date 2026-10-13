@@ -3,7 +3,7 @@
 <?php $c = $company; ?>
 <div class="bg-soft border-bottom"><div class="container py-4">
     <nav aria-label="Breadcrumb"><ol class="breadcrumb mb-1"><li class="breadcrumb-item"><a href="<?= site_url('suppliers') ?>">Suppliers</a></li><li class="breadcrumb-item active" aria-current="page"><?= esc($c['trade_name'] ?: $c['legal_name']) ?></li></ol></nav>
-    <div class="d-flex flex-wrap align-items-center gap-2"><h1 class="h3 mb-0"><?= esc($c['trade_name'] ?: $c['legal_name']) ?></h1><span class="badge-verified"><i class="bi bi-patch-check-fill" aria-hidden="true"></i>Verified Supplier</span><?= sample_badge($c) ?></div>
+    <div class="d-flex flex-wrap align-items-center gap-2"><?php if (! empty($c['logo_path']) && service('entitlements')->has($c, 'public_profile')): ?><img src="<?= base_url($c['logo_path']) ?>" alt="<?= esc(($c['trade_name'] ?: $c['legal_name']) . ' logo', 'attr') ?>" class="rounded border bg-white" style="width:56px;height:56px;object-fit:contain"><?php endif ?><h1 class="h3 mb-0"><?= esc($c['trade_name'] ?: $c['legal_name']) ?></h1><span class="badge-verified"><i class="bi bi-patch-check-fill" aria-hidden="true"></i>Verified Supplier</span><?= sample_badge($c) ?></div>
     <p class="text-muted mb-0 mt-1"><?= esc(trim(($c['city'] ? $c['city'] . ', ' : '') . country_name($c['country_code']))) ?><?= $c['year_established'] ? ' · Established ' . esc($c['year_established']) : '' ?></p>
 </div></div>
 <div class="container py-4">

@@ -73,8 +73,8 @@ class LogisticsService
             throw new BusinessRuleException('Choose a shipping option.');
         }
         $ent = service('entitlements');
-        if ($mode === 'consolidation' && ! $ent->has($company, 'consolidation_services')) {
-            throw new BusinessRuleException('Multi-supplier consolidation is available to verified buyers.');
+        if ($mode === 'consolidation' && $company['company_type'] !== 'buyer') {
+            throw new BusinessRuleException('Multi-supplier consolidation is arranged on behalf of buyers.');
         }
         if ($mode === 'supplier_direct' && $company['company_type'] === 'supplier' && ! $ent->has($company, 'direct_logistics')) {
             throw new BusinessRuleException('Supplier-direct logistics is a Verified Supplier feature.');
@@ -121,6 +121,9 @@ class LogisticsService
             'fee_basis'           => $est['basis'],
             'status'              => 'requested',
             'notes'               => $data['notes'] ?? null,
+            'admin_notes'         => $mode === 'consolidation'
+                ? ($ent->has($company, 'consolidation_services') ? 'Consolidation: verified buyer privilege.' : 'Consolidation for a non-verified buyer: additional charges apply.')
+                : null,
         ]);
         if ($orderId) {
             model(OrderModel::class)->update($orderId, ['shipment_status' => 'requested', 'logistics_mode' => $mode === 'consolidation' ? 'platform_managed' : $mode]);

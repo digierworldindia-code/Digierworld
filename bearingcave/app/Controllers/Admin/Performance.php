@@ -12,10 +12,10 @@ class Performance extends AdminController
 
         return $this->page('performance', [
             'title' => 'Performance scores',
-            'suppliers' => $db->query("SELECT c.id, c.legal_name, c.is_sample, sp.ranking_score, sp.performance_score, sp.risk_level, p.on_time_delivery_pct, p.quality_rejection_pct, p.cost_competitiveness, p.avg_response_hours, p.rfq_response_rate_pct, p.service_level, p.orders_count, p.computed_at
+            'suppliers' => $db->query("SELECT c.id, c.legal_name, c.is_sample, sp.ranking_score, sp.performance_score, sp.risk_level, p.on_time_delivery_pct, p.quality_rejection_pct, p.cost_competitiveness, p.avg_response_hours, p.rfq_response_rate_pct, p.service_level, p.compliance_score, p.orders_count, p.computed_at
                 FROM companies c JOIN supplier_profiles sp ON sp.company_id = c.id LEFT JOIN supplier_performance p ON p.id = (SELECT MAX(id) FROM supplier_performance WHERE company_id = c.id)
                 WHERE c.deleted_at IS NULL ORDER BY sp.ranking_score DESC LIMIT 200")->getResultArray(),
-            'buyers' => $db->query('SELECT c.id, c.legal_name, c.verification_status, bp.engagement_score, bp.rfq_genuineness_score, bp.transaction_score, bp.scores_computed_at FROM companies c JOIN buyer_profiles bp ON bp.company_id = c.id WHERE c.deleted_at IS NULL ORDER BY bp.engagement_score DESC LIMIT 200')->getResultArray(),
+            'buyers' => $db->query('SELECT c.id, c.legal_name, c.verification_status, bp.engagement_score, bp.rfq_genuineness_score, bp.transaction_score, bp.services_bonus_score, bp.overall_score, bp.scores_computed_at FROM companies c JOIN buyer_profiles bp ON bp.company_id = c.id WHERE c.deleted_at IS NULL ORDER BY bp.overall_score DESC, bp.engagement_score DESC LIMIT 200')->getResultArray(),
         ]);
     }
 

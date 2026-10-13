@@ -10,7 +10,7 @@ use App\Models\ProductModel;
 
 class Products extends BaseApi
 {
-    private const FILTERS = ['q', 'category', 'brand', 'condition', 'country', 'age', 'verified', 'min_price', 'max_price', 'min_qty', 'in_stock', 'id', 'od', 'w', 'make', 'model', 'year', 'spec', 'sort'];
+    private const FILTERS = ['q', 'category', 'brand', 'condition', 'country', 'age', 'verified', 'min_price', 'max_price', 'min_qty', 'in_stock', 'clearance', 'id', 'od', 'w', 'make', 'model', 'year', 'spec', 'sort'];
 
     public function index()
     {
@@ -60,6 +60,7 @@ class Products extends BaseApi
             'sale_mode' => $p['sale_mode'], 'currency' => $p['currency'],
             'price' => $price && $price['total'] !== null ? ['unit_price' => $price['unit'], 'lot_price' => $p['lot_price'], 'lot_quantity' => $p['lot_quantity'], 'mode' => $price['mode']] : null,
             'price_on_request' => $p['price_visibility'] === 'on_request',
+            'clearance_pct' => ! empty($p['clearance_started_at']) ? (float) $p['clearance_pct'] : null,
             'inventory_age' => \App\Services\InventoryService::ageBucket($p['inventory_age_date']),
             'warehouse_country' => $p['warehouse_country'],
             'supplier' => ['name' => $vis->supplierLabel($supplier, $p, $v), 'verified' => service('entitlements')->isVerifiedSupplier($supplier)],

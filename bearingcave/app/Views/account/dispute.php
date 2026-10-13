@@ -25,6 +25,12 @@
             <dl class="dl-grid small mb-0"><dt>Status</dt><dd><?= status_badge($d['status'], $statuses[$d['status']]) ?></dd><dt>Category</dt><dd><?= esc($categories[$d['category']]) ?></dd><dt>Order</dt><dd><a href="<?= site_url($area . '/orders/' . $order['id']) ?>"><?= esc($order['order_number']) ?></a></dd><dt>Opened</dt><dd><?= fdt($d['created_at']) ?></dd>
             <?php if ($d['resolution_notes']): ?><dt>Resolution</dt><dd><?= esc($d['resolution_notes']) ?></dd><?php endif ?></dl>
         </div></div>
+        <div class="bc-card mb-3"><div class="bc-card-header"><h2>BearingCave role</h2></div><div class="bc-card-body small">
+            <?php if ($d['bc_intervention_eligible']): ?><p class="mb-2"><?= status_badge('approved', 'Intervention eligible') ?> A BearingCave inspection was purchased for this order, so BearingCave's agreed intervention process applies.</p>
+            <?php else: ?><p class="mb-2"><?= status_badge('neutral', 'Documentation only') ?> No BearingCave inspection was purchased for this order. Quality and warranty claims remain between supplier and client; BearingCave acts as intermediary for documentation (platform and service issues are handled by BearingCave directly).</p><?php endif ?>
+            <?php if ($evidence): ?><div class="fw-semibold mb-1">Documentation available to you</div><?php foreach ($evidence as $e): ?><div class="mb-1"><a href="<?= site_url('documents/' . $e['doc']['uuid']) ?>" target="_blank" rel="noopener"><i class="bi bi-file-earmark-text" aria-hidden="true"></i> <?= esc($e['label']) ?></a></div><?php endforeach ?><?php else: ?><div class="text-muted">No inspection reports or supplier test documents on file for this order.</div><?php endif ?>
+            <?= pending_badge('Dispute terms pending legal approval') ?>
+        </div></div>
         <div class="bc-card"><div class="bc-card-header"><h2>Supporting documents</h2></div><div class="bc-card-body">
             <?php foreach ($documents as $doc): ?><div class="small mb-1"><a href="<?= site_url('documents/' . $doc['uuid']) ?>"><i class="bi bi-paperclip" aria-hidden="true"></i> <?= esc($doc['title']) ?></a></div><?php endforeach ?>
             <?php if ($d['status'] !== 'closed'): ?>

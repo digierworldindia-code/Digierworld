@@ -135,6 +135,11 @@ class ProductService
             $row['hide_supplier_identity'] = 1; // unverified suppliers are always anonymous
         }
         $row['search_keywords'] = $this->keywords($row, $data);
+        if ($existing && ! empty($existing['clearance_started_at'])
+            && ((float) $row['unit_price'] !== (float) $existing['unit_price'] || (float) $row['lot_price'] !== (float) $existing['lot_price'])) {
+            // A manual price change during clearance becomes the regular price and ends the clearance.
+            $row += ['clearance_pct' => null, 'clearance_started_at' => null, 'pre_clearance_unit_price' => null, 'pre_clearance_lot_price' => null];
+        }
 
         $dupe = $this->products->withDeleted()->where('company_id', $company['id'])->where('sku', $row['sku']);
         if ($existing) {
@@ -379,6 +384,93 @@ class ProductService
         service('audit')->log('product.status', ['entity_type' => 'product', 'entity_id' => (int) $product['id'], 'company_id' => (int) $product['company_id'], 'description' => "{$product['status']} → {$status}"]);
     }
 
+    /**
+     * Liquidation tool: marks a listing down by a percentage. The pre-clearance
+     * unit and lot prices are kept so the markdown can be reversed exactly;
+     * quantity tiers stay stored unchanged and get the same % at price time.
+     */
+    public function startClearance(array $product, float $pct): void
+    {
+        if ($pct < 1 || $pct > 90) {
+            throw new BusinessRuleException('Clearance discount must be between 1% and 90%.');
+        }
+        if ($product['unit_price'] === null && $product['lot_price'] === null) {
+            throw new BusinessRuleException("{$product['part_number']} has no price to mark down (price on request).");
+        }
+        $baseUnit = $product['clearance_started_at'] ? $product['pre_clearance_unit_price'] : $product['unit_price'];
+        $baseLot  = $product['clearance_started_at'] ? $product['pre_clearance_lot_price'] : $product['lot_price'];
+        $factor   = 1 - $pct / 100;
+        $this->products->update($product['id'], [
+            'pre_clearance_unit_price' => $baseUnit, 'pre_clearance_lot_price' => $baseLot,
+            'unit_price' => $baseUnit !== null ? round((float) $baseUnit * $factor, 4) : null,
+            'lot_price'  => $baseLot !== null ? round((float) $baseLot * $factor, 2) : null,
+            'clearance_pct' => $pct, 'clearance_started_at' => $product['clearance_started_at'] ?: date('Y-m-d H:i:s'),
+        ]);
+        service('audit')->log('product.clearance_started', ['entity_type' => 'product', 'entity_id' => (int) $product['id'], 'company_id' => (int) $product['company_id'], 'description' => "{$pct}% clearance markdown", 'old_values' => ['unit_price' => $baseUnit, 'lot_price' => $baseLot]]);
+    }
+
+    public function endClearance(array $product): void
+    {
+        if (! $product['clearance_started_at']) {
+            throw new BusinessRuleException("{$product['part_number']} is not on clearance.");
+        }
+        $this->products->update($product['id'], [
+            'unit_price' => $product['pre_clearance_unit_price'], 'lot_price' => $product['pre_clearance_lot_price'],
+            'pre_clearance_unit_price' => null, 'pre_clearance_lot_price' => null, 'clearance_pct' => null, 'clearance_started_at' => null,
+        ]);
+        service('audit')->log('product.clearance_ended', ['entity_type' => 'product', 'entity_id' => (int) $product['id'], 'company_id' => (int) $product['company_id'], 'description' => 'Clearance ended; prices restored']);
+    }
+
+    public const BULK_ACTIONS = [
+        'submit' => 'Submit / publish', 'unpublish' => 'Unpublish', 'archive' => 'Archive',
+        'clearance_start' => 'Start clearance markdown', 'clearance_end' => 'End clearance (restore prices)',
+    ];
+
+    /**
+     * Applies one action to many of the company's own listings. Each listing
+     * is handled independently; failures are reported, not hidden.
+     *
+     * @param list<int> $ids
+     * @return array{done:int, failed:list<string>}
+     */
+    public function bulk(array $company, array $ids, string $action, ?float $pct = null): array
+    {
+        if (! isset(self::BULK_ACTIONS[$action])) {
+            throw new BusinessRuleException('Choose a bulk action.');
+        }
+        $ids = array_values(array_unique(array_filter(array_map('intval', $ids))));
+        if ($ids === [] || count($ids) > 500) {
+            throw new BusinessRuleException('Select between 1 and 500 listings.');
+        }
+        $rows = $this->products->where('company_id', $company['id'])->whereIn('id', $ids)->findAll();
+        if (count($rows) !== count($ids)) {
+            service('audit')->security('access.denied', 'Bulk inventory action included listings of another company', ['company_id' => (int) $company['id']]);
+
+            throw new BusinessRuleException('Some selected listings were not found.');
+        }
+        $done   = 0;
+        $failed = [];
+        foreach ($rows as $p) {
+            try {
+                match ($action) {
+                    'submit'          => $this->submit($p, $company, false, false),
+                    'unpublish'       => $this->setStatus($p, 'unpublished'),
+                    'archive'         => $this->setStatus($p, 'archived'),
+                    'clearance_start' => $this->startClearance($p, (float) $pct),
+                    'clearance_end'   => $this->endClearance($p),
+                };
+                $done++;
+            } catch (BusinessRuleException $e) {
+                $failed[] = $p['part_number'] . ': ' . $e->getMessage();
+            }
+        }
+        if ($action === 'submit' && $done > 0 && $this->needsReview($company)) {
+            service('notifications')->notifyStaff(['procurement_manager'], 'product.review', "{$done} listings awaiting review", $company['legal_name'], 'admin/products?status=pending_review');
+        }
+
+        return ['done' => $done, 'failed' => $failed];
+    }
+
     private function uniqueSlug(string $text): string
     {
         $base = make_slug($text, 200);
@@ -402,7 +494,8 @@ class ProductService
             $tier = model(PricingTierModel::class)->where('product_id', $product['id'])->where('min_qty <=', $qty)
                 ->groupStart()->where('max_qty', null)->orWhere('max_qty >=', $qty)->groupEnd()
                 ->orderBy('min_qty', 'DESC')->first();
-            $unit = (float) ($tier['unit_price'] ?? $product['unit_price']);
+            // Tiers are stored pre-clearance; the listing's markdown applies to them too.
+            $unit = $tier ? round((float) $tier['unit_price'] * (1 - (float) ($product['clearance_pct'] ?? 0) / 100), 4) : (float) $product['unit_price'];
 
             return ['unit' => $unit, 'total' => round($unit * $qty, 2), 'mode' => 'piece'];
         }

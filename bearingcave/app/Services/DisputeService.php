@@ -48,6 +48,7 @@ class DisputeService
             throw new BusinessRuleException('Please add a subject and describe the issue (at least 20 characters).');
         }
         $against = (int) $order['buyer_company_id'] === (int) $company['id'] ? (int) $order['supplier_company_id'] : (int) $order['buyer_company_id'];
+        $insp    = $this->paidInspection((int) $order['id']);
         $id      = (int) $this->disputes->insert([
             'dispute_number'       => service('numbers')->next('DSP'),
             'order_id'             => $order['id'],
@@ -59,6 +60,8 @@ class DisputeService
             'description'          => trim($data['description']),
             'desired_resolution'   => $data['desired_resolution'] ?? null,
             'status'               => 'awaiting_response',
+            'bc_intervention_eligible' => $insp ? 1 : 0,
+            'inspection_request_id'    => $insp['id'] ?? null,
         ]);
         if (in_array($order['status'], ['delivered', 'completed'], true)) {
             service('orders')->transition($order, 'disputed', 'system', $userId, 'Dispute raised');
@@ -70,6 +73,50 @@ class DisputeService
         service('audit')->log('dispute.created', ['entity_type' => 'dispute', 'entity_id' => $id, 'company_id' => (int) $company['id']]);
 
         return $d;
+    }
+
+    /**
+     * Workbook: "Bearing Cave intervention applies when inspection services are
+     * opted for at an additional cost". An inspection counts once the buyer has
+     * accepted its quote (or it progressed further).
+     */
+    public function paidInspection(int $orderId): ?array
+    {
+        return db_connect()->table('inspection_requests')->where('order_id', $orderId)
+            ->whereIn('status', ['accepted', 'assigned', 'in_progress', 'report_uploaded', 'completed'])
+            ->orderBy('id', 'DESC')->get()->getRowArray() ?: null;
+    }
+
+    /**
+     * Documentation BearingCave provides in a dispute: inspection reports for
+     * the order and the supplier's product documents (test reports,
+     * certificates) — filtered by what this viewer may open.
+     *
+     * @return list<array{label:string, doc:array}>
+     */
+    public function evidence(array $d, \App\Libraries\Viewer $viewer): array
+    {
+        $db   = db_connect();
+        $docs = service('documents');
+        $out  = [];
+        $reports = $db->table('inspection_reports r')->select('r.document_id, r.result, q.request_number')
+            ->join('inspection_requests q', 'q.id = r.inspection_request_id')->where('q.order_id', $d['order_id'])->where('r.document_id IS NOT NULL', null, false)->get()->getResultArray();
+        foreach ($reports as $r) {
+            $doc = $db->table('documents')->where('id', $r['document_id'])->get()->getRowArray();
+            if ($doc && $docs->canAccess($doc, $viewer)) {
+                $out[] = ['label' => 'Inspection report ' . $r['request_number'] . ' (' . $r['result'] . ')', 'doc' => $doc];
+            }
+        }
+        $productIds = array_column($db->table('order_items')->select('product_id')->where('order_id', $d['order_id'])->get()->getResultArray(), 'product_id');
+        foreach (array_unique($productIds) as $pid) {
+            foreach ($docs->forEntity('product', (int) $pid) as $doc) {
+                if ($docs->canAccess($doc, $viewer)) {
+                    $out[] = ['label' => 'Supplier document: ' . $doc['title'], 'doc' => $doc];
+                }
+            }
+        }
+
+        return $out;
     }
 
     public function forParty(int $id, int $companyId): ?array

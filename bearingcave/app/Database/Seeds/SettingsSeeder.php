@@ -72,6 +72,8 @@ class SettingsSeeder extends Seeder
 
             'ranking.performance_weight' => ['1', 'decimal', 'ranking', 'Performance weight in ranking', 'Ranking = performance × weight + plan boost.', $P],
             'performance.window_days'    => ['365', 'int', 'ranking', 'Performance window (days)', '', $A],
+            'buyer.score_weights'        => ['{"engagement":40,"transaction":40,"services_bonus":10,"genuine_rfq_bonus":10}', 'json', 'ranking', 'Client score weights', 'Workbook: client scoring = engagement history + transaction behaviour, with bonuses for using BearingCave logistics/inspection and for genuine purchase requirements. Weights (sum 100) are not specified by the client.', $P],
+            'buyer.services_bonus_per_use' => ['25', 'int', 'ranking', 'Client bonus per BearingCave service used', 'Points (max 100) per logistics or inspection request in the scoring window.', $P],
 
             'payments.bank_transfer_enabled' => ['1', 'bool', 'payments', 'Bank transfer enabled', 'Finance confirms receipt manually.', $A],
             'payments.bank_instructions' => ['', 'text', 'payments', 'Bank remittance instructions', 'Account details shown to payers. Leave empty until finance confirms.', $P],
@@ -101,15 +103,28 @@ class SettingsSeeder extends Seeder
 
     public function run(): void
     {
+        self::insertMissing($this->db);
+    }
+
+    /**
+     * Inserts settings that do not exist yet; never overwrites admin changes.
+     * Also used by incremental migrations to add new settings safely.
+     */
+    public static function insertMissing(\CodeIgniter\Database\BaseConnection $db): int
+    {
+        $added = 0;
         foreach (self::definitions() as $key => [$value, $type, $group, $label, $desc, $approval]) {
-            if ($this->db->table('platform_settings')->where('setting_key', $key)->countAllResults() > 0) {
+            if ($db->table('platform_settings')->where('setting_key', $key)->countAllResults() > 0) {
                 continue;
             }
-            $this->db->table('platform_settings')->insert([
+            $added++;
+            $db->table('platform_settings')->insert([
                 'setting_key' => $key, 'setting_value' => $value, 'value_type' => $type, 'setting_group' => $group,
                 'label' => $label, 'description' => $desc, 'approval_status' => $approval,
                 'created_at' => date('Y-m-d H:i:s'), 'updated_at' => date('Y-m-d H:i:s'),
             ]);
         }
+
+        return $added;
     }
 }

@@ -37,6 +37,7 @@ $routes->group('', ['namespace' => 'App\Controllers\Web'], static function ($rou
     $routes->get('marketplace', 'Catalog::index');
     $routes->get('category/(:segment)', 'Catalog::category/$1');
     $routes->get('brand/(:segment)', 'Catalog::brand/$1');
+    $routes->get('product/(:segment)/stock', 'Product::stock/$1');
     $routes->get('product/(:segment)', 'Product::show/$1');
     $routes->get('search/suggest', 'Catalog::suggest');
     $routes->get('compare', 'Compare::index');
@@ -86,6 +87,7 @@ foreach (['buyer', 'supplier'] as $area) {
     $routes->group($area, ['namespace' => 'App\Controllers\Account', 'filter' => 'company:' . $area], static function ($routes) {
         $routes->get('company', 'Profile::edit');
         $routes->post('company', 'Profile::update', ['filter' => 'member:company.profile']);
+        $routes->post('company/logo', 'Profile::logo', ['filter' => 'member:company.profile']);
         $routes->get('team', 'Team::index');
         $routes->post('team', 'Team::store', ['filter' => 'member:company.members']);
         $routes->post('team/(:num)', 'Team::update/$1', ['filter' => 'member:company.members']);
@@ -168,6 +170,7 @@ $routes->group('supplier', ['namespace' => 'App\Controllers\Supplier', 'filter' 
     $routes->post('products', 'Products::create', ['filter' => 'member:inventory.manage']);
     $routes->get('products/(:num)/edit', 'Products::edit/$1');
     $routes->post('products/(:num)', 'Products::update/$1', ['filter' => 'member:inventory.manage']);
+    $routes->post('products/bulk', 'Products::bulk', ['filter' => 'member:inventory.manage']);
     $routes->post('products/(:num)/submit', 'Products::submit/$1', ['filter' => 'member:inventory.manage']);
     $routes->post('products/(:num)/status', 'Products::status/$1', ['filter' => 'member:inventory.manage']);
     $routes->post('products/(:num)/images', 'Products::uploadImage/$1', ['filter' => 'member:inventory.manage']);
@@ -347,6 +350,10 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin', 'filter' => 'st
     $routes->get('seo', 'Settings::seo', ['filter' => 'permission:seo.manage']);
     $routes->post('seo', 'Settings::updateSeo', ['filter' => 'permission:seo.manage']);
     $routes->get('audit', 'Audit::index', ['filter' => 'permission:audit.view']);
+    $routes->get('enquiries', 'Enquiries::index', ['filter' => 'permission:enquiries.manage']);
+    $routes->post('enquiries/(:num)/respond', 'Enquiries::respond/$1', ['filter' => 'permission:enquiries.manage']);
+    $routes->post('enquiries/(:num)/forward', 'Enquiries::forward/$1', ['filter' => 'permission:enquiries.manage']);
+    $routes->post('enquiries/(:num)/close', 'Enquiries::close/$1', ['filter' => 'permission:enquiries.manage']);
     $routes->get('leads', 'Leads::index', ['filter' => 'permission:leads.view']);
     $routes->post('leads/(:num)', 'Leads::update/$1', ['filter' => 'permission:leads.view']);
 });

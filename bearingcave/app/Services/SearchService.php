@@ -166,6 +166,9 @@ class SearchService
         if (isset($f['min_qty']) && is_numeric($f['min_qty'])) {
             $b->where('(p.stock_on_hand - p.stock_reserved) >=', (int) $f['min_qty']);
         }
+        if (! empty($f['clearance'])) {
+            $b->where('p.clearance_started_at IS NOT NULL', null, false);
+        }
         if (! empty($f['in_stock'])) {
             $b->where('(p.stock_on_hand - p.stock_reserved) >', 0);
         }

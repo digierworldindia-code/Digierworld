@@ -19,6 +19,8 @@ class DisputeModel extends Model
     protected $createdField   = 'created_at';
     protected $updatedField   = 'updated_at';
     protected $allowedFields  = [
+        'bc_intervention_eligible',
+        'inspection_request_id',
         'dispute_number',
         'order_id',
         'raised_by_company_id',

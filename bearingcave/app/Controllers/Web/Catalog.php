@@ -12,7 +12,7 @@ use CodeIgniter\HTTP\ResponseInterface;
 
 class Catalog extends BaseController
 {
-    private const FILTERS = ['q', 'category', 'brand', 'condition', 'country', 'age', 'verified', 'min_price', 'max_price', 'min_qty', 'in_stock', 'id', 'od', 'w', 'make', 'model', 'year', 'spec', 'sort'];
+    private const FILTERS = ['q', 'category', 'brand', 'condition', 'country', 'age', 'verified', 'min_price', 'max_price', 'min_qty', 'in_stock', 'clearance', 'id', 'od', 'w', 'make', 'model', 'year', 'spec', 'sort'];
 
     public function index(): string
     {

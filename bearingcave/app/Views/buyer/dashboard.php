@@ -37,7 +37,7 @@
             <?php elseif (! $analytics): ?>
                 <dl class="dl-grid small mb-0"><dt>Restricted access</dt><dd><?= ! empty($profile['restricted_inventory_access']) ? status_badge('approved') : '<span class="text-muted">Not granted</span>' ?></dd></dl>
             <?php else: ?>
-                <dl class="dl-grid small mb-0"><dt>Engagement</dt><dd><?= esc($profile['engagement_score'] ?? '0') ?>/100</dd><dt>RFQ genuineness</dt><dd><?= esc($profile['rfq_genuineness_score'] ?? '0') ?>/100</dd><dt>Transactions</dt><dd><?= esc($profile['transaction_score'] ?? '0') ?>/100</dd><dt>Restricted access</dt><dd><?= ! empty($profile['restricted_inventory_access']) ? status_badge('approved') : '<span class="text-muted">Not granted</span>' ?></dd></dl>
+                <dl class="dl-grid small mb-0"><dt>Engagement</dt><dd><?= esc($profile['engagement_score'] ?? '0') ?>/100</dd><dt>RFQ genuineness</dt><dd><?= esc($profile['rfq_genuineness_score'] ?? '0') ?>/100</dd><dt>Transactions</dt><dd><?= esc($profile['transaction_score'] ?? '0') ?>/100</dd><dt>BearingCave services bonus</dt><dd><?= esc($profile['services_bonus_score'] ?? '0') ?>/100</dd><dt>Overall</dt><dd class="fw-semibold"><?= esc($profile['overall_score'] ?? '0') ?>/100</dd><dt>Restricted access</dt><dd><?= ! empty($profile['restricted_inventory_access']) ? status_badge('approved') : '<span class="text-muted">Not granted</span>' ?></dd></dl>
                 <p class="small text-muted mt-2 mb-0">Scores are computed from your platform activity<?= $profile['scores_computed_at'] ? ' on ' . fdate($profile['scores_computed_at']) : ' (not yet computed)' ?>.</p>
             <?php endif ?>
         </div></div>

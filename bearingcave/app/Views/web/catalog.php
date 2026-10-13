@@ -59,6 +59,7 @@ $active = array_diff_key($f, array_flip(['sort']));
                 <div class="filter-group">
                     <div class="form-check"><input class="form-check-input" type="checkbox" name="verified" value="1" id="flt-ver"<?= ! empty($f['verified']) ? ' checked' : '' ?>><label class="form-check-label" for="flt-ver">Verified suppliers only</label></div>
                     <div class="form-check"><input class="form-check-input" type="checkbox" name="in_stock" value="1" id="flt-stock"<?= ! empty($f['in_stock']) ? ' checked' : '' ?>><label class="form-check-label" for="flt-stock">Available stock only</label></div>
+                    <div class="form-check"><input class="form-check-input" type="checkbox" name="clearance" value="1" id="flt-clr"<?= ! empty($f['clearance']) ? ' checked' : '' ?>><label class="form-check-label" for="flt-clr">Clearance deals only</label></div>
                 </div>
                 <input type="hidden" name="sort" value="<?= esc($f['sort'] ?? 'relevance', 'attr') ?>">
                 <div class="d-grid gap-2 pt-3"><button class="btn btn-primary btn-sm" type="submit">Apply filters</button><?php if ($active): ?><a class="btn btn-link btn-sm" href="<?= site_url('marketplace') ?>">Clear all</a><?php endif ?></div>

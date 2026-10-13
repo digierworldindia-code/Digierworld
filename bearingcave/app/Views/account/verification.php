@@ -5,7 +5,7 @@ $c   = $company;
 $sup = $c['company_type'] === 'supplier';
 $status = $app['status'] ?? 'not_started';
 $canSubmit = in_array($status, ['not_started', 'draft', 'changes_requested'], true) && service('companyContext')->can('company.verification');
-$docTypes = ['registration_certificate' => 'Company registration certificate', 'gst_certificate' => 'GST certificate', 'pan_card' => 'PAN card', 'tax_registration' => 'Tax / VAT registration', 'bank_letter' => 'Bank letter / cancelled cheque', 'address_proof' => 'Address proof', 'director_id' => 'Director / owner ID', 'financial_statement' => 'Financial statement', 'quality_manual' => 'Quality manual', 'insurance' => 'Insurance certificate', 'other' => 'Other'];
+$docTypes = \App\Services\DocumentService::COMPANY_DOC_TYPES;
 ?>
 <?= view('components/page_header', ['title' => ($sup ? 'Supplier' : 'Buyer') . ' verification', 'subtitle' => $sup ? 'Complete each section, then submit. Verification approval and membership payment are separate steps.' : 'Verified buyers gain a badge and become eligible for restricted inventory and enhanced sourcing features.']) ?>
 

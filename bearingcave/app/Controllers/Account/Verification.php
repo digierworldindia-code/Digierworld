@@ -170,7 +170,7 @@ class Verification extends AreaController
 
     public function uploadDocument()
     {
-        if ($r = $this->invalid(['doc_type' => 'required|in_list[registration_certificate,gst_certificate,pan_card,tax_registration,bank_letter,address_proof,director_id,financial_statement,quality_manual,insurance,other]',
+        if ($r = $this->invalid(['doc_type' => 'required|in_list[' . implode(',', array_keys(\App\Services\DocumentService::COMPANY_DOC_TYPES)) . ']',
             'title' => 'required|max_length[191]', 'expires_on' => 'permit_empty|valid_date[Y-m-d]', 'replace_id' => 'permit_empty|is_natural_no_zero'])) {
             return $r;
         }

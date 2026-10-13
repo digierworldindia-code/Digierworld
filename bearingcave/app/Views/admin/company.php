@@ -11,7 +11,7 @@
         </div></div></div>
         <div class="bc-card mb-4"><div class="bc-card-header"><h2>Activity</h2></div><div class="bc-card-body d-flex gap-4 small"><span><?= (int) $counts['products'] ?> products</span><span><?= (int) $counts['orders'] ?> orders</span><span><?= (int) $counts['rfqs'] ?> RFQs</span>
             <?php if ($sup && $perf): ?><span>Performance <?= $perf['overall_score'] !== null ? esc($perf['overall_score']) . '/100' : 'n/a' ?> (<?= fdate($perf['computed_at']) ?>)</span><?php endif ?>
-            <?php if (! $sup && $profile): ?><span>Engagement <?= esc($profile['engagement_score']) ?> · Genuineness <?= esc($profile['rfq_genuineness_score']) ?> · Transactions <?= esc($profile['transaction_score']) ?></span><?php endif ?>
+            <?php if (! $sup && $profile): ?><span>Engagement <?= esc($profile['engagement_score']) ?> · Genuineness <?= esc($profile['rfq_genuineness_score']) ?> · Transactions <?= esc($profile['transaction_score']) ?> · Services bonus <?= esc($profile['services_bonus_score'] ?? '—') ?> · Overall <?= esc($profile['overall_score'] ?? '—') ?></span><?php endif ?>
         </div></div>
         <div class="bc-card mb-4"><div class="bc-card-header"><h2>Team</h2></div><div class="table-responsive"><table class="table table-bc mb-0 small"><thead><tr><th>Email</th><th>Role</th><th>Status</th><th>Last active</th></tr></thead><tbody><?php foreach ($members as $m): ?><tr><td><a href="<?= site_url('admin/users/' . $m['user_id']) ?>"><?= esc($m['email']) ?></a></td><td><?= esc($m['member_role']) ?></td><td><?= status_badge($m['status']) ?></td><td><?= fdt($m['last_active']) ?></td></tr><?php endforeach ?></tbody></table></div></div>
         <?php if ($sup): ?>

@@ -14,6 +14,14 @@
                 <div class="col-md-6"><?= field('buyer_po_reference', 'Your PO reference', null, ['class' => '']) ?></div>
             </div>
         </fieldset>
+        <fieldset class="bc-fieldset"><legend>Optional inspection before purchase confirmation</legend>
+            <div class="form-check mb-2"><input class="form-check-input" type="checkbox" name="request_inspection" value="1" id="reqInsp" data-toggle-target="#inspOpts"<?= old('request_inspection') ? ' checked' : '' ?>><label class="form-check-label" for="reqInsp">Request BearingCave inspection for these orders (additional cost)</label></div>
+            <div id="inspOpts" class="row g-2<?= old('request_inspection') ? '' : ' d-none' ?>">
+                <div class="col-md-6"><?= select_field('inspection_type', 'Inspection type', ['in_house' => 'In-house BearingCave team — ' . rtrim(rtrim(number_format((float) policy('inspection.in_house_rate_pct', 10), 2), '0'), '.') . '% of total invoice value', 'third_party' => 'Third-party agency (e.g. SGS) — quoted by volume and location'], 'in_house', ['class' => '']) ?></div>
+                <div class="col-md-6 small"><span class="d-block mb-1">Services</span><?php foreach (\App\Services\InspectionService::SCOPES as $k => $l): ?><div class="form-check"><input class="form-check-input" type="checkbox" name="inspection_scope[]" value="<?= $k ?>" id="sc-<?= $k ?>" checked><label class="form-check-label" for="sc-<?= $k ?>"><?= esc($l) ?></label></div><?php endforeach ?></div>
+                <p class="small text-muted mb-0 col-12">An inspection request is created for each supplier order. You accept the inspection quote separately; nothing is charged until then.</p>
+            </div>
+        </fieldset>
         <div class="alert alert-light border small">
             <p class="mb-1"><strong>How payment works:</strong> after each supplier confirms, a proforma invoice is issued. <?= $escrow ? 'Escrow-supported payment is available.' : 'Escrow-supported payments will be offered once the licensed escrow partner is configured; until then pay by bank transfer, confirmed by BearingCave finance.' ?></p>
             <p class="mb-1"><?= esc((string) $warranty) ?></p>

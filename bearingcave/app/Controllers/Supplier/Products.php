@@ -36,12 +36,38 @@ class Products extends BaseController
         if (($age = $this->request->getGet('age')) && ($sql = InventoryService::ageBucketSql($age, 'products.inventory_age_date'))) {
             $m->where($sql, null, false);
         }
+        if ($this->request->getGet('clearance') === '1') {
+            $m->where('products.clearance_started_at IS NOT NULL', null, false);
+        }
         $m->orderBy('products.updated_at', 'DESC');
 
         return view('supplier/products', [
             'title' => 'Inventory', 'area' => 'supplier', 'products' => $m->paginate(25), 'pager' => $m->pager,
             'limit' => service('entitlements')->limit($this->company(), 'max_active_products'), 'ages' => InventoryService::AGE_BUCKETS,
         ]);
+    }
+
+    /**
+     * Bulk management / liquidation tools for many listings at once.
+     */
+    public function bulk()
+    {
+        if ($r = $this->invalid(['action' => 'required|in_list[' . implode(',', array_keys(\App\Services\ProductService::BULK_ACTIONS)) . ']', 'ids' => 'required', 'clearance_pct' => 'permit_empty|decimal|greater_than_equal_to[1]|less_than_equal_to[90]'])) {
+            return $r;
+        }
+        $action = (string) $this->request->getPost('action');
+        if ($action === 'clearance_start' && (string) $this->request->getPost('clearance_pct') === '') {
+            return redirect()->back()->withInput()->with('error', 'Enter the clearance discount %.');
+        }
+        try {
+            $res = service('products')->bulk($this->company(), (array) $this->request->getPost('ids'), $action, (float) $this->request->getPost('clearance_pct'));
+        } catch (\App\Exceptions\BusinessRuleException $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        }
+        $msg = $res['done'] . ' listing(s) updated: ' . \App\Services\ProductService::BULK_ACTIONS[$action] . '.';
+        $redirect = redirect()->back()->with('success', $msg);
+
+        return $res['failed'] ? $redirect->with('error', count($res['failed']) . ' not changed — ' . implode(' · ', array_slice($res['failed'], 0, 10))) : $redirect;
     }
 
     public function export()

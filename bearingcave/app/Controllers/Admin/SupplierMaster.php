@@ -19,6 +19,7 @@ class SupplierMaster extends AdminController
         $m = model(ImportJobModel::class)->where('import_type', 'supplier_master')->orderBy('id', 'DESC');
 
         return $this->page('supplier_master', ['title' => 'Supplier master data', 'fields' => service('supplierMaster')->fields(), 'targets' => SupplierMasterService::TARGETS,
+            'retired' => model(SupplierMasterFieldModel::class)->where('is_active', 0)->countAllResults(),
             'jobs' => $m->paginate(20), 'pager' => $m->pager,
             'records' => db_connect()->table('supplier_master_attributes')->select('COUNT(DISTINCT company_id) AS companies, COUNT(*) AS cells')->get()->getRowArray()]);
     }

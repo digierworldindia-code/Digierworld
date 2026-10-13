@@ -7,82 +7,118 @@ namespace App\Database\Seeds;
 use CodeIgniter\Database\Seeder;
 
 /**
- * PROPOSED supplier master-data field map (86 fields).
+ * Supplier master-data fields = the 86 column headings of the client's
+ * "Suppiler list" tab (BearingCave workbook, supplied 2026-10-13), in sheet
+ * order and with the sheet's own spelling (e.g. "Manufacturing Catagory").
  *
- * The client's "Suppiler list" spreadsheet tab defines 86 column headings,
- * but that sheet could not be accessed from the build environment. These
- * fields cover the areas named in the brief (contact, legal, certifications,
- * financial, risk, audits, sanctions, performance, approvals, vendor status)
- * and are flagged is_confirmed = 0. When the real sheet is uploaded through
- * Admin → Supplier Master, any heading that does not match is registered
- * automatically, so no source column is ever dropped. Admins can then
- * rename/retarget fields to mirror the sheet exactly.
+ * Headings that correspond to a normalized column carry a target; every
+ * value is also kept in supplier_master_attributes, so no column is lost.
+ * "Bank account" is never stored in plain text: it is encrypted into
+ * kyc_records and only a masked value is kept as an attribute.
  */
 class SupplierMasterFieldSeeder extends Seeder
 {
+    /**
+     * @return array<string, list<array{0:string,1:?string}>> group => [[heading, target]]
+     */
     public static function fields(): array
     {
         return [
             'contact' => [
-                ['Supplier Name', 'companies.legal_name'], ['Trade Name', 'companies.trade_name'], ['Contact Person', null], ['Designation', null],
-                ['Email', 'companies.email'], ['Phone', 'companies.phone'], ['Website', 'companies.website'],
-                ['Address Line 1', 'companies.address_line1'], ['City', 'companies.city'], ['State', 'companies.state'],
-                ['Postal Code', 'companies.postal_code'], ['Country', 'companies.country_code'],
+                ['SKU', null], ['Company Name', 'companies.legal_name'], ['Contact Person', null], ['Designation', null],
+                ['Manufacturing Catagory', 'supplier_profiles.main_categories'], ['Address 1', 'companies.address_line1'], ['State', 'companies.state'],
+                ['Country', 'companies.country_code'], ['Land Line No.', 'companies.phone'], ['Mobile no.', null], ['Fax No.', null],
+                ['Email', 'companies.email'], ['Website', 'companies.website'], ['Instagram', null], ['Facebook', null], ['Linkedin', null],
             ],
-            'legal' => [
-                ['Company Registration No', 'companies.registration_number'], ['Business Type', 'companies.business_type'], ['Year Established', 'companies.year_established'],
-                ['Number of Employees', 'companies.employee_count'], ['GST Number', 'kyc_records.gst_number'], ['PAN', 'kyc_records.pan_number'], ['CIN', 'kyc_records.cin_number'],
-                ['VAT Number', 'kyc_records.vat_number'], ['Tax ID', 'kyc_records.tax_id'], ['Directors / Owners', null], ['Ultimate Beneficial Owner', null], ['Supplier Type', 'supplier_profiles.supplier_type'],
+            'registration_kyc' => [
+                ['GST Registration', 'kyc_records.gst_number'], ['PAN Card', 'kyc_records.pan_number'], ['CIN', 'kyc_records.cin_number'],
+                ['VAT', 'kyc_records.vat_number'], ['Tax ID validation', 'kyc_records.tax_id'], ['Bank account', 'kyc_records.bank_account_number'],
+                ['Certificate of Incorporation', null], ['MSME Certificate', null], ['Import Export Code (IEC)', null], ['Director/Owner verification', null],
             ],
-            'capability' => [
-                ['Product Categories', 'supplier_profiles.main_categories'], ['Brands Handled', 'supplier_profiles.brands_handled'], ['Production Capacity', 'supplier_profiles.production_capacity'],
-                ['Export Markets', 'supplier_profiles.export_markets'], ['Warehouse Locations', null], ['Company Description', 'companies.description'],
-            ],
-            'certifications' => [
-                ['ISO 9001', null], ['ISO 9001 Expiry', null], ['IATF 16949', null], ['IATF 16949 Expiry', null], ['AS9100', null], ['ISO 14001', null],
-                ['RoHS Compliance', null], ['REACH Compliance', null], ['ESG Rating', null], ['Insurance Cover', null], ['Insurance Expiry', null], ['Labour Compliance', null],
+            'compliance' => [
+                ['ISO certifications', null], ['IATF 16949 (Automotive)', null], ['AS9100 (Aerospace)', null], ['RoHS & REACH compliance', null],
+                ['ESG compliance', null], ['Insurance certificates', null], ['Labor law compliance', null],
             ],
             'financial' => [
-                ['Annual Turnover', null], ['Financial Year', null], ['Net Profit', null], ['Credit Rating', null], ['Credit Rating Agency', null],
-                ['Bank Name', null], ['Banking Reference', null], ['Pending Legal Cases', null], ['Bankruptcy History', null],
+                ['Credit rating', null], ['Annual turnover', null], ['Profitability', null], ['Balance sheet review', null],
+                ['Banking references', null], ['Outstanding legal cases', null], ['Bankruptcy checks', null],
             ],
             'risk' => [
-                ['Financial Risk', null], ['Operational Risk', null], ['Compliance Risk', null], ['Geographic Risk', null], ['Supply Risk', null], ['ESG Risk', null], ['Overall Risk Level', null],
+                ['Risk outputs', null], ['Financial Risk', null], ['Operational Risk', null], ['Compliance Risk', null],
+                ['Geographic Risk', null], ['Supply Risk', null], ['ESG Risk', null],
             ],
-            'audit' => [
-                ['Last Site Audit Date', null], ['Site Audit Result', null], ['Auditor', null], ['Manufacturing Capability Score', null], ['Machinery Condition', null],
-                ['Warehouse Management', null], ['Calibration Status', null], ['Quality Processes (PPAP/APQP/FMEA/CAPA)', null],
+            'quality' => [
+                ['Quality certifications', null], ['Inspection systems', null], ['PPAP capability', null], ['Incoming and outgoing QC procedures', null],
+                ['CAPA process', null], ['Rejection history', null], ['IATF 16949', null], ['PPAP', null], ['APQP', null], ['FMEA capability', null],
+            ],
+            'site_audit' => [
+                ['Manufacturing capability', null], ['Production capacity', 'supplier_profiles.production_capacity'], ['Machinery condition', null],
+                ['Warehouse management', null], ['Calibration systems', null], ['Employee competency', null], ['Quality systems', null], ['Outputs', null],
+            ],
+            'documents' => [
+                ['ISO certificates', null], ['Insurance policies', null], ['NDAs', null], ['Contracts', null], ['Quality certificates', null],
+                ['Test reports', null], ['Features', null],
             ],
             'sanctions' => [
-                ['UN Sanctions Check', null], ['OFAC Check', null], ['PEP Check', null], ['AML Check', null], ['Screening Date', null], ['Screening Provider', null],
+                ['UN sanctions lists', null], ['OFAC sanctions', null], ['Politically Exposed Persons (PEP)', null], ['Anti-money laundering databases', null],
             ],
             'performance' => [
-                ['On-time Delivery %', null], ['Quality Rejection %', null], ['Cost Competitiveness', null], ['Average Response Time (hrs)', null], ['Service Level', null], ['Overall Performance Score', null],
+                ['On-time delivery %', null], ['Quality rejection %', null], ['Cost competitiveness', null], ['Response time', null], ['Service level', null],
             ],
-            'approvals' => [
-                ['Approved Categories', null], ['Approved Brands', null], ['Approved Products', null], ['Vendor Status', null], ['Approval Date', null],
-                ['Membership Plan', null], ['Membership Expiry', null], ['Account Manager', null], 
+            'avl' => [
+                ['Category-wise supplier approval', null], ['Approved brands', null], ['Product-specific approvals', null],
+                ['Supplier status tracking', null], ['Suspension and reactivation', null],
             ],
         ];
     }
 
-    public function run(): void
+    public static function key(string $heading): string
     {
-        $sort = 0;
-        $now  = date('Y-m-d H:i:s');
+        return str_replace('-', '_', make_slug($heading, 90));
+    }
+
+    /**
+     * Inserts missing sheet fields and confirms/activates existing ones with
+     * the same key. Never deletes rows; fields not in the sheet are only
+     * deactivated (their stored values stay readable).
+     */
+    public static function sync(\CodeIgniter\Database\BaseConnection $db): array
+    {
+        helper('app');
+        $now    = date('Y-m-d H:i:s');
+        $sort   = 0;
+        $keys   = [];
+        $stats  = ['inserted' => 0, 'updated' => 0, 'deactivated' => 0];
+        // Read the live schema: fieldExists() caches column names per connection,
+        // which is stale when the column was added earlier in the same migrate run.
+        $hasActive = in_array('is_active', array_column($db->query('SHOW COLUMNS FROM supplier_master_fields')->getResultArray(), 'Field'), true);
         foreach (self::fields() as $group => $fields) {
             foreach ($fields as [$heading, $target]) {
-                $key = str_replace('-', '_', make_slug($heading, 90));
-                if ($this->db->table('supplier_master_fields')->where('field_key', $key)->countAllResults() > 0) {
-                    $sort++;
-
-                    continue;
+                $key    = self::key($heading);
+                $keys[] = $key;
+                $row    = ['source_heading' => $heading, 'field_group' => $group, 'target' => $target, 'sort_order' => $sort++, 'is_confirmed' => 1, 'updated_at' => $now];
+                if ($hasActive) {
+                    $row['is_active'] = 1;
                 }
-                $this->db->table('supplier_master_fields')->insert([
-                    'source_heading' => $heading, 'field_key' => $key, 'field_group' => $group, 'target' => $target,
-                    'data_type' => 'string', 'sort_order' => $sort++, 'is_confirmed' => 0, 'created_at' => $now, 'updated_at' => $now,
-                ]);
+                if ($db->table('supplier_master_fields')->where('field_key', $key)->countAllResults() > 0) {
+                    $db->table('supplier_master_fields')->where('field_key', $key)->update($row);
+                    $stats['updated']++;
+                } else {
+                    $db->table('supplier_master_fields')->insert($row + ['field_key' => $key, 'data_type' => 'string', 'created_at' => $now]);
+                    $stats['inserted']++;
+                }
             }
         }
+        if ($hasActive) {
+            $db->table('supplier_master_fields')->whereNotIn('field_key', $keys)->where('is_confirmed', 0)->update(['is_active' => 0, 'sort_order' => 1000, 'updated_at' => $now]);
+            $stats['deactivated'] = $db->affectedRows();
+        }
+
+        return $stats;
+    }
+
+    public function run(): void
+    {
+        self::sync($this->db);
     }
 }

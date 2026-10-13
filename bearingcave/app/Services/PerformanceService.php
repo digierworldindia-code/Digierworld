@@ -48,13 +48,19 @@ class PerformanceService
         $disputes = (int) $db->table('disputes')->where('against_company_id', $companyId)->where('created_at >=', $since)->countAllResults();
         $service  = $orders > 0 ? round(max(0, 100 - 100 * $disputes / $orders), 2) : null;
 
-        $parts   = array_filter([$onTime, $rejection !== null ? 100 - $rejection : null, $cost, $responseRate, $service], static fn ($v) => $v !== null);
+        // Compliance (workbook: "based on transaction history, reliability, and compliance"):
+        // share of submitted certifications that are verified and not expired.
+        $cert = $db->query("SELECT COUNT(*) total, SUM(status = 'verified' AND (expires_on IS NULL OR expires_on >= CURDATE())) valid
+            FROM compliance_certifications WHERE company_id = ? AND status <> 'rejected'", [$companyId])->getRowArray();
+        $compliance = (int) $cert['total'] > 0 ? round(100 * (int) $cert['valid'] / (int) $cert['total'], 2) : null;
+
+        $parts   = array_filter([$onTime, $rejection !== null ? 100 - $rejection : null, $cost, $responseRate, $service, $compliance], static fn ($v) => $v !== null);
         $overall = $parts ? round(array_sum($parts) / count($parts), 2) : null;
 
         $row = [
             'company_id' => $companyId, 'period_start' => $from, 'period_end' => $to, 'orders_count' => $orders,
             'on_time_delivery_pct' => $onTime, 'quality_rejection_pct' => $rejection, 'cost_competitiveness' => $cost,
-            'avg_response_hours' => $avgHours, 'rfq_response_rate_pct' => $responseRate, 'service_level' => $service,
+            'avg_response_hours' => $avgHours, 'rfq_response_rate_pct' => $responseRate, 'service_level' => $service, 'compliance_score' => $compliance,
             'overall_score' => $overall, 'source' => 'computed', 'computed_at' => date('Y-m-d H:i:s'),
         ];
         $m = model(SupplierPerformanceModel::class);
@@ -89,14 +95,25 @@ class PerformanceService
         $orders   = (int) $db->table('orders')->where('buyer_company_id', $companyId)->where('created_at >=', $since)->countAllResults();
         $done     = (int) $db->table('orders')->where('buyer_company_id', $companyId)->where('status', 'completed')->where('created_at >=', $since)->countAllResults();
 
+        // Workbook bonus: use of BearingCave logistics and inspection services (not cancelled).
+        $services = (int) $db->table('logistics_requests')->where('company_id', $companyId)->whereNotIn('status', ['cancelled'])->where('created_at >=', $since)->countAllResults()
+            + (int) $db->table('inspection_requests')->where('company_id', $companyId)->whereNotIn('status', ['cancelled'])->where('created_at >=', $since)->countAllResults();
+
         $engagement  = min(100, $searches * 1 + $enq * 5 + $rfqs * 10);
         $genuine     = $rfqs > 0 ? round(100 * ($awarded + 0.5 * max(0, $rfqs - $awarded - $cancel)) / $rfqs, 2) : 0;
         $transaction = $orders > 0 ? round(100 * $done / $orders, 2) : 0;
+        $bonus       = min(100, $services * (int) policy('buyer.services_bonus_per_use', 25));
+
+        // Overall = weighted engagement + transaction behaviour + the two workbook bonuses.
+        $w       = array_merge(['engagement' => 40, 'transaction' => 40, 'services_bonus' => 10, 'genuine_rfq_bonus' => 10], (array) policy('buyer.score_weights', []));
+        $sum     = max(1, array_sum(array_map('floatval', $w)));
+        $overall = round(min(100, ($engagement * $w['engagement'] + $transaction * $w['transaction'] + $bonus * $w['services_bonus'] + $genuine * $w['genuine_rfq_bonus']) / $sum), 2);
 
         model(BuyerProfileModel::class)->where('company_id', $companyId)->set([
-            'engagement_score' => $engagement, 'rfq_genuineness_score' => $genuine, 'transaction_score' => $transaction, 'scores_computed_at' => date('Y-m-d H:i:s'),
+            'engagement_score' => $engagement, 'rfq_genuineness_score' => $genuine, 'transaction_score' => $transaction,
+            'services_bonus_score' => $bonus, 'overall_score' => $overall, 'scores_computed_at' => date('Y-m-d H:i:s'),
         ])->update();
 
-        return compact('searches', 'enq', 'rfqs', 'awarded', 'orders', 'done', 'engagement', 'genuine', 'transaction');
+        return compact('searches', 'enq', 'rfqs', 'awarded', 'orders', 'done', 'services', 'engagement', 'genuine', 'transaction', 'bonus', 'overall');
     }
 }

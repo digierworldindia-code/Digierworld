@@ -28,7 +28,7 @@ $img      = product_image_url($p['image_path'] ?? null);
             <span><i class="bi bi-box" aria-hidden="true"></i> <?= number_format($avail) ?> <?= esc($p['unit_of_measure']) ?> available</span>
             <span><i class="bi bi-geo-alt" aria-hidden="true"></i> <?= esc(country_name($p['warehouse_country'])) ?></span>
         </div>
-        <div class="meta"><?= esc(\App\Services\ProductService::CONDITIONS[$p['item_condition']] ?? $p['item_condition']) ?> · MOQ <?= (int) $p['moq'] ?> · Age: <?= age_label($p['inventory_age_date']) ?></div>
+        <div class="meta"><?= esc(\App\Services\ProductService::CONDITIONS[$p['item_condition']] ?? $p['item_condition']) ?> · MOQ <?= (int) $p['moq'] ?> · Age: <?= age_label($p['inventory_age_date']) ?><?= ! empty($p['clearance_started_at']) ? ' <span class="badge-soft warning">Clearance</span>' : '' ?></div>
         <div class="mt-auto pt-2 d-flex justify-content-between align-items-end gap-2">
             <div>
                 <?php if ($canPrice && $price['total'] !== null): ?>

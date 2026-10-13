@@ -17,6 +17,20 @@ use CodeIgniter\HTTP\Files\UploadedFile;
  */
 class DocumentService
 {
+    /**
+     * Company document types. Includes every document named in the client
+     * workbook (Supplier Verification: documents collected; Document
+     * Management Module).
+     */
+    public const COMPANY_DOC_TYPES = [
+        'registration_certificate' => 'Certificate of Incorporation / registration', 'gst_certificate' => 'GST registration', 'pan_card' => 'PAN card',
+        'msme_certificate' => 'MSME certificate', 'iec_certificate' => 'Import Export Code (IEC)', 'tax_registration' => 'Tax / VAT registration',
+        'bank_letter' => 'Bank letter / cancelled cheque', 'address_proof' => 'Address proof', 'director_id' => 'Director / owner ID',
+        'financial_statement' => 'Financial statement / balance sheet', 'iso_certificate' => 'ISO certificate', 'quality_certificate' => 'Quality certificate',
+        'quality_manual' => 'Quality manual', 'insurance' => 'Insurance policy / certificate', 'nda' => 'NDA', 'contract' => 'Contract',
+        'test_report' => 'Test report', 'other' => 'Other',
+    ];
+
     public const ALLOWED = [
         'pdf'  => ['application/pdf'],
         'jpg'  => ['image/jpeg'],

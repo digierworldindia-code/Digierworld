@@ -74,11 +74,11 @@ class ReportService
             'inspection_requests' => ["SELECT inspection_type, status, COUNT(*) AS requests, SUM(quoted_fee) AS quoted_fees FROM inspection_requests WHERE created_at BETWEEN ? AND ? GROUP BY inspection_type, status", [$f, $t]],
             'logistics_requests' => ["SELECT mode, status, COUNT(*) AS requests, SUM(quoted_fee) AS quoted_fees FROM logistics_requests WHERE created_at BETWEEN ? AND ? GROUP BY mode, status", [$f, $t]],
             'supplier_performance' => ["SELECT co.legal_name AS supplier, sp.period_start, sp.period_end, sp.orders_count, sp.on_time_delivery_pct, sp.quality_rejection_pct,
-                sp.cost_competitiveness, sp.avg_response_hours, sp.rfq_response_rate_pct, sp.service_level, sp.overall_score, sp.computed_at
+                sp.cost_competitiveness, sp.avg_response_hours, sp.rfq_response_rate_pct, sp.service_level, sp.compliance_score, sp.overall_score, sp.computed_at
                 FROM supplier_performance sp JOIN companies co ON co.id = sp.company_id
                 WHERE sp.id IN (SELECT MAX(id) FROM supplier_performance GROUP BY company_id) ORDER BY sp.overall_score DESC", []],
-            'buyer_engagement' => ["SELECT c.legal_name AS buyer, c.verification_status, bp.engagement_score, bp.rfq_genuineness_score, bp.transaction_score, bp.scores_computed_at
-                FROM buyer_profiles bp JOIN companies c ON c.id = bp.company_id WHERE c.deleted_at IS NULL ORDER BY bp.engagement_score DESC", []],
+            'buyer_engagement' => ["SELECT c.legal_name AS buyer, c.verification_status, bp.engagement_score, bp.rfq_genuineness_score, bp.transaction_score, bp.services_bonus_score, bp.overall_score, bp.scores_computed_at
+                FROM buyer_profiles bp JOIN companies c ON c.id = bp.company_id WHERE c.deleted_at IS NULL ORDER BY bp.overall_score DESC", []],
         };
 
         $rows = $db->query($sql[0], $sql[1])->getResultArray();

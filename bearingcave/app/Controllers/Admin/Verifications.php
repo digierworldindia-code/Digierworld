@@ -186,6 +186,13 @@ class Verifications extends AdminController
                 $v = $this->request->getPost($f);
                 $row[$f] = $v === '' || $v === null ? null : max(1, min(5, (int) $v));
             }
+            // Workbook outputs: audit score (derived from the 1–5 ratings, never typed in),
+            // corrective action requests and approval recommendation.
+            $rated = array_filter(array_intersect_key($row, array_flip(['manufacturing_capability', 'production_capacity', 'machinery_condition', 'warehouse_management', 'calibration', 'workforce_capability', 'quality_processes'])), static fn ($v) => $v !== null);
+            $row['audit_score']        = $rated ? round(100 * array_sum($rated) / (5 * count($rated)), 2) : null;
+            $row['corrective_actions'] = trim((string) $this->request->getPost('corrective_actions')) ?: null;
+            $rec                       = (string) $this->request->getPost('recommendation');
+            $row['recommendation']     = in_array($rec, ['approve', 'approve_with_conditions', 'reject'], true) ? $rec : null;
             if (in_array($row['result'], ['pass', 'conditional', 'fail'], true) && ! $row['conducted_on']) {
                 throw new \App\Exceptions\BusinessRuleException('Enter the date the audit was conducted.');
             }

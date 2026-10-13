@@ -12,6 +12,24 @@ use App\Models\SavedProductModel;
 
 class Product extends BaseController
 {
+    /**
+     * Real-time stock for the product page (polled by app.js). Same visibility
+     * rules as the page itself; restricted listings answer 404.
+     */
+    public function stock(string $uuid)
+    {
+        $product = model(ProductModel::class)->where('uuid', $uuid)->first();
+        if (! $product || ! service('visibility')->canView($product)) {
+            return $this->response->setStatusCode(404)->setJSON(['error' => 'Not found']);
+        }
+
+        return $this->response->setHeader('Cache-Control', 'no-store')->setJSON([
+            'available' => max(0, (int) $product['stock_on_hand'] - (int) $product['stock_reserved']),
+            'status'    => $product['status'],
+            'checked_at' => date('c'),
+        ]);
+    }
+
     public function show(string $slug)
     {
         $product = model(ProductModel::class)->where('slug', $slug)->first();
@@ -65,7 +83,7 @@ class Product extends BaseController
             'showIdentity' => $vis->canSeeSupplierIdentity($supplier, $product, $viewer),
             'showContact' => $vis->canSeeSupplierContact($supplier, $product, $viewer),
             'supplierVerified' => service('entitlements')->isVerifiedSupplier($supplier),
-            'acceptsEnquiries' => service('entitlements')->has($supplier, 'direct_enquiries'),
+            'directEnquiries' => service('entitlements')->has($supplier, 'direct_enquiries'),
             'brand'      => $product['brand_id'] ? $db->table('brands')->where('id', $product['brand_id'])->get()->getRowArray() : null,
             'category'   => $db->table('categories')->where('id', $product['category_id'])->get()->getRowArray(),
             'images'     => $images,
@@ -113,16 +131,25 @@ class Product extends BaseController
             return $r;
         }
         $supplier = model(CompanyModel::class)->find($product['company_id']);
-        if (! service('entitlements')->has($supplier, 'direct_enquiries')) {
-            return redirect()->back()->withInput()->with('error', 'This supplier does not take direct enquiries. Please submit an RFQ instead.');
-        }
-        model(ProductEnquiryModel::class)->insert([
+        // Workbook: direct enquiry to the supplier is a Verified-plan feature
+        // (entitlement direct_enquiries). Otherwise BearingCave receives the
+        // enquiry and answers it or forwards it to the supplier.
+        $direct = service('entitlements')->has($supplier, 'direct_enquiries');
+        $id     = (int) model(ProductEnquiryModel::class)->insert([
             'product_id' => $id, 'buyer_company_id' => service('companyContext')->companyId(), 'user_id' => $this->userId(),
             'quantity' => $this->request->getPost('quantity') ?: null, 'message' => $this->request->getPost('message'), 'status' => 'open',
+            'routing' => $direct ? 'direct' : 'platform',
         ]);
-        service('notifications')->notifyCompany((int) $supplier['id'], 'enquiry.new', 'New enquiry for ' . $product['part_number'], mb_substr((string) $this->request->getPost('message'), 0, 200), 'supplier/enquiries');
+        $preview = mb_substr((string) $this->request->getPost('message'), 0, 200);
+        if ($direct) {
+            service('notifications')->notifyCompany((int) $supplier['id'], 'enquiry.new', 'New enquiry for ' . $product['part_number'], $preview, 'supplier/enquiries');
+            $msg = 'Your enquiry was sent to the supplier. Replies appear under Buyer → Enquiries. Supplier identity stays confidential unless they choose to share it.';
+        } else {
+            service('notifications')->notifyStaff(['support_executive', 'procurement_manager'], 'enquiry.platform', 'Buyer enquiry for ' . $product['part_number'] . ' (via BearingCave)', $preview, 'admin/enquiries');
+            $msg = 'Your enquiry was sent to BearingCave, which will answer it or pass it to the supplier. Replies appear under Buyer → Enquiries.';
+        }
 
-        return redirect()->to(site_url('product/' . $product['slug']))->with('success', 'Your enquiry was sent. Replies appear under Buyer → Enquiries. Supplier identity stays confidential unless they choose to share it.');
+        return redirect()->to(site_url('product/' . $product['slug']))->with('success', $msg);
     }
 
     public function toggleSave(int $id)
