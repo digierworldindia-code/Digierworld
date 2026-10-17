@@ -1,0 +1,294 @@
+/* ==========================================================================
+   POLYFIZZ floor — warehouse and field-agent panels
+   --------------------------------------------------------------------------
+   Loaded after console.css, which supplies the palette and the Bootstrap
+   overrides. This sheet is only what the two hand-held panels need on top.
+
+   The people using these screens are standing up, holding a phone in one
+   hand and a mattress in the other, often in poor light and sometimes in
+   gloves. So: few controls, each one large enough to hit without looking,
+   state readable at arm's length, and nothing that depends on hover or on
+   reading a sentence. Labels are short and plain, because they are read by
+   people who work in Hindi and in English.
+   ========================================================================== */
+
+.floor {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+}
+
+/* ---------- top bar ---------- */
+.floor-top {
+  background: #121417;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  padding: .7rem 1rem;
+  position: sticky;
+  top: 0;
+  z-index: 1020;
+  padding-top: max(.7rem, env(safe-area-inset-top));
+}
+.floor-top .brand {
+  color: #fff;
+  text-decoration: none;
+  font-weight: 700;
+  letter-spacing: .14em;
+  font-size: .95rem;
+}
+.floor-top .brand span { color: #9fc5b3; }
+.floor-top .who { margin-left: auto; text-align: right; line-height: 1.15; }
+.floor-top .who strong { display: block; font-size: .8rem; font-weight: 600; }
+.floor-top .who small { color: #8a9096; font-size: .7rem; }
+.floor-top .back {
+  color: #c9ccd1;
+  text-decoration: none;
+  font-size: 1.4rem;
+  line-height: 1;
+  padding: .1rem .4rem .1rem 0;
+}
+
+.floor-main { flex: 1; padding: 1rem; padding-bottom: max(1rem, env(safe-area-inset-bottom)); }
+.floor-main > .page-head { margin-bottom: 1rem; }
+
+/* ---------- the big buttons ----------
+   The warehouse menu is five of these and nothing else. Each is a link the
+   whole area of which is tappable; 5.5rem is comfortably past the 44px
+   minimum even with a glove on. */
+.floor-menu {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: .75rem;
+}
+@media (min-width: 576px) { .floor-menu { grid-template-columns: 1fr 1fr; } }
+
+.floor-action {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  min-height: 5.5rem;
+  padding: 1rem 1.1rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-left: 5px solid var(--accent);
+  border-radius: var(--radius-lg);
+  color: var(--ink);
+  text-decoration: none;
+}
+.floor-action:active { background: var(--accent-soft); }
+.floor-action i { font-size: 2rem; color: var(--accent); flex: none; }
+.floor-action strong { display: block; font-size: 1.1rem; font-weight: 650; line-height: 1.2; }
+.floor-action span { font-size: .85rem; color: var(--ink-muted); }
+.floor-action .count {
+  margin-left: auto;
+  font-size: 1.5rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent);
+}
+.floor-action--muted { border-left-color: var(--line); }
+.floor-action--muted i { color: var(--ink-muted); }
+
+/* A primary action at the bottom of a working screen: confirm, submit. */
+.floor-commit {
+  position: sticky;
+  bottom: 0;
+  background: linear-gradient(to top, var(--bg) 70%, transparent);
+  padding: .75rem 0 max(.75rem, env(safe-area-inset-bottom));
+  margin-top: 1rem;
+}
+.floor-commit .btn { min-height: 3.5rem; font-size: 1.05rem; font-weight: 600; }
+
+.btn-floor { min-height: 3.25rem; font-size: 1rem; font-weight: 600; }
+
+/* ==========================================================================
+   The scanner
+   ========================================================================== */
+
+.scanner {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+/* ---------- the viewfinder ---------- */
+.scanner__view {
+  position: relative;
+  background: #0d0e10;
+  aspect-ratio: 4 / 3;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+.scanner__view video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+/* Until the camera is running there is nothing to show but the reason why. */
+.scanner:not(.is-scanning) .scanner__view video { visibility: hidden; }
+.scanner__idle {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  gap: .5rem;
+  align-content: center;
+  color: #8a9096;
+  text-align: center;
+  padding: 1rem;
+}
+.scanner__idle i { font-size: 3rem; }
+.scanner.is-scanning .scanner__idle { display: none; }
+
+/* The target. Corner marks rather than a full box: they frame the label
+   without hiding it, and they are visible against a white mattress tag. */
+.scanner__frame {
+  position: absolute;
+  width: min(62%, 15rem);
+  aspect-ratio: 1;
+  border: 2px solid rgb(255 255 255 / .55);
+  border-radius: 14px;
+  box-shadow: 0 0 0 100vmax rgb(0 0 0 / .35);
+  transition: border-color .12s ease, transform .12s ease;
+  pointer-events: none;
+}
+.scanner:not(.is-scanning) .scanner__frame { display: none; }
+.scanner__frame.is-hit {
+  border-color: #6ee7a8;
+  transform: scale(.96);
+}
+
+.scanner__tools {
+  position: absolute;
+  right: .6rem;
+  bottom: .6rem;
+  display: flex;
+  gap: .5rem;
+}
+.scanner__tools .btn {
+  --bs-btn-bg: rgb(0 0 0 / .55);
+  --bs-btn-border-color: rgb(255 255 255 / .3);
+  --bs-btn-color: #fff;
+  --bs-btn-hover-bg: rgb(0 0 0 / .75);
+  --bs-btn-hover-border-color: #fff;
+  --bs-btn-hover-color: #fff;
+  --bs-btn-active-bg: rgb(255 255 255 / .25);
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+}
+
+/* ---------- the count ----------
+   The one number the operator checks between units, so it is the largest
+   thing on the screen. Tabular figures stop it jittering as it counts up. */
+.scanner__counter {
+  padding: .9rem 1rem;
+  text-align: center;
+  font-size: 1.45rem;
+  font-weight: 700;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  border-bottom: 1px solid var(--line-soft);
+  background: var(--surface-2);
+}
+
+/* ---------- the last result ---------- */
+.scanner__status {
+  padding: .85rem 1rem;
+  font-size: .95rem;
+  line-height: 1.35;
+  border-bottom: 1px solid var(--line-soft);
+  min-height: 4rem;
+}
+.scanner__status strong { font-size: 1.05rem; }
+.scanner__status--success { background: var(--positive-bg); color: var(--positive); }
+.scanner__status--warning { background: var(--caution-bg); color: var(--caution); }
+.scanner__status--danger  { background: var(--critical-bg); color: var(--critical); }
+.scanner__status--info    { background: var(--info-bg); color: var(--info); }
+.scanner__status strong { color: inherit; }
+
+/* A thin bar while a scan is with the server, so a slow connection looks
+   like waiting rather than like nothing happening. */
+.scanner.is-busy .scanner__status { position: relative; }
+.scanner.is-busy .scanner__status::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 2px;
+  background: currentColor;
+  opacity: .5;
+  animation: scanner-wait 1s linear infinite;
+}
+@keyframes scanner-wait {
+  from { clip-path: inset(0 100% 0 0); }
+  to   { clip-path: inset(0 0 0 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .scanner.is-busy .scanner__status::after { animation: none; opacity: .3; }
+  .scanner__frame { transition: none; }
+}
+
+/* ---------- controls ---------- */
+.scanner__controls {
+  display: flex;
+  gap: .5rem;
+  padding: .75rem 1rem;
+}
+.scanner__controls .btn { flex: 1; min-height: 3.25rem; font-size: 1rem; font-weight: 600; }
+
+.scanner__manual {
+  display: flex;
+  gap: .5rem;
+  padding: 0 1rem .9rem;
+}
+.scanner__manual input {
+  min-height: 3rem;
+  font-family: var(--mono);
+  text-transform: uppercase;
+}
+.scanner__manual .btn { min-height: 3rem; white-space: nowrap; }
+.scanner__hint { padding: 0 1rem .9rem; font-size: .78rem; color: var(--ink-muted); }
+
+/* ---------- the running list ----------
+   Newest first, because the question being asked is always "did that one
+   go in?". Scrolls on its own so the count and the camera stay put. */
+.scanner__log {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 17rem;
+  overflow-y: auto;
+  border-top: 1px solid var(--line-soft);
+}
+.scanner__log:empty { display: none; }
+.scanner__entry {
+  padding: .55rem 1rem;
+  border-bottom: 1px solid var(--line-soft);
+  border-left: 4px solid transparent;
+}
+.scanner__entry--success { border-left-color: var(--positive); }
+.scanner__entry--warning { border-left-color: var(--caution); }
+.scanner__entry--danger  { border-left-color: var(--critical); }
+.scanner__entry-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .5rem;
+}
+.scanner__entry-head code { font-size: .9rem; font-weight: 600; }
+.scanner__entry-note { font-size: .78rem; color: var(--ink-muted); margin-top: .1rem; }
+
+/* ==========================================================================
+   Printing
+   Label sheets and survey reports print from these panels; the chrome does
+   not belong on paper.
+   ========================================================================== */
+@media print {
+  .floor-top, .floor-commit, .scanner, .no-print { display: none !important; }
+  .floor-main { padding: 0; }
+}

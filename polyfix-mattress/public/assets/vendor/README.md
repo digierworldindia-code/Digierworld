@@ -8,6 +8,16 @@ runtime dependency on a CDN — nothing a page needs comes from a third party.
 |---|---|---|
 | `bootstrap/` | 5.3.8 | `twbs/bootstrap`, `dist/css` and `dist/js` |
 | `bootstrap-icons/` | 1.11 | `twbs/bootstrap-icons`, the stylesheet and the font files |
+| `jsqr/` | 1.4.0 | npm `jsqr`, `dist/jsQR.js` and `LICENSE` (Apache-2.0) |
+
+`jsqr/jsQR.js` is the fallback QR decoder for the camera scanner. Browsers
+that provide the native `BarcodeDetector` API never download it — the scanner
+loads it only when the native decoder is missing, which is mostly iOS Safari.
+It is the file npm publishes, byte for byte; the tarball it came from matches
+the registry's own checksums:
+
+    shasum  8efb8d0a7cc6863cb6d95116b9069123ce9eb2d1
+    sha512  dxLob7q65Xg2DvstYkRpkYtmKm2sPJ9oFhrhmudT1dZvNFFTlroai3AWSpLey/w5vMcLBXRgOJsbXpdN9HzU/A==
 
 The fonts under `public/assets/fonts` (Fraunces and Inter, Latin subsets) are
 self-hosted for the same reason, and are preloaded by the site layout.
