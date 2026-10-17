@@ -315,7 +315,7 @@ class MasterDataSeeder extends Seeder
             'calls'       => ['id', 'lead_id', 'company_name', 'mobile', 'caller', 'called_at', 'outcome', 'notes', 'next_action_at', 'updated_at', 'sync_status'],
             'followups'   => ['id', 'lead_id', 'company_name', 'owner', 'due_at', 'status', 'title', 'updated_at', 'sync_status'],
             'visits'      => ['id', 'lead_id', 'company_name', 'visitor', 'scheduled_at', 'address', 'purpose', 'status', 'outcome', 'updated_at', 'sync_status'],
-            'conversions' => ['id', 'lead_id', 'company_name', 'converted_at', 'attributed_to', 'contract_value', 'updated_at', 'sync_status'],
+            'conversions' => ['id', 'lead_id', 'company_name', 'client', 'converted_at', 'attributed_to', 'updated_at', 'sync_status'],
             'daily'       => ['date', 'telecaller', 'calls', 'connected', 'followups_done', 'meetings', 'visits', 'conversions', 'updated_at'],
         ];
         $this->db->query(

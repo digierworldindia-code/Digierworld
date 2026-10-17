@@ -217,4 +217,22 @@ class Services extends BaseService
 
         return new \App\Services\Finance\ReconciliationService(db_connect(), static::ledger());
     }
+
+    public static function sheetsSync(bool $getShared = true): \App\Services\Sync\SheetsSyncService
+    {
+        if ($getShared) {
+            return static::getSharedInstance('sheetsSync');
+        }
+
+        return new \App\Services\Sync\SheetsSyncService(db_connect());
+    }
+
+    public static function leads(bool $getShared = true): \App\Services\Crm\LeadService
+    {
+        if ($getShared) {
+            return static::getSharedInstance('leads');
+        }
+
+        return new \App\Services\Crm\LeadService(db_connect(), static::sheetsSync());
+    }
 }
