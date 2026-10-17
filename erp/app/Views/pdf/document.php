@@ -37,6 +37,7 @@ $taxCols  = match ($gstType) {
     default      => [],
 };
 $hasCess = Dec::isPositive($t['cess_total'] ?? '0');
+$hasDisc = Dec::isPositive($t['discount_total'] ?? '0');
 $money   = static fn ($v) => inr((string) $v, false);
 $rate    = static fn ($v) => Dec::rateLabel((string) $v) . '%';
 $typeLine = ['cgst_sgst' => 'CGST + SGST (intra-state supply)', 'cgst_utgst' => 'CGST + UTGST (intra-Union Territory supply)', 'igst' => 'IGST (inter-state supply)', 'none' => 'No GST charged'][$gstType] ?? '—';
@@ -77,13 +78,18 @@ $posLabel = ($h['place_of_supply_name'] ?? '') . (isset($h['place_of_supply_stat
 <?php if ($status === 'draft'): ?><div class="watermark">DRAFT — NOT A VALID <?= in_array($docType, ['estimate', 'quotation', 'proforma'], true) ? 'DOCUMENT' : 'TAX DOCUMENT' ?></div><?php endif ?>
 <?php if ($status === 'cancelled'): ?><div class="watermark">CANCELLED</div><?php endif ?>
 <?php if ($layout === 'premium'): ?><div class="accent-bar"></div><?php endif ?>
+<?php
+$logoPos  = in_array($set['logo_position'] ?? 'top_left', ['top_left', 'top_center', 'top_right'], true) ? ($set['logo_position'] ?? 'top_left') : 'top_left';
+$logoHtml = ! empty($images['logo'])
+    ? '<img src="' . $images['logo'] . '" style="width:' . (float) ($s['branding']['logo']['width_mm'] ?? 45) . 'mm; max-height:26mm; margin-bottom:4px" alt="logo">'
+    : '';
+?>
+<?php if ($logoHtml !== '' && $logoPos !== 'top_left'): ?><div class="<?= $logoPos === 'top_center' ? 'center' : 'right' ?>"><?= $logoHtml ?></div><?php endif ?>
 
 <table>
     <tr>
         <td style="width:58%">
-            <?php if (! empty($images['logo'])): ?>
-                <img src="<?= $images['logo'] ?>" style="width:<?= (float) ($s['branding']['logo']['width_mm'] ?? 45) ?>mm; max-height:26mm; margin-bottom:4px" alt="logo"><br>
-            <?php endif ?>
+            <?php if ($logoHtml !== '' && $logoPos === 'top_left'): ?><?= $logoHtml ?><br><?php endif ?>
             <div class="bold" style="font-size:<?= $fs + 3 ?>pt"><?= esc($sup['legal_name'] ?: 'COMPANY LEGAL NAME NOT SET') ?></div>
             <?php if (! empty($sup['trade_name']) && $sup['trade_name'] !== $sup['legal_name']): ?><div>Trade name: <?= esc($sup['trade_name']) ?></div><?php endif ?>
             <?php foreach ($sup['address'] as $line): ?><div><?= esc($line) ?></div><?php endforeach ?>
@@ -140,13 +146,13 @@ $posLabel = ($h['place_of_supply_name'] ?? '') . (isset($h['place_of_supply_stat
     <thead>
     <tr>
         <th style="width:3%">#</th>
-        <th>Description of service</th>
-        <th style="width:8%">SAC</th>
-        <th style="width:6%">Qty</th>
+        <th style="width:<?= max(20, 100 - 3 - 7 - 7 - 10 - ($hasDisc ? 8 : 0) - 11 - count($taxCols) * 13 - ($hasCess ? 7 : 0) - 11) ?>%">Description of service</th>
+        <th style="width:7%">SAC</th>
+        <th style="width:7%">Qty</th>
         <th style="width:10%">Rate</th>
-        <th style="width:8%">Disc.</th>
+        <?php if ($hasDisc): ?><th style="width:8%">Disc.</th><?php endif ?>
         <th style="width:11%">Taxable value</th>
-        <?php foreach ($taxCols as [$label]): ?><th style="width:5%"><?= $label ?> %</th><th style="width:9%"><?= $label ?> ₹</th><?php endforeach ?>
+        <?php foreach ($taxCols as [$label]): ?><th style="width:4%"><?= $label ?> %</th><th style="width:9%"><?= $label ?> ₹</th><?php endforeach ?>
         <?php if ($hasCess): ?><th style="width:7%">Cess ₹</th><?php endif ?>
         <th style="width:11%">Amount</th>
     </tr>
@@ -160,7 +166,7 @@ $posLabel = ($h['place_of_supply_name'] ?? '') . (isset($h['place_of_supply_stat
             <td class="center"><?= esc((string) ($l['sac_code'] ?? '')) ?></td>
             <td class="right"><?= esc(rtrim(rtrim((string) $l['qty'], '0'), '.')) ?> <?= esc((string) ($l['unit'] ?? '')) ?></td>
             <td class="right"><?= $money($l['unit_rate']) ?></td>
-            <td class="right"><?= Dec::isPositive($l['discount_amount'] ?? '0') ? $money($l['discount_amount']) : '—' ?></td>
+            <?php if ($hasDisc): ?><td class="right"><?= Dec::isPositive($l['discount_amount'] ?? '0') ? $money($l['discount_amount']) : '—' ?></td><?php endif ?>
             <td class="right"><?= $money($l['taxable_value']) ?></td>
             <?php foreach ($taxCols as [, $k]): ?>
                 <td class="right"><?= Dec::isPositive($l[$k . '_rate']) ? $rate($l[$k . '_rate']) : '—' ?></td>
