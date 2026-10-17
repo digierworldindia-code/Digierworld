@@ -23,7 +23,7 @@ use Throwable;
  */
 class Doctor extends BaseCommand
 {
-    protected $group       = 'POLYFIX';
+    protected $group       = 'POLYFIZZ';
     protected $name        = 'polyfix:doctor';
     protected $description = 'Check PHP, permissions, secrets, the database and the migrations, and report what fails.';
     protected $usage       = 'polyfix:doctor';
@@ -70,24 +70,24 @@ class Doctor extends BaseCommand
 
     private function checkPhp(): void
     {
-        version_compare(PHP_VERSION, Polyfix::MINIMUM_PHP, '>=')
+        version_compare(PHP_VERSION, POLYFIZZ::MINIMUM_PHP, '>=')
             ? $this->pass('PHP ' . PHP_VERSION)
             : $this->fail(sprintf(
                 'PHP %s — this application needs %s or newer. Change it in your hosting control panel.',
                 PHP_VERSION,
-                Polyfix::MINIMUM_PHP,
+                POLYFIZZ::MINIMUM_PHP,
             ));
     }
 
     private function checkExtensions(): void
     {
         $missing = array_values(array_filter(
-            Polyfix::REQUIRED_EXTENSIONS,
+            POLYFIZZ::REQUIRED_EXTENSIONS,
             static fn (string $ext): bool => ! extension_loaded($ext),
         ));
 
         $missing === []
-            ? $this->pass('PHP extensions: ' . implode(', ', Polyfix::REQUIRED_EXTENSIONS))
+            ? $this->pass('PHP extensions: ' . implode(', ', POLYFIZZ::REQUIRED_EXTENSIONS))
             : $this->fail('PHP extensions switched off: ' . implode(', ', $missing) . ' — enable them in your hosting control panel.');
     }
 
@@ -221,7 +221,7 @@ class Doctor extends BaseCommand
         foreach (['users', 'roles', 'permissions', 'ci_sessions', 'system_settings'] as $table) {
             $db->tableExists($table)
                 ? $this->pass('table ' . $table)
-                : $this->fail('table ' . $table . ' is missing. Load POLYFIX-MATTRESS-DATABASE.sql, or run: php spark polyfix:migrate');
+                : $this->fail('table ' . $table . ' is missing. Load POLYFIZZ-MATTRESS-DATABASE.sql, or run: php spark polyfix:migrate');
         }
 
         // The application's own database account is deliberately not granted

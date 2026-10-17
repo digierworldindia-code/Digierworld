@@ -29,7 +29,7 @@ class Filters extends BaseFilters
         'honeypot'      => Honeypot::class,
         'invalidchars'  => InvalidChars::class,
         'secureheaders' => \App\Filters\SecureHeaders::class,
-        // POLYFIX
+        // POLYFIZZ
         'auth'          => \App\Filters\AuthFilter::class,
         'staff'         => \App\Filters\StaffFilter::class,
         'dealer'        => \App\Filters\DealerFilter::class,

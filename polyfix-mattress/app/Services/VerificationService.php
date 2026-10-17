@@ -30,13 +30,27 @@ final class VerificationService
     /**
      * @return array{found:bool, genuine:bool, serial?:string, product?:array, manufactured_on?:string, warranty?:array, note:string}
      */
+    /**
+     * The serial shapes this installation recognises.
+     *
+     *   PFZ-2026-000001   current production
+     *   CLF26000001       the previous platform, never rewritten
+     *
+     * Checked before any query runs, so a malformed input costs nothing.
+     */
+    private const SERIAL_PATTERN = '/^(?:[A-Z]{3}-[0-9]{4}-[0-9]{6,8}|[A-Z]{3}[0-9]{8,12})$/';
+
     public function verify(?string $serial, ?string $qrToken): array
     {
         $serial  = $serial !== null ? strtoupper(trim($serial)) : null;
         $qrToken = $qrToken !== null ? trim($qrToken) : null;
 
         // Shape checks before any query: cheap, and they keep garbage out of the logs.
-        $validSerial = $serial !== null && preg_match('/^[A-Z]{3}[0-9]{8,12}$/', $serial) === 1;
+        // Both numbering schemes are live: PFZ-2026-000001 on new production,
+        // and the previous platform's CLF26000001 on labels already in
+        // customers' homes. A lookup that recognised only one of them would
+        // tell half the owners their mattress does not exist.
+        $validSerial = $serial !== null && preg_match(self::SERIAL_PATTERN, $serial) === 1;
         $validToken  = $qrToken !== null && preg_match('/^[A-Za-z0-9_-]{22,64}$/', $qrToken) === 1;
 
         if (! $validSerial && ! $validToken) {
@@ -115,7 +129,7 @@ final class VerificationService
             'found'   => false,
             'genuine' => false,
             'note'    => 'We have no record of that serial number. Check the characters on the law label, or contact the dealer you bought from. '
-                . 'Serial numbers begin with ' . brand('serialPrefix') . '.',
+                . 'Serial numbers begin with ' . brand('serialPrefix') . ' or ' . implode(' or ', brand('legacySerialPrefixes')) . '.',
         ];
     }
 }

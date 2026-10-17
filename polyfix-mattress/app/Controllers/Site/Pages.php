@@ -5,7 +5,7 @@ namespace App\Controllers\Site;
 use App\Libraries\Seo;
 
 /**
- * Content pages. why-polyfix and about come from the CMS; privacy and terms
+ * Content pages. why-polyfizz and about come from the CMS; privacy and terms
  * are legal text kept in the codebase so they change through review, not
  * through the content editor.
  */
@@ -28,7 +28,7 @@ class Pages extends SiteController
         }
 
         $page = $this->cmsPage($slug);
-        if ($slug === 'why-polyfix') {
+        if ($slug === 'why-polyfizz') {
             $trail[1][0] = 'Why ' . brand('shortName');
         }
         $meta = Seo::meta(

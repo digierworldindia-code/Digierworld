@@ -168,7 +168,12 @@ abstract class PolyfixTestCase extends CIUnitTestCase
         $id     = uuid4();
         // The database itself enforces the serial format, so a fixture has to
         // use the real prefix; the high range keeps it clear of issued numbers.
-        $serial = brand('serialPrefix') . str_pad((string) random_int(50_000_000, 99_999_999), 8, '0', STR_PAD_LEFT);
+        $serial = sprintf(
+            '%s-%s-%06d',
+            brand('serialPrefix'),
+            local_time(utc_now(), 'Y'),
+            random_int(500_000, 999_999),
+        );
         $token  = \App\Libraries\Identifiers::qrToken();
         $this->insert('mattresses', $overrides + [
             'id' => $id, 'serial_number' => $serial, 'qr_token' => $token, 'product_variant_id' => $variantId,

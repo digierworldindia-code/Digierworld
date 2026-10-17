@@ -25,7 +25,7 @@ use CodeIgniter\CLI\CLI;
  */
 class Unlock extends BaseCommand
 {
-    protected $group       = 'POLYFIX';
+    protected $group       = 'POLYFIZZ';
     protected $name        = 'polyfix:unlock';
     protected $description = 'Clear stale sign-in locks, clear an account\'s two-factor, or switch two-factor off.';
     protected $usage       = 'polyfix:unlock [--email x] [--clear-2fa] [--two-factor-off]';

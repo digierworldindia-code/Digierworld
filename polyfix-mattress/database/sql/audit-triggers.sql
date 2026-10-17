@@ -1,5 +1,5 @@
 -- =============================================================================
--- POLYFIX MATTRESS — OPTIONAL owner-level protection for history tables
+-- POLYFIZZ — OPTIONAL owner-level protection for history tables
 -- -----------------------------------------------------------------------------
 -- The application account already cannot UPDATE, DELETE or TRUNCATE history
 -- (see generate-privileges.sql). These triggers additionally stop the SCHEMA

@@ -26,14 +26,51 @@ class BrandCheck extends BaseCommand
     protected $usage       = 'polyfix:brand-check [--data]';
     protected $options     = ['--data' => 'Also scan content in the database (read-only)'];
 
-    /** Spellings that are always wrong. */
-    private const WRONG = ['COLIFEES', 'Colifees', 'POLY FIX', 'Poly Fix', 'POLYFIX MATTRESSS', 'PolyFix Mattress', 'Polyfix Mattresss'];
+    /**
+     * Spellings that are always wrong.
+     *
+     * POLYFIX is on this list: it was the name before the correction to
+     * POLYFIZZ. It survives only where it is a historical fact — the database
+     * name chosen at install, the application's database accounts, the
+     * Config\Polyfix class and the polyfix.* settings prefix. Those are in
+     * ALLOWED_FRAGMENTS; everywhere else it is a defect.
+     */
+    private const WRONG = [
+        'COLIFEES', 'Colifees',
+        'POLYFIX', 'Polyfix', 'PolyFix',
+        'POLY FIX', 'Poly Fix',
+        'POLY FIZZ', 'Poly Fizz',
+        'POLYFIZZZ', 'Polyfizzz',
+        'POLYFIZZ MATTRESS', 'Polyfizz Mattress',
+    ];
+
+    /**
+     * Occurrences of a wrong spelling that are not the brand at all: the
+     * database name, its accounts, the config class and the settings prefix.
+     * Renaming any of these would be churn at best and an outage at worst.
+     *
+     * @var list<string>
+     */
+    private const ALLOWED_FRAGMENTS = [
+        'polyfix_mattress', 'polyfix_app', 'polyfix_owner', 'polyfix_backup', 'polyfix_test',
+        'polyfix_preview', 'polyfix_zipcheck', 'polyfix_final', 'polyfix_uf', 'polyfix_no2fa',
+        'Config\\Polyfix', 'Config/Polyfix', "config('Polyfix')", 'Polyfix::class',
+        'PolyfixRules', 'PolyfixTestCase', 'polyfix.', 'polyfix:', 'Polyfix $config',
+        'class Polyfix', 'polyfix-mattress', 'Polyfix extends', 'use Config\\Polyfix',
+        // A migration name recorded in the database when the previous rename
+        // ran. It is history, not branding, and rewriting it would falsify
+        // the record of what was applied.
+        '0006_brand_rename_polyfix', 'brand_rename_backup',
+    ];
 
     /** Where a literal is expected and not a fault. */
     private const ALLOWED_PATHS = [
         'app/Config/Brand.php',            // the definition itself
         'app/Commands/BrandCheck.php',     // this file
         'app/Commands/ImportPostgres.php', // names the previous platform's database
+        // Must contain the old spelling: it is the string the migration
+        // searches for when correcting stored content.
+        'app/Database/Migrations/2026-10-17-000001_RebrandToPolyfizz.php',
         'app/Config/Routes.php',           // keeps the old public address working
         'tests/',                          // tests assert the exact spelling
         'docs/',                           // documentation quotes both names
@@ -54,7 +91,7 @@ class BrandCheck extends BaseCommand
         }
 
         if ($problems === []) {
-            CLI::write('Brand check passed: the name is spelt POLYFIX MATTRESS everywhere it appears, and comes from configuration.', 'green');
+            CLI::write('Brand check passed: the name is spelt ' . brand('name') . ' everywhere it appears, and comes from configuration.', 'green');
 
             return EXIT_SUCCESS;
         }
@@ -95,8 +132,15 @@ class BrandCheck extends BaseCommand
             $relative = ltrim(str_replace($root, '', $file->getPathname()), DIRECTORY_SEPARATOR);
             $contents = (string) file_get_contents($file->getPathname());
 
+            // Strip the occurrences that are not the brand — the database
+            // name, its accounts, the config class, the settings prefix —
+            // before looking for a misspelling in what is left. Checking the
+            // whole file would flag every line that merely mentions
+            // config('Polyfix').
+            $searchable = str_replace(self::ALLOWED_FRAGMENTS, '', $contents);
+
             foreach (self::WRONG as $wrong) {
-                if (str_contains($contents, $wrong) && ! $this->allowed($relative)) {
+                if (str_contains($searchable, $wrong) && ! $this->allowed($relative)) {
                     $problems[] = "{$relative}: misspelling \"{$wrong}\"";
                 }
             }

@@ -28,17 +28,18 @@ final class IdentifiersAndLabelsTest extends PolyfixTestCase
         $this->assertCount(50, $batch);
         $this->assertCount(50, array_unique($batch), 'a serial is never issued twice');
         foreach ($batch as $serial) {
-            $this->assertMatchesRegularExpression('/^' . brand('serialPrefix') . '\d{2}\d{6}$/', $serial);
+            $this->assertMatchesRegularExpression('/^' . brand('serialPrefix') . '-\d{4}-\d{6}$/', $serial);
         }
 
-        $numbers = array_map(static fn ($s) => (int) substr($s, 5), $batch);
+        // PFZ-2026-000001 -> the sequence is everything after the last hyphen.
+        $numbers = array_map(static fn ($s) => (int) substr($s, strrpos($s, '-') + 1), $batch);
         $this->assertSame(range($numbers[0], $numbers[0] + 49), $numbers, 'they run consecutively');
     }
 
     public function testSerialsCarryTheCurrentYear(): void
     {
         $serial = $this->identifiers->serials(1)[0];
-        $this->assertSame(gmdate('y'), substr($serial, 3, 2));
+        $this->assertSame(local_time(utc_now(), 'Y'), explode('-', $serial)[1]);
     }
 
     public function testTheOtherIdentifiersHaveTheirOwnSequences(): void
@@ -52,6 +53,7 @@ final class IdentifiersAndLabelsTest extends PolyfixTestCase
         $before = $this->identifiers->claimNumber();
         $this->identifiers->serials(3);
         $after = $this->identifiers->claimNumber();
+        // CLM26000001: three-letter prefix, two-digit year, then the sequence.
         $this->assertSame((int) substr($before, 5) + 1, (int) substr($after, 5));
     }
 
@@ -83,7 +85,7 @@ final class IdentifiersAndLabelsTest extends PolyfixTestCase
 
     public function testTheBarcodeCarriesTheSerialForAWarehouseScanner(): void
     {
-        $svg = Labels::barcodeSvg(brand('serialPrefix') . '26000001');
+        $svg = Labels::barcodeSvg(brand('serialPrefix') . '-2026-000001');
 
         $this->assertStringContainsString('<svg', $svg);
         $this->assertStringContainsString('<rect', $svg);

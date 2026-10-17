@@ -17,7 +17,7 @@ $unread   = (int) db_connect()->table('notifications')->where(['user_id' => $ctx
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex, nofollow">
     <title><?= esc($title ?? 'Console') ?> · <?= esc(brand('shortName')) ?> Console</title>
-    <link rel="icon" href="<?= base_url('images/polyfix-logo.svg') ?>" type="image/svg+xml">
+    <link rel="icon" href="<?= base_url('images/polyfizz-logo.svg') ?>" type="image/svg+xml">
     <link rel="stylesheet" href="<?= base_url('assets/css/fonts.css') ?>">
     <link rel="stylesheet" href="<?= base_url('assets/vendor/bootstrap/css/bootstrap.min.css') ?>">
     <link rel="stylesheet" href="<?= base_url('assets/vendor/bootstrap-icons/bootstrap-icons.min.css') ?>">

@@ -1,13 +1,13 @@
 /* ==========================================================================
-   POLYFIX MATTRESS — public website theme on Bootstrap 5
+   POLYFIZZ — public website theme on Bootstrap 5
    --------------------------------------------------------------------------
    Bootstrap supplies the grid, components and accessibility behaviour. This
-   file supplies the POLYFIX look, carried over from the previous site: warm
+   file supplies the POLYFIZZ look, carried over from the previous site: warm
    paper and ink with a single brass accent, Fraunces for display and Inter for
    text. Bootstrap is themed through its own CSS variables where it exposes
    them, and overridden only where it does not.
 
-     1. tokens            the POLYFIX palette, type scale, spacing
+     1. tokens            the POLYFIZZ palette, type scale, spacing
      2. Bootstrap theme   mapping the tokens onto --bs-* variables
      3. base typography
      4. layout            sections, header, footer
@@ -170,7 +170,7 @@ strong { font-weight: 600; color: var(--ink); }
 .footer-bottom { margin-top: var(--space-8); padding-top: 1.5rem; border-top: 1px solid rgb(255 255 255 / 0.12); font-size: var(--step--1); color: #8e8376; }
 
 /* ---------- 5. components ------------------------------------------------ */
-/* Buttons: Bootstrap's .btn, in POLYFIX's pill shape and palette. */
+/* Buttons: Bootstrap's .btn, in POLYFIZZ's pill shape and palette. */
 .btn {
   --bs-btn-padding-x: 1.6rem; --bs-btn-padding-y: .82rem;
   --bs-btn-font-size: var(--step--1); --bs-btn-font-weight: 600;
@@ -224,7 +224,7 @@ strong { font-weight: 600; color: var(--ink); }
 .hero__trust { display: flex; flex-wrap: wrap; gap: 1.5rem; margin-top: var(--space-7); padding-top: 1.5rem; border-top: 1px solid var(--line); font-size: var(--step--1); color: var(--ink-muted); }
 .hero__trust strong { display: block; font-size: var(--step-1); font-family: var(--font-display); color: var(--ink); font-weight: 500; }
 
-/* Forms: Bootstrap controls in the POLYFIX palette */
+/* Forms: Bootstrap controls in the POLYFIZZ palette */
 .form-label { font-size: var(--step--1); font-weight: 600; color: var(--ink); }
 .form-control, .form-select { padding: .78rem 1rem; border-color: var(--line-strong); background-color: var(--paper-raised); color: var(--ink); }
 .form-control:focus, .form-select:focus { border-color: var(--brass); box-shadow: 0 0 0 3px var(--brass-tint); }

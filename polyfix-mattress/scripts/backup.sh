@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# POLYFIX MATTRESS — nightly database backup.
+# POLYFIZZ — nightly database backup.
 #
 #   scripts/backup.sh
 #   BACKUP_DIR=/srv/backups DB_NAME=polyfix_mattress scripts/backup.sh
@@ -8,7 +8,7 @@
 # Credentials come from a MySQL option file, never from the command line: a
 # password given as --password=… is visible to anyone who can run ps.
 #
-#   /etc/mysql/polyfix-backup.cnf   (chmod 600)
+#   /etc/mysql/polyfizz-backup.cnf   (chmod 600)
 #     [client]
 #     user = polyfix_backup
 #     password = "…"
@@ -19,8 +19,8 @@
 set -euo pipefail
 
 DB_NAME="${DB_NAME:-polyfix_mattress}"
-BACKUP_DIR="${BACKUP_DIR:-/srv/backups/polyfix}"
-DEFAULTS_FILE="${DEFAULTS_FILE:-/etc/mysql/polyfix-backup.cnf}"
+BACKUP_DIR="${BACKUP_DIR:-/srv/backups/polyfizz}"
+DEFAULTS_FILE="${DEFAULTS_FILE:-/etc/mysql/polyfizz-backup.cnf}"
 RETENTION_DAYS="${RETENTION_DAYS:-14}"
 
 if [[ ! -r "$DEFAULTS_FILE" ]]; then

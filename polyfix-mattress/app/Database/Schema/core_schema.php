@@ -1,7 +1,7 @@
 <?php
 
 /**
- * The POLYFIX MATTRESS core schema, translated from the PostgreSQL database the
+ * The POLYFIZZ core schema, translated from the PostgreSQL database the
  * platform previously ran on. Generated from that database's catalog so column
  * names, types, keys, indexes and constraints match it exactly; see
  * docs/migration.md for every translation decision.

@@ -1,5 +1,5 @@
 -- =============================================================================
--- POLYFIX MATTRESS — privilege verification. Every row returned is a finding.
+-- POLYFIZZ — privilege verification. Every row returned is a finding.
 --   mysql -u root -p polyfix_mattress < database/sql/verify-privileges.sql
 -- =============================================================================
 

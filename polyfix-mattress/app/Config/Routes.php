@@ -23,7 +23,7 @@ $routes->addPlaceholder('slug', '[a-z0-9]+(?:-[a-z0-9]+)*');
 $routes->get('/', 'Site\Home::index');
 $routes->get('mattresses', 'Site\Mattresses::index');
 $routes->get('mattresses/(:slug)', 'Site\Mattresses::show/$1');
-$routes->get('why-polyfix', 'Site\Pages::show/why-polyfix');
+$routes->get('why-polyfizz', 'Site\Pages::show/why-polyfizz');
 $routes->get('about', 'Site\Pages::show/about');
 $routes->get('privacy', 'Site\Pages::show/privacy');
 $routes->get('terms', 'Site\Pages::show/terms');
@@ -38,7 +38,10 @@ $routes->get('sitemap.xml', 'Site\Seo::sitemap');
 $routes->get('robots.txt', 'Site\Seo::robots');
 
 // Old addresses keep working: search engines and bookmarks follow a 301.
-$routes->addRedirect('why-colifees', 'why-polyfix', 301);
+// Both earlier spellings keep working: links printed on old material, and
+// anything a search engine still holds, land on the current page.
+$routes->addRedirect('why-colifees', 'why-polyfizz', 301);
+$routes->addRedirect('why-polyfix', 'why-polyfizz', 301);
 
 // =============================================================================
 // Sign-in and account — private, never indexed

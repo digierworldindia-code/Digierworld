@@ -16,9 +16,9 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 ROOT=$(pwd)
 OUT=${1:-"$ROOT/delivery"}
-NAME=POLYFIX-MATTRESS
-ZIP="$OUT/${ZIP_NAME:-POLYFIX-MATTRESS-CI4-NO-2FA-FINAL}.zip"
-SQL_SRC="$OUT/POLYFIX-MATTRESS-DATABASE.sql"
+NAME=POLYFIZZ-MATTRESS
+ZIP="$OUT/${ZIP_NAME:-POLYFIZZ-MATTRESS-CI4-NO-2FA-FINAL}.zip"
+SQL_SRC="$OUT/POLYFIZZ-MATTRESS-DATABASE.sql"
 
 command -v zip >/dev/null || { echo "zip is not installed"; exit 1; }
 [ -f "$SQL_SRC" ] || { echo "missing $SQL_SRC — generate the dump first"; exit 1; }
@@ -48,7 +48,7 @@ composer install \
 find "$STAGE/$NAME/vendor" -name '.git' -prune -exec rm -rf {} + 2>/dev/null || true
 
 echo "==> adding the database dump and the empty writable tree"
-cp "$SQL_SRC" "$STAGE/$NAME/POLYFIX-MATTRESS-DATABASE.sql"
+cp "$SQL_SRC" "$STAGE/$NAME/POLYFIZZ-MATTRESS-DATABASE.sql"
 for d in cache logs session uploads debugbar; do
     mkdir -p "$STAGE/$NAME/writable/$d"
     [ -f "$STAGE/$NAME/writable/$d/index.html" ] || \
@@ -70,7 +70,7 @@ fi
 # A real value against any of these names, as opposed to the CHANGE_ME
 # placeholders .env.example is supposed to carry.
 while IFS= read -r -d '' file; do
-    if grep -qiE '^[[:space:]]*(polyfix\.(encryptionKey|signingSecret)|encryption\.key|database\.default\.password|email\.SMTPPass)[[:space:]]*=[[:space:]]*.+' "$file" 2>/dev/null; then
+    if grep -qiE '^[[:space:]]*(polyfizz\.(encryptionKey|signingSecret)|encryption\.key|database\.default\.password|email\.SMTPPass)[[:space:]]*=[[:space:]]*.+' "$file" 2>/dev/null; then
         if ! grep -qiE '=[[:space:]]*.?CHANGE_ME' "$file"; then
             echo "  REFUSING: $file looks like it holds a real secret"; fail=1
         fi

@@ -58,7 +58,7 @@ class Reports extends AdminController
             $this->notFound();
         }
 
-        $name = 'polyfix-' . $key . '-' . local_time(utc_now(), 'Y-m-d') . '.' . $format;
+        $name = strtolower(brand('shortName')) . '-' . $key . '-' . local_time(utc_now(), 'Y-m-d') . '.' . $format;
         $path = tempnam(WRITEPATH . 'cache', 'export');
 
         $writer = $format === 'csv' ? new CsvWriter() : new XlsxWriter();

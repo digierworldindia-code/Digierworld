@@ -23,7 +23,7 @@ use CodeIgniter\CLI\CLI;
  */
 class Keys extends BaseCommand
 {
-    protected $group       = 'POLYFIX';
+    protected $group       = 'POLYFIZZ';
     protected $name        = 'polyfix:keys';
     protected $description = 'Generate the secrets a new installation needs, and optionally write them into .env.';
     protected $usage       = 'polyfix:keys [--write]';
@@ -109,7 +109,7 @@ class Keys extends BaseCommand
             CLI::write('Back up polyfix.encryptionKey now. Without it, encrypted customer data cannot be read.', 'yellow');
         }
 
-        // Read the file back rather than ask config(): the Polyfix instance was
+        // Read the file back rather than ask config(): the POLYFIZZ instance was
         // built from the old .env when this process started, so it would report
         // the very values we have just replaced as still missing.
         $outstanding = $this->outstandingSecrets($path);

@@ -1,5 +1,5 @@
 -- =============================================================================
--- POLYFIX MATTRESS — least-privilege grants for MySQL 8
+-- POLYFIZZ — least-privilege grants for MySQL 8
 -- -----------------------------------------------------------------------------
 -- Run as an administrative account AFTER every `php spark polyfix:migrate`:
 --

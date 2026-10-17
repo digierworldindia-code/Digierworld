@@ -19,20 +19,33 @@ use CodeIgniter\Config\BaseConfig;
  */
 class Brand extends BaseConfig
 {
-    /** Full name. Exact spelling, everywhere. */
-    public string $name = 'POLYFIX MATTRESS';
+    /**
+     * Full name. Exact spelling, everywhere: P-O-L-Y-F-I-Z-Z.
+     *
+     * Never POLYFIX, POLY FIZZ, Polyfizz Mattress or POLYFIZZZ. The previous
+     * spelling POLYFIX appears only where it is a historical fact — the
+     * database name chosen at install, and records written before the
+     * correction. Those are left alone deliberately; see docs/BRANDING.md.
+     */
+    public string $name = 'POLYFIZZ';
 
     /** Tight spaces: headings, the wordmark, product names. */
-    public string $shortName = 'POLYFIX';
+    public string $shortName = 'POLYFIZZ';
 
     /** Registered business name, for schema.org and documents. */
-    public string $legalName = 'POLYFIX MATTRESS';
+    public string $legalName = 'POLYFIZZ';
 
     /**
-     * The two halves of the logotype, styled differently. Rendered as one word:
-     * POLY + FIX. Never "POLY FIX".
+     * The two halves of the logotype, styled differently. Rendered as one
+     * word: POLY + FIZZ. Never "POLY FIZZ".
      */
-    public array $wordmark = ['lead' => 'POLY', 'trail' => 'FIX'];
+    public array $wordmark = ['lead' => 'POLY', 'trail' => 'FIZZ'];
+
+    /** The public website, shown in the footer and in documents. */
+    public string $website = 'www.polyfizz.in';
+
+    /** What the company makes. Used in meta descriptions and structured data. */
+    public string $business = 'Mattress and Foam Manufacturing';
 
     /** The company's own location. Never written over dealer or customer addresses. */
     public array $location = [
@@ -52,7 +65,19 @@ class Brand extends BaseConfig
      * would orphan every mattress made to date. A future change applies to new
      * production only and never rewrites an existing serial.
      */
-    public string $serialPrefix = 'CLF';
+    public string $serialPrefix = 'PFZ';
+
+    /**
+     * Serial prefixes this installation has ever issued, oldest first.
+     *
+     * Lookups, QR verification and reports must accept every one of them, and
+     * the database CHECK constraint is written from this list. CLF is the
+     * prefix the previous platform used; those labels are on mattresses in
+     * customers' homes and their serials are never rewritten.
+     *
+     * @var list<string>
+     */
+    public array $legacySerialPrefixes = ['CLF'];
 
     /** Suffix for page titles: "Contact | POLYFIX MATTRESS". */
     public function titleSuffix(string $text): string
@@ -60,7 +85,7 @@ class Brand extends BaseConfig
         return $text . ' | ' . $this->name;
     }
 
-    /** "POLYFIX Aurea Hybrid". */
+    /** "POLYFIZZ Aurea Hybrid". */
     public function productName(string $model): string
     {
         return $this->shortName . ' ' . $model;

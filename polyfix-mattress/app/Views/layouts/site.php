@@ -36,7 +36,7 @@ $gsc     = config('Polyfix')->gscVerification;
     <meta name="twitter:description" content="<?= esc($meta['og_description'], 'attr') ?>">
     <meta name="twitter:image" content="<?= esc($meta['image'], 'attr') ?>">
     <?php if ($gsc !== ''): ?><meta name="google-site-verification" content="<?= esc($gsc, 'attr') ?>"><?php endif ?>
-    <link rel="icon" href="<?= base_url('images/polyfix-logo.svg') ?>" type="image/svg+xml">
+    <link rel="icon" href="<?= base_url('images/polyfizz-logo.svg') ?>" type="image/svg+xml">
     <link rel="preload" href="<?= base_url('assets/fonts/fraunces-latin.woff2') ?>" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="<?= base_url('assets/fonts/inter-latin.woff2') ?>" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="<?= base_url('assets/css/fonts.css') ?>">

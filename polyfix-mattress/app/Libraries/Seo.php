@@ -10,12 +10,12 @@ namespace App\Libraries;
  * changing SEO copy is a content action, not a code change. The page's own
  * defaults apply only when nothing is stored.
  *
- * Titles are used exactly as stored — they are complete ("… | POLYFIX
+ * Titles are used exactly as stored — they are complete ("… | POLYFIZZ
  * MATTRESS") and must not have the brand appended a second time.
  */
 final class Seo
 {
-    public const DEFAULT_IMAGE = '/images/og/polyfix-default.svg';
+    public const DEFAULT_IMAGE = '/images/og/polyfizz-default.svg';
 
     /**
      * @return array{title:string, description:string, canonical:string, image:string, robots:string,
@@ -89,7 +89,7 @@ final class Seo
             'legalName'   => brand('legalName'),
             'url'         => $root,
             'description' => self::siteDescription(),
-            'logo'        => ['@type' => 'ImageObject', 'url' => self::absolute('/images/polyfix-logo.svg'), 'width' => 512, 'height' => 512],
+            'logo'        => ['@type' => 'ImageObject', 'url' => self::absolute('/images/polyfizz-logo.svg'), 'width' => 512, 'height' => 512],
             'address'     => [
                 '@type'           => 'PostalAddress',
                 'streetAddress'   => $location['line'],

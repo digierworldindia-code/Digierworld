@@ -33,11 +33,20 @@ final class Identifiers
         return $this->serials(1)[0];
     }
 
-    /** @return list<string> */
+    /**
+     * A contiguous block of serial numbers: PFZ-2026-000001, PFZ-2026-000002…
+     *
+     * Four-digit year, not two. The previous platform used CLF plus a
+     * two-digit year and no separators; those serials are on labels in
+     * customers' homes and are never rewritten, so the database CHECK accepts
+     * both shapes and every lookup matches on either.
+     *
+     * @return list<string>
+     */
     public function serials(int $count): array
     {
         $start  = $this->reserve('serial', $count);
-        $prefix = brand('serialPrefix') . $this->year();
+        $prefix = brand('serialPrefix') . '-' . $this->fullYear() . '-';
         $out    = [];
         for ($i = 0; $i < $count; $i++) {
             $out[] = $prefix . str_pad((string) ($start + $i), 6, '0', STR_PAD_LEFT);
@@ -91,6 +100,18 @@ final class Identifiers
         $this->db->query('UPDATE identifier_counters SET value = ? WHERE name = ?', [(int) $row->value + $count, $name]);
 
         return $first;
+    }
+
+    /**
+     * Four digits, in the company's own timezone rather than UTC.
+     *
+     * A batch serialised at half past midnight in Manesar on 1 January is a
+     * unit of the new year to everyone who handles it. year() below stays on
+     * UTC because the codes it builds are long established; this one is new.
+     */
+    private function fullYear(): string
+    {
+        return local_time(utc_now(), 'Y');
     }
 
     private function year(): string

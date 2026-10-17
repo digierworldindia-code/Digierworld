@@ -16,9 +16,15 @@ final class ContentAndBrandTest extends PolyfixTestCase
 {
     public function testTheBrandHasOneDefinitionAndItIsSpeltCorrectly(): void
     {
-        $this->assertSame('POLYFIX MATTRESS', brand('name'));
-        $this->assertSame('POLYFIX', brand('shortName'));
-        $this->assertSame('CLF', brand('serialPrefix'), 'serials issued by the previous platform keep their prefix');
+        $this->assertSame('POLYFIZZ', brand('name'));
+        $this->assertSame('POLYFIZZ', brand('shortName'));
+        $this->assertSame('www.polyfizz.in', brand('website'));
+        $this->assertSame('PFZ', brand('serialPrefix'), 'new production is numbered PFZ-YYYY-NNNNNN');
+        $this->assertSame(
+            ['CLF'],
+            brand('legacySerialPrefixes'),
+            'serials issued by the previous platform keep their prefix and must stay recognised',
+        );
         $this->assertSame('Manesar', brand('location')['locality']);
         $this->assertSame('Haryana', brand('location')['region']);
         $this->assertSame('IN', brand('location')['countryCode']);
@@ -26,7 +32,7 @@ final class ContentAndBrandTest extends PolyfixTestCase
 
     public function testTheWordmarkIsMarkupAndStaysEscaped(): void
     {
-        $this->assertSame('POLY<span>FIX</span>', brand_wordmark());
+        $this->assertSame('POLY<span>FIZZ</span>', brand_wordmark());
         $this->assertStringContainsString('Console', brand_wordmark('Console'));
     }
 
@@ -72,14 +78,14 @@ final class ContentAndBrandTest extends PolyfixTestCase
     {
         $this->insert('seo_metadata', [
             'id' => uuid4(), 'scope' => 'PAGE', 'entity_key' => 'home',
-            'title' => 'A stored title | POLYFIX MATTRESS', 'description' => 'A stored description, long enough to be realistic.',
+            'title' => 'A stored title | POLYFIZZ', 'description' => 'A stored description, long enough to be realistic.',
             'canonical_path' => '/', 'keywords' => json_encode(['mattress', 'hybrid']), 'robots_index' => 1, 'robots_follow' => 1,
             'sitemap_include' => 1, 'sitemap_priority' => 1.0, 'sitemap_changefreq' => 'weekly', 'twitter_card' => 'summary_large_image',
         ]);
 
         $meta = Seo::meta('PAGE', 'home', 'A fallback title', 'A fallback description.', '/');
 
-        $this->assertSame('A stored title | POLYFIX MATTRESS', $meta['title']);
+        $this->assertSame('A stored title | POLYFIZZ', $meta['title']);
         $this->assertSame(['mattress', 'hybrid'], $meta['keywords']);
         $this->assertStringContainsString('index', $meta['robots']);
         $this->assertStringNotContainsString('noindex', $meta['robots']);
@@ -120,7 +126,7 @@ final class ContentAndBrandTest extends PolyfixTestCase
     {
         $schema = Seo::organization();
 
-        $this->assertSame('POLYFIX MATTRESS', $schema['name']);
+        $this->assertSame('POLYFIZZ', $schema['name']);
         $this->assertSame('Manesar', $schema['address']['addressLocality']);
         $this->assertSame('IN', $schema['address']['addressCountry']);
     }
@@ -133,7 +139,7 @@ final class ContentAndBrandTest extends PolyfixTestCase
 
         $this->assertSame('INR', $schema['offers']['priceCurrency']);
         $this->assertSame('21500.00', $schema['offers']['lowPrice']);
-        $this->assertSame('POLYFIX MATTRESS', $schema['brand']['name']);
+        $this->assertSame('POLYFIZZ', $schema['brand']['name']);
     }
 
     public function testMoneyIsFormattedTheIndianWay(): void

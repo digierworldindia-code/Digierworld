@@ -16,7 +16,7 @@ $problems = $problems ?? [];
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>Setup not finished &mdash; POLYFIX MATTRESS</title>
+<title>Setup not finished &mdash; POLYFIZZ</title>
 <style>
     :root { color-scheme: light dark; }
     * { box-sizing: border-box; }
@@ -49,7 +49,7 @@ $problems = $problems ?? [];
 </head>
 <body>
 <div class="card">
-    <p class="brand">POLYFIX MATTRESS</p>
+    <p class="brand">POLYFIZZ</p>
     <h1>Setup is not finished yet</h1>
     <p>The application stopped rather than run half-configured. Nothing is broken
        and no data has been touched &mdash; the items below just need attention.</p>

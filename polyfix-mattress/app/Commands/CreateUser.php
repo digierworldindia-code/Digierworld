@@ -21,7 +21,7 @@ use CodeIgniter\CLI\CLI;
  */
 class CreateUser extends BaseCommand
 {
-    protected $group       = 'POLYFIX';
+    protected $group       = 'POLYFIZZ';
     protected $name        = 'polyfix:create-user';
     protected $description = 'Create a user with a one-time temporary password (use for the first administrator).';
     protected $usage       = 'polyfix:create-user --email <email> --name <full name> --role <ROLE> [--dealer <code>] [--demo]';

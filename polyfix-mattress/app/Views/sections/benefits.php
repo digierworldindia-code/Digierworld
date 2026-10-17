@@ -13,6 +13,6 @@ $icons = ['comfort' => 'bi-cloud', 'materials' => 'bi-layers', 'support' => 'bi-
             </div>
             <?php endforeach ?>
         </div>
-        <p class="mt-5"><a class="btn btn-outline-dark" href="<?= site_url('why-polyfix') ?>">See what sits behind each of these</a></p>
+        <p class="mt-5"><a class="btn btn-outline-dark" href="<?= site_url('why-polyfizz') ?>">See what sits behind each of these</a></p>
     </div>
 </section>

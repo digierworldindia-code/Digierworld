@@ -2,7 +2,7 @@
 /** @var string $active */
 $nav = [
     'mattresses'  => ['mattresses', 'Mattresses'],
-    'why-polyfix' => ['why-polyfix', 'Why ' . brand('shortName')],
+    'why-polyfizz' => ['why-polyfizz', 'Why ' . brand('shortName')],
     'warranty'    => ['warranty', 'Warranty'],
     'dealers'     => ['dealers', 'Dealers'],
     'about'       => ['about', 'About'],

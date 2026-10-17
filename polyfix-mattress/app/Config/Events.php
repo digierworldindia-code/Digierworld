@@ -24,7 +24,7 @@ use CodeIgniter\HotReloader\HotReloader;
  */
 
 /*
- * POLYFIX: refuse to serve a production request from an unfinished install.
+ * POLYFIZZ: refuse to serve a production request from an unfinished install.
  *
  * A half-configured deployment that runs is more dangerous than one that
  * stops. But stopping with a bare 500 was its own bug: the generic error page
@@ -35,7 +35,7 @@ use CodeIgniter\HotReloader\HotReloader;
  *
  * So: name the problems on a plain, self-contained page and answer 503, which
  * is what "configured but not ready" actually means. Only install-integrity
- * problems qualify — see Polyfix::installProblems(). They cannot be true of an
+ * problems qualify — see POLYFIZZ::installProblems(). They cannot be true of an
  * installation that has ever served a request, so there is no live site whose
  * details this could leak, and it prints names, never values.
  */

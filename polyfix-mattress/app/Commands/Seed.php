@@ -18,7 +18,7 @@ use Config\Database;
  */
 class Seed extends BaseCommand
 {
-    protected $group       = 'POLYFIX';
+    protected $group       = 'POLYFIZZ';
     protected $name        = 'polyfix:seed';
     protected $description = 'Run a seeder against a named database group.';
     protected $usage       = 'polyfix:seed <SeederName> [--group <name>]';

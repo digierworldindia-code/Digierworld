@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 #
-# POLYFIX MATTRESS — restore a backup.
+# POLYFIZZ — restore a backup.
 #
-#   scripts/restore.sh backup.sql.gz                      # into polyfix_restore_check
-#   scripts/restore.sh backup.sql.gz polyfix_drill        # into a named database
+#   scripts/restore.sh backup.sql.gz                      # into polyfizz_restore_check
+#   scripts/restore.sh backup.sql.gz polyfizz_drill        # into a named database
 #   scripts/restore.sh backup.sql.gz polyfix_mattress --force   # over a database that has data
 #
 # By default it restores into a SEPARATE database so you can look before
@@ -12,9 +12,9 @@
 set -euo pipefail
 
 ARCHIVE="${1:-}"
-TARGET="${2:-polyfix_restore_check}"
+TARGET="${2:-polyfizz_restore_check}"
 FORCE="${3:-}"
-DEFAULTS_FILE="${DEFAULTS_FILE:-/etc/mysql/polyfix-restore.cnf}"
+DEFAULTS_FILE="${DEFAULTS_FILE:-/etc/mysql/polyfizz-restore.cnf}"
 
 if [[ -z "$ARCHIVE" || ! -r "$ARCHIVE" ]]; then
   echo "usage: scripts/restore.sh <backup.sql.gz> [database] [--force]" >&2

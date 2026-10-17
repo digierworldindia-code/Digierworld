@@ -33,7 +33,7 @@ $ranges = db_connect()->table('products')->select('name, slug')->where(['status'
                 <h2>Company</h2>
                 <ul>
                     <li><a href="<?= site_url('about') ?>">About</a></li>
-                    <li><a href="<?= site_url('why-polyfix') ?>">Why <?= esc(brand('shortName')) ?></a></li>
+                    <li><a href="<?= site_url('why-polyfizz') ?>">Why <?= esc(brand('shortName')) ?></a></li>
                     <li><a href="<?= site_url('dealers') ?>">Find a dealer</a></li>
                     <li><a href="<?= site_url('dealers#apply') ?>">Become a dealer</a></li>
                     <li><a href="<?= site_url('dealer/login') ?>">Dealer sign-in</a></li>

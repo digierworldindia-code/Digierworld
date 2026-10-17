@@ -41,12 +41,12 @@ final class LogisticsTest extends PolyfixTestCase
         $this->assertCount(5, $units);
         $this->assertCount(5, array_unique(array_column($units, 'qr_token')), 'every unit gets its own QR token');
         foreach ($units as $unit) {
-            $this->assertMatchesRegularExpression('/^' . brand('serialPrefix') . '\d{8}$/', $unit['serial_number']);
+            $this->assertMatchesRegularExpression('/^' . brand('serialPrefix') . '-\d{4}-\d{6}$/', $unit['serial_number']);
             $this->assertSame('MANUFACTURED', $unit['current_status']);
         }
 
         // Serials are consecutive: no gaps, no reuse.
-        $numbers = array_map(static fn ($u) => (int) substr($u['serial_number'], 3), $units);
+        $numbers = array_map(static fn ($u) => (int) substr($u['serial_number'], strrpos($u['serial_number'], '-') + 1), $units);
         $this->assertSame(range(min($numbers), min($numbers) + 4), $numbers);
         $this->assertSame(5, (int) $this->db->table('manufacturing_batches')->select('produced_quantity')->where('id', $batch['id'])->get()->getRow()->produced_quantity);
     }
