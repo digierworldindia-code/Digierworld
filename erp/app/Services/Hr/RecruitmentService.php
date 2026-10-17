@@ -325,10 +325,27 @@ class RecruitmentService
         });
     }
 
-    /** Store a new CV version, extract its text server-side and record the parse status. */
+    /** Store a new CV version from an upload (type/size validated by FileStorage). */
     public function storeCv(int $candidateId, UploadedFile $file): int
     {
-        $fileId = service('files')->storeUpload($file, 'cv', 'cv', 'candidate', $candidateId);
+        return $this->attachCv($candidateId, service('files')->storeUpload($file, 'cv', 'cv', 'candidate', $candidateId));
+    }
+
+    /** Validate raw CV bytes (PDF/DOCX, max 5 MB) and store them as a new CV version. */
+    public function storeCvBytes(int $candidateId, string $bytes, string $name): int
+    {
+        $mime  = (new \finfo(FILEINFO_MIME_TYPE))->buffer($bytes) ?: '';
+        $rules = \App\Services\Files\FileStorage::PROFILES['cv'];
+        if (! in_array($mime, $rules['mimes'], true) || strlen($bytes) > $rules['max']) {
+            throw new BusinessRuleException('Only PDF or DOCX CVs up to 5 MB are accepted.');
+        }
+
+        return $this->attachCv($candidateId, service('files')->storeContents($bytes, $name, $mime, 'cv', 'candidate', $candidateId));
+    }
+
+    /** Extract text server-side, record the parse status and make it the current CV. */
+    private function attachCv(int $candidateId, int $fileId): int
+    {
         $stored = service('files')->find($fileId);
         $no     = (int) ($this->db->table('candidate_documents')->selectMax('version_no', 'm')->where(['candidate_id' => $candidateId, 'doc_kind' => 'cv'])->get()->getRow()->m ?? 0) + 1;
         $status = 'parsed';

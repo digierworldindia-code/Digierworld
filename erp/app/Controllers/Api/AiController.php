@@ -60,7 +60,7 @@ class AiController extends Controller
         } catch (AiDeniedException $e) {
             return $this->response->setStatusCode(403)->setJSON(['ok' => false, 'error' => $e->reason]);
         }
-        $clean = UntrustedText::sanitize((string) $cv['extracted_text']);
+        $clean = UntrustedText::sanitize((string) $cv['extracted_text'], 'candidate_cv', [$c['full_name']]);
 
         return $this->response->setJSON([
             'ok' => true, 'grant_id' => (int) $grant['id'], 'expires_at' => $grant['expires_at'],
@@ -93,7 +93,7 @@ class AiController extends Controller
         $cv    = $db->table('candidate_documents')->where(['candidate_id' => $id, 'doc_kind' => 'cv', 'is_current' => 1])->get()->getRowArray();
         $job   = $db->table('job_openings')->where('id', $c['job_opening_id'])->get()->getRowArray();
         $jd    = $db->table('job_description_versions')->where('id', $job['current_jd_version_id'])->get()->getRowArray();
-        $clean = UntrustedText::sanitize((string) $cv['extracted_text']);
+        $clean = UntrustedText::sanitize((string) $cv['extracted_text'], 'candidate_cv', [$c['full_name']]);
         $questions = in_array('ai.recruitment.suggest_interview_questions', $this->gw()->currentToken()['capabilities'], true) && $this->gw()->enabled('ai.recruitment.suggest_interview_questions');
         try {
             $out = service('cvEvaluation')->validate((array) ($body['result'] ?? []), RecruitmentService::rubric($jd), $clean['text'], $questions);

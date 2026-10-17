@@ -5,6 +5,7 @@ namespace App\Libraries;
 /**
  * Prepares untrusted document text (CVs) before it leaves the server.
  *
+ *  - replaces the candidate's own name with [candidate];
  *  - strips control, zero-width and bidi-override characters (hidden text tricks);
  *  - removes lines that only carry protected / irrelevant personal attributes
  *    (age, date of birth, gender, marital status, religion, caste, photo …)
@@ -34,7 +35,7 @@ class UntrustedText
     /**
      * @return array{text: string, flags: list<array{type: string, sample: string}>, redactions: int}
      */
-    public static function sanitize(string $text, string $delimiter = 'candidate_cv'): array
+    public static function sanitize(string $text, string $delimiter = 'candidate_cv', array $names = []): array
     {
         $flags = [];
         // 1. invisible / control characters
@@ -61,6 +62,23 @@ class UntrustedText
 
             return '[phone removed]';
         }, $text) ?? $text;
+        // 2b. the person's own name (can signal gender, religion or community)
+        $parts = [];
+        foreach ($names as $n) {
+            $n = trim((string) $n);
+            if ($n !== '') {
+                $parts[] = $n;
+                foreach (preg_split('/\s+/u', $n) ?: [] as $p) {
+                    if (mb_strlen($p) >= 3) {
+                        $parts[] = $p;
+                    }
+                }
+            }
+        }
+        usort($parts, static fn ($a, $b) => mb_strlen($b) <=> mb_strlen($a));
+        foreach (array_unique($parts) as $p) {
+            $text = preg_replace('/\b' . preg_quote($p, '/') . '\b/iu', '[candidate]', $text) ?? $text;
+        }
         // 3. instruction-like content
         foreach (self::INJECTION as $type => $re) {
             $text = preg_replace_callback($re, static function (array $m) use (&$flags, $type) {

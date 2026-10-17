@@ -201,7 +201,8 @@ class PayrollService
                     $payable   = max(0.0, $a['days'] - $a['outside'] - $lop);
             }
         }
-        $ratio = $proration > 0 ? Dec::div((string) $payable, (string) $proration, 6) : '0';
+        // amount × payable ÷ proration, computed in one step so components do not drift by paise
+        $prorate = static fn ($amount) => $proration > 0 ? Dec::round(Dec::div(Dec::mul($amount, (string) $payable, 6), (string) $proration, 6)) : '0.00';
 
         // ---- fixed pay
         $fixed      = '0';
@@ -213,12 +214,12 @@ class PayrollService
             $fixed = Dec::round(Dec::mul($ss['monthly_gross'], (string) $payable, 4));
             $add('earning', 'DAILY', 'Daily wages (' . $payable . ' days × ' . inr($ss['monthly_gross']) . ')', $fixed);
         } elseif ($earnComps === []) {
-            $fixed = Dec::round(Dec::mul($ss['monthly_gross'], $ratio, 6));
+            $fixed = $prorate($ss['monthly_gross']);
             $add('earning', 'FIXED', 'Fixed monthly pay', $fixed);
             $basicEarned = $fixed;
         } else {
             foreach ($earnComps as $c) {
-                $amt = (int) $c['is_prorated'] === 1 ? Dec::round(Dec::mul($c['amount'], $ratio, 6)) : Dec::round($c['amount']);
+                $amt = (int) $c['is_prorated'] === 1 ? $prorate($c['amount']) : Dec::round($c['amount']);
                 $add('earning', $c['code'], $c['label'] . ((int) $c['is_prorated'] === 1 ? '' : ' (fixed)'), $amt);
                 if ((int) $c['is_prorated'] === 1) {
                     $fixed = Dec::add($fixed, $amt);
@@ -231,7 +232,7 @@ class PayrollService
             }
         }
         foreach (array_filter($ss['components'], static fn ($c) => $c['component_type'] === 'deduction') as $c) {
-            $amt = (int) $c['is_prorated'] === 1 ? Dec::round(Dec::mul($c['amount'], $ratio, 6)) : Dec::round($c['amount']);
+            $amt = (int) $c['is_prorated'] === 1 ? $prorate($c['amount']) : Dec::round($c['amount']);
             $add('deduction', $c['code'], $c['label'], $amt);
             $otherDed = Dec::add($otherDed, $amt);
         }

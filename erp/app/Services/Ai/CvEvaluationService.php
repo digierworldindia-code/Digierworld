@@ -94,7 +94,7 @@ class CvEvaluationService
             return $this->unavailable($ctx, 'ai', $e->getMessage());
         }
 
-        $clean     = UntrustedText::sanitize((string) $ctx['cv']['extracted_text']);
+        $clean     = UntrustedText::sanitize((string) $ctx['cv']['extracted_text'], 'candidate_cv', [$ctx['candidate']['full_name']]);
         $questions = $this->gateway->enabled('ai.recruitment.suggest_interview_questions');
         $proposal  = $this->gateway->enabled('ai.recruitment.create_timeline_entry');
         $provider  = service('aiProvider');

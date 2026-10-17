@@ -90,10 +90,12 @@ final class CrmAccessReminderTest extends DgrTestCase
         $this->assertStringNotContainsString('Beta Secret Lead', $lookup);
 
         foreach (['finance/accounts', 'finance/accounts/1', 'finance/receipts', 'finance/transfers', 'finance/ledger', 'finance/reconciliation', 'finance/expenses',
-            'reports', 'reports/gst', 'reports/gst/gstr1', 'reports/sales_register', 'billing/documents', 'settings/banks', 'crm/export', 'crm/sync', 'admin/users'] as $url) {
+            'reports', 'reports/gst', 'reports/gst/gstr1', 'reports/sales_register', 'billing/documents', 'settings/banks', 'crm/export', 'crm/sync', 'admin/users',
+            'hr/employees', 'hr/employees/1', 'hr/payroll', 'hr/payroll/statutory', 'hr/candidates', 'hr/vacancies', 'hr/incentives', 'hr/attendance', 'hr/leaves', 'admin/ai'] as $url) {
             $this->assertSame(403, $this->statusOf(fn () => $this->get($url)), "Telecaller must be denied {$url}");
         }
         $this->assertSame(403, $this->statusOf(fn () => $this->postForm('finance/transfers', ['amount' => '1'])));
+        $this->assertSame(403, $this->statusOf(fn () => $this->postForm('hr/employees/1/salary', ['effective_from' => date('Y-m-d'), 'monthly_gross' => '1'])));
 
         // ...but can hand work to the owner
         $owner = $this->makeUser('super_admin', 'Owner For Tasks');

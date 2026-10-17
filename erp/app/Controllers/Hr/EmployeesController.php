@@ -110,7 +110,7 @@ class EmployeesController extends HrBase
         }
         $data = [
             'pageTitle' => $emp['full_name'], 'breadcrumbs' => [['HR'], ['Employees', 'hr/employees'], [$emp['employee_code']]],
-            'emp' => $emp, 'full' => $full,
+            'emp' => $emp, 'full' => $full, 'structures' => [], 'bank' => null, 'docs' => [], 'payroll' => [], 'incentives' => [], 'timeline' => null, 'candidate' => null,
             'department' => $this->db->table('departments')->select('name')->where('id', $emp['department_id'])->get()->getRow()->name ?? null,
             'designation' => $this->db->table('designations')->select('name')->where('id', $emp['designation_id'])->get()->getRow()->name ?? null,
             'manager' => $emp['reporting_manager_id'] ? service('employees')->find((int) $emp['reporting_manager_id']) : null,

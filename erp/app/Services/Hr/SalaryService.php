@@ -89,7 +89,8 @@ class SalaryService
         if ($from !== null && $this->db->table('salary_structures')->where(['employee_id' => $employeeId, 'effective_from' => $from])->countAllResults() > 0) {
             $errors['effective_from'] = 'A structure with this effective date already exists — choose a new date for a revision.';
         }
-        if ($from !== null && $this->db->table('payroll_runs')->where('is_locked', 1)->where('period_end >=', $from)->countAllResults() > 0) {
+        if ($from !== null && $this->db->table('payroll_items i')->join('payroll_runs r', 'r.id = i.payroll_run_id')->where('i.employee_id', $employeeId)
+            ->where('r.is_locked', 1)->where('r.period_end >=', $from)->countAllResults() > 0) {
             $errors['effective_from'] = 'Payroll is already locked for this date. Revisions must start after the last finalized period.';
         }
         if ($errors !== []) {

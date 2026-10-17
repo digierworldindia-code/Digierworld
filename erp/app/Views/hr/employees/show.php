@@ -31,7 +31,7 @@
         <?php if (! $full): ?><div class="alert alert-light border small mt-3 mb-0">You see the directory view. Personal details, salary and documents need additional HR permissions.</div><?php endif ?>
     </div></div>
 
-    <?php if (isset($bank)): ?>
+    <?php if (can('hr.employee.bank_view')): ?>
     <div class="card mb-3" id="bank"><div class="card-body small">
         <div class="card-section-title">Bank details <i class="bi bi-lock-fill text-muted" title="Restricted"></i></div>
         <?php if ($bank): ?>
@@ -57,7 +57,7 @@
     </div></div>
     <?php endif ?>
 
-    <?php if (isset($docs)): ?>
+    <?php if (can('hr.employee.private_docs')): ?>
     <div class="card mb-3" id="docs"><div class="card-body small">
         <div class="card-section-title">Private documents <i class="bi bi-lock-fill text-muted"></i></div>
         <?php foreach ($docs as $d): ?>
@@ -88,7 +88,7 @@
     </div>
     <?php endif ?>
 
-    <?php if (isset($structures)): ?>
+    <?php if (can('hr.salary.view')): ?>
     <div class="table-card mb-3" id="salary"><div class="card-header bg-white"><strong>Salary structure</strong> <i class="bi bi-lock-fill text-muted" title="Restricted to salary permissions"></i></div>
         <div class="card-body small">
         <?php foreach ($structures as $i => $s): ?>
@@ -127,7 +127,7 @@
         </div></div>
     <?php endif ?>
 
-    <?php if (isset($payroll)): ?>
+    <?php if (can('hr.payroll.view')): ?>
     <div class="table-card mb-3"><div class="card-header bg-white"><strong>Payroll history</strong></div><div class="table-responsive"><table class="table small mb-0">
         <thead><tr><th>Period</th><th class="num">Payable days</th><th class="num">Gross</th><th class="num">Deductions</th><th class="num">Net</th><th class="num">Paid</th><th>Status</th></tr></thead><tbody>
         <?php foreach ($payroll as $p): ?><tr><td><a href="<?= site_url('hr/payroll/' . $p['run_id']) ?>"><?= esc($p['period']) ?></a></td><td class="num"><?= $p['payable_days'] ?></td><td class="num"><?= inr($p['gross_pay']) ?></td><td class="num"><?= inr($p['total_deductions']) ?></td><td class="num fw-semibold"><?= inr($p['net_pay']) ?></td><td class="num"><?= inr($p['amount_paid']) ?></td><td><?= status_badge($p['run_status']) ?> <?= status_badge($p['payment_status']) ?></td></tr><?php endforeach ?>
@@ -135,14 +135,14 @@
         </tbody></table></div></div>
     <?php endif ?>
 
-    <?php if (isset($incentives)): ?>
+    <?php if (can('hr.incentive.view_all')): ?>
     <div class="table-card mb-3"><div class="card-header bg-white d-flex justify-content-between"><strong>Incentives</strong><a class="small" href="<?= site_url('hr/incentives?employee=' . $id) ?>">Ledger</a></div><div class="table-responsive"><table class="table small mb-0"><tbody>
         <?php foreach ($incentives as $e): ?><tr><td><?= esc($e['period']) ?></td><td><?= esc(str_replace('_', ' ', $e['source_type'])) ?></td><td class="num"><?= inr($e['amount']) ?></td><td><?= status_badge($e['status']) ?></td></tr><?php endforeach ?>
         <?php if ($incentives === []): ?><tr><td class="text-muted">No incentive entries.</td></tr><?php endif ?>
         </tbody></table></div></div>
     <?php endif ?>
 
-    <?php if (isset($timeline)): ?>
+    <?php if ($timeline !== null): ?>
     <div class="card mb-3"><div class="card-body small">
         <div class="card-section-title">Recruitment history — <a href="<?= site_url('hr/candidates/' . $candidate['id']) ?>"><?= esc($candidate['candidate_code']) ?></a> <span class="text-muted fw-normal">(applied <?= dmy($candidate['application_date']) ?>)</span></div>
         <ul class="timeline list-unstyled mb-0"><?php foreach ($timeline as $t): ?><li class="mb-1"><span class="text-muted"><?= dmy($t['occurred_at'], true) ?></span> — <?= esc($t['title']) ?><?= $t['actor'] ? ' <span class="text-muted">by ' . esc($t['actor']) . '</span>' : '' ?></li><?php endforeach ?></ul>
