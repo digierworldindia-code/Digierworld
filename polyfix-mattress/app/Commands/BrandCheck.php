@@ -61,6 +61,8 @@ class BrandCheck extends BaseCommand
         // ran. It is history, not branding, and rewriting it would falsify
         // the record of what was applied.
         '0006_brand_rename_polyfix', 'brand_rename_backup',
+        // The config class, named in prose as well as in code.
+        'Polyfix.php',
     ];
 
     /** Where a literal is expected and not a fault. */
@@ -73,8 +75,12 @@ class BrandCheck extends BaseCommand
         'app/Database/Migrations/2026-10-17-000001_RebrandToPolyfizz.php',
         'app/Config/Routes.php',           // keeps the old public address working
         'tests/',                          // tests assert the exact spelling
-        'docs/',                           // documentation quotes both names
-        'README.md',
+        // docs/ and README.md are NOT exempt. They are delivered to the
+        // client and read by the people using the software, so a
+        // misspelling there is as much a defect as one on a screen.
+        // Keeping them out of this list is what caught the old name still
+        // sitting in three of them after the rename.
+        'docs/database.md',                // names the database accounts
         'LICENSE',
         'composer.json',                   // the package's own description
         'public/assets/vendor/README.md',

@@ -1,4 +1,4 @@
-# POLYFIX MATTRESS
+# POLYFIZZ
 
 A mattress company's whole operation, in one CodeIgniter 4 application: the
 public website, the staff console, the dealer portal, and the record that ties
@@ -244,4 +244,4 @@ templates — a hidden link is a courtesy, the filter is the control.
 
 ---
 
-*POLYFIX MATTRESS — Manesar, Noranpur Chowk, Haryana, India*
+*POLYFIZZ — Manesar, Noranpur Chowk, Haryana, India*

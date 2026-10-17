@@ -17,11 +17,10 @@ cd "$(dirname "$0")/.."
 ROOT=$(pwd)
 OUT=${1:-"$ROOT/delivery"}
 NAME=POLYFIZZ-MATTRESS
-ZIP="$OUT/${ZIP_NAME:-POLYFIZZ-MATTRESS-CI4-NO-2FA-FINAL}.zip"
+ZIP="$OUT/${ZIP_NAME:-POLYFIZZ-CI4-COMPLETE-FINAL}.zip"
 SQL_SRC="$OUT/POLYFIZZ-MATTRESS-DATABASE.sql"
 
 command -v zip >/dev/null || { echo "zip is not installed"; exit 1; }
-[ -f "$SQL_SRC" ] || { echo "missing $SQL_SRC — generate the dump first"; exit 1; }
 
 STAGE=$(mktemp -d)
 trap 'rm -rf "$STAGE"' EXIT
@@ -47,8 +46,18 @@ composer install \
 [ -f "$STAGE/$NAME/vendor/autoload.php" ] || { echo "composer install produced no autoloader"; exit 1; }
 find "$STAGE/$NAME/vendor" -name '.git' -prune -exec rm -rf {} + 2>/dev/null || true
 
-echo "==> adding the database dump and the empty writable tree"
-cp "$SQL_SRC" "$STAGE/$NAME/POLYFIZZ-MATTRESS-DATABASE.sql"
+# A data dump is included only when one has been generated beside this
+# script. For an upgrade of a running installation there should not be one:
+# the client already has their data, and the migrations bring the schema
+# forward without touching it. Shipping a dump alongside an upgrade invites
+# somebody to restore it over live records.
+echo "==> adding the empty writable tree"
+if [ -f "$SQL_SRC" ]; then
+    echo "  including $SQL_SRC"
+    cp "$SQL_SRC" "$STAGE/$NAME/POLYFIZZ-MATTRESS-DATABASE.sql"
+else
+    echo "  no data dump present — this is an upgrade package, which is correct"
+fi
 for d in cache logs session uploads debugbar; do
     mkdir -p "$STAGE/$NAME/writable/$d"
     [ -f "$STAGE/$NAME/writable/$d/index.html" ] || \

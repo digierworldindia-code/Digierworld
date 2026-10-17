@@ -1,4 +1,4 @@
-# POLYFIX MATTRESS — Use case specification
+# POLYFIZZ — Use case specification
 
 Software documentation. Describes what the system does, who may do it, what
 must be true before and after, and the rules it enforces.
@@ -12,7 +12,7 @@ companion documents are `docs/USER-GUIDE.md` (how to operate it),
 
 | | |
 |---|---|
-| **System** | POLYFIX MATTRESS warranty and distribution platform |
+| **System** | POLYFIZZ warranty and distribution platform |
 | **Version** | CodeIgniter 4.7.4 · PHP 8.2+ · MySQL 8.0+ · Bootstrap 5 |
 | **Scope** | Public website, admin console, dealer portal |
 | **Use cases** | 92 across 13 subsystems — 29 specified in full, 63 in brief |
@@ -73,7 +73,7 @@ field is listed, the previous value is recorded alongside the new one.
 | Actor | Role key | Description |
 |---|---|---|
 | **Visitor** | — | Anonymous public. No account. Browses the website, verifies a warranty by QR code, submits an enquiry or a dealership application. |
-| **Customer** | — | A person who owns a POLYFIX mattress. Has no account; interacts only by scanning the label on their own unit. |
+| **Customer** | — | A person who owns a POLYFIZZ mattress. Has no account; interacts only by scanning the label on their own unit. |
 | **Dealer** | `DEALER` | An appointed dealership. Receives consignments, sells units, raises warranty claims. Confined to their own dealership's data. |
 | **Warehouse Operator** | `WAREHOUSE` | Production, serialisation, stock and dispatch. |
 | **Warranty Manager** | `WARRANTY_MANAGER` | Reviews and decides claims, issues replacements, manages warranty records. |
@@ -377,7 +377,7 @@ not a dealer, and no sign-in has been created.
 | **2a. Wrong password** | *Incorrect email or password. Please try again.* The email address is retained in the form. The failure is counted and logged. **The account is not locked** (BR-04). The user may retry immediately and as often as needed. |
 | **2b. Email not registered** | The identical message, and the same response time. Account existence is not disclosed (BR-03). |
 | **2c. Account suspended or disabled** | The identical message (BR-03). |
-| **2d. Dealer whose dealership is suspended or terminated** | *This dealership account is not active. Please contact POLYFIX.* The password was correct, so this discloses nothing to an attacker and tells a legitimate dealer something actionable. |
+| **2d. Dealer whose dealership is suspended or terminated** | *This dealership account is not active. Please contact POLYFIZZ.* The password was correct, so this discloses nothing to an attacker and tells a legitimate dealer something actionable. |
 | **4a. Password is temporary** | Continues at UC-AU-02 before anything else is reachable. |
 | **4b. Two-factor is on and this account has enrolled** | Continues at UC-AU-09. No session exists until the code is accepted. |
 | **4c. Two-factor is off but the account's `mfa_enabled` flag is set** | The flag is ignored and sign-in completes (BR-10). A stale flag cannot strand an account. |
@@ -647,10 +647,10 @@ cancellation.
 4. The system records a receipt line per unit. Units marked OK move to
    `DEALER_RECEIVED` and become the dealer's sellable stock.
 5. Units marked DAMAGED or MISSING **do not** become sellable stock and are
-   reported back to POLYFIX on the dispatch record (BR-21).
+   reported back to POLYFIZZ on the dispatch record (BR-21).
 6. The dispatch becomes `RECEIVED` if every unit is now accounted for, or
    `PARTIALLY_RECEIVED` if some remain.
-7. A notification is raised for POLYFIX staff, and a `RECEIPT_CREATED` audit
+7. A notification is raised for POLYFIZZ staff, and a `RECEIPT_CREATED` audit
    entry is written.
 
 **Alternate flows**
@@ -1283,7 +1283,7 @@ permission and the dealer scope, and write the audit entry named.
 | UC-PB-02 | View a product page | Marketing content and SEO metadata from the CMS; no stock or price-list data. |
 | UC-PB-04 | Find a dealer | Active dealers, by city and state. Hidden when `website.dealer_locator_enabled` is false. |
 | UC-PB-05 | Submit an enquiry | Typed: product enquiry, bulk order, dealership, other. Creates a lead at `NEW`. Throttled at 5 per hour per address. Hidden when `website.contact_form_enabled` is false. |
-| UC-PB-07 | Read a content page | Why POLYFIX, about, warranty, privacy, terms. Text from the CMS. |
+| UC-PB-07 | Read a content page | Why POLYFIZZ, about, warranty, privacy, terms. Text from the CMS. |
 | UC-PB-08 | Retrieve robots.txt / sitemap.xml | Honours `seo.robots_allow_indexing` and `seo.sitemap_enabled`. Both disallow `/admin` and `/dealer`. |
 
 ### Account
@@ -1327,7 +1327,7 @@ permission and the dealer scope, and write the audit entry named.
 | UC-CL-06 | Request information | Moves to `INFO_REQUESTED` and tells the dealer what is needed. |
 | UC-CL-07 | Record an inspection | Date and findings, when someone has physically examined the unit. |
 | UC-CL-08 | Add a note | Internal, or visible to the dealer — chosen explicitly. |
-| UC-CL-09 | Attach own evidence | Inspection photographs from POLYFIX's side. |
+| UC-CL-09 | Attach own evidence | Inspection photographs from POLYFIZZ's side. |
 | UC-CL-10 | Recalculate risk | Re-runs the ten indicators, e.g. after new photographs arrive. Audit: `RISK_RECOMPUTED`. |
 | UC-CL-13 | Close a claim | Terminal. From `APPROVED`, `REJECTED` or `REPLACED`. Nothing further may be recorded against it (BR-38). |
 | UC-CL-14 | View claim evidence | Served through a **signed URL valid for 300 seconds**, after a permission check. Uploads live outside the web root and are never directly addressable (BR-37). |
@@ -1395,7 +1395,7 @@ permission and the dealer scope, and write the audit entry named.
 | **BR-18** | Only a unit in `MANUFACTURED` or `RETURNED` may be dispatched. Returned stock is therefore re-dispatchable; a unit already on an open dispatch, at a dealer, sold or scrapped is not. This is what confines a unit to one open dispatch at a time. Stock must also be dispatched to an `ACTIVE` dealer. |
 | **BR-19** | A `DRAFT` dispatch is invisible to the destination dealer. It becomes visible when sent. |
 | **BR-20** | A dispatch may be cancelled only before it is sent. After sending, the correction is a return. |
-| **BR-21** | Units reported damaged or missing on receipt do not become sellable stock, and the report is attached to the dispatch for POLYFIX to act on. |
+| **BR-21** | Units reported damaged or missing on receipt do not become sellable stock, and the report is attached to the dispatch for POLYFIZZ to act on. |
 | **BR-22** | Receipt may be partial. The dispatch stays `PARTIALLY_RECEIVED` until every unit is accounted for. |
 | **BR-23** | A unit may be sold only from `DEALER_RECEIVED`. A dealer who has not confirmed a consignment cannot sell from it. |
 

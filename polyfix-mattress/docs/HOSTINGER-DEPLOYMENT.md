@@ -1,4 +1,4 @@
-# Deploying POLYFIX MATTRESS on Hostinger
+# Deploying POLYFIZZ on Hostinger
 
 Written for Hostinger's shared and Cloud plans (hPanel), but every step applies
 to any ordinary Apache or LiteSpeed host with PHP and MySQL: cPanel, Plesk,
@@ -48,11 +48,11 @@ names any that are missing.
 
 ## 3. Where to upload and extract
 
-Upload `POLYFIX-MATTRESS-CI4-FINAL-CLIENT-DELIVERY.zip` with **hPanel → Files →
+Upload `POLYFIZZ-CI4-COMPLETE-FINAL.zip` with **hPanel → Files →
 File Manager**, or over SFTP, then extract it in place. Extracting on the server
 is much faster than uploading ~1,900 unpacked files.
 
-You will get a single folder, `POLYFIX-MATTRESS/`, containing `app/`, `public/`,
+You will get a single folder, `POLYFIZZ-MATTRESS/`, containing `app/`, `public/`,
 `vendor/`, `writable/` and the rest.
 
 Which folder you put it in depends on the next step.
@@ -69,8 +69,8 @@ Best if your plan allows it. On Hostinger this is **Websites → your domain →
 Advanced → Change website root** (Cloud and some Business plans; not all shared
 plans have it).
 
-* Put the project anywhere, e.g. `/home/uXXXX/polyfix/POLYFIX-MATTRESS`
-* Set the website root to `/home/uXXXX/polyfix/POLYFIX-MATTRESS/public`
+* Put the project anywhere, e.g. `/home/uXXXX/polyfizz/POLYFIZZ-MATTRESS`
+* Set the website root to `/home/uXXXX/polyfizz/POLYFIZZ-MATTRESS/public`
 
 Nothing outside `public/` is then served at all, whatever else is
 misconfigured.
@@ -79,7 +79,7 @@ misconfigured.
 
 Use this when the document root is fixed at `public_html/`.
 
-Extract so that the contents of `POLYFIX-MATTRESS/` sit **directly inside**
+Extract so that the contents of `POLYFIZZ-MATTRESS/` sit **directly inside**
 `public_html/`:
 
 ```
@@ -184,23 +184,44 @@ permissions, settings, the website's page content and one plant. No accounts and
 no customer data: those belong to a running system.
 
 hPanel → **Databases → phpMyAdmin → Import** → choose
-`POLYFIX-MATTRESS-DATABASE.sql` → Go. Over SSH:
+`POLYFIZZ-MATTRESS-DATABASE.sql` → Go. Over SSH:
 
 ```bash
-mysql -u uXXXX_polyfix -p uXXXX_polyfix < POLYFIX-MATTRESS-DATABASE.sql
+mysql -u uXXXX_polyfix -p uXXXX_polyfix < POLYFIZZ-MATTRESS-DATABASE.sql
 ```
 
-**An installation that already holds live data.** Do not import the dump over
-it — that is what would overwrite your records. Take a backup first
-(`scripts/backup.sh`, or hPanel → Backups), then apply only the schema changes:
+**An installation that already holds live data.** This is the usual case for
+an upgrade, and the upgrade package deliberately contains **no data dump** —
+your records are already in the database and nothing should be restored over
+them.
+
+Take a backup first (`scripts/backup.sh`, or hPanel → Backups), then apply
+only the schema changes:
 
 ```bash
 php spark polyfix:migrate --owner-user uXXXX_polyfix_owner
 php spark polyfix:seed ReferenceData
 ```
 
-Both are safe to run twice. The seeder fills in reference rows that are missing
-and leaves everything else alone. Existing serial numbers are never rewritten.
+Both are safe to run twice. The seeder brings roles, permissions and settings
+into line with the code and leaves everything else alone.
+
+Every migration in this release is additive. None drops a table, deletes a
+record or resets a counter. In particular:
+
+* **Existing serial numbers are never rewritten.** Units numbered `CLF…`
+  under the previous platform keep those serials — they are printed on labels
+  in customers' homes. The format check is widened so new production can be
+  numbered `PFZ-YYYY-NNNNNN` alongside them.
+* **The brand correction touches website copy only** — pages, FAQs, SEO
+  metadata and the company-name setting. Sales, claims, warranties,
+  dispatches, customer text and the audit trail are left exactly as they are,
+  because they record what happened.
+* The survey and warehouse tables are each created `IF NOT EXISTS`.
+
+`POLYFIZZ-MYSQL-MIGRATIONS.zip` contains the same migrations on their own,
+with a README, for a database administrator who wants to read them before
+anything is applied.
 
 ## 8. Base URL
 
@@ -364,6 +385,32 @@ Now test in a browser:
 6. Check the dealer panel loads at `https://your-domain.com/dealer/login`.
 7. Sign out from the menu, and confirm `/admin` sends you back to the sign-in
    page.
+
+### The two panels that need a camera
+
+The warehouse panel (`/warehouse`) and the field agent panel (`/agent`) open
+the phone's camera to read QR codes. Two things have to be true, and both are
+about the address rather than the application:
+
+* **It must be served over https.** No browser will open a camera on a plain
+  `http://` address. If section 12 is done, this is already the case.
+* **The person has to allow it** the first time, in the browser's own prompt.
+
+If the camera cannot be opened the panel says exactly why — permission
+refused, no camera on the device, another app using it, or an address that is
+not secure — and the box for typing a serial by hand stays usable throughout.
+Nobody is ever stuck.
+
+To see a panel working you need an account with the right role:
+
+```bash
+php spark polyfix:create-user --email floor@your-domain.com --name "Plant" --role WAREHOUSE
+php spark polyfix:create-user --email agent@your-domain.com --name "Agent" --role FIELD_AGENT
+```
+
+Each lands in its own panel at sign-in. A field agent also needs dealers
+assigned to them, under **Console → Field surveys → Agent assignments**,
+before there is anything on their round.
 
 ## 14. Troubleshooting, and where the logs are
 

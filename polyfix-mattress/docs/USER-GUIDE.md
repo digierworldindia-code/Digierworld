@@ -1,4 +1,4 @@
-# POLYFIX MATTRESS — User guide
+# POLYFIZZ — User guide
 
 Everything the software does, and how to do it.
 
@@ -20,6 +20,8 @@ For installing it, see `INSTALL.txt` and `docs/HOSTINGER-DEPLOYMENT.md`.
 4. [Who can do what — roles](#4-who-can-do-what--roles)
 5. [The life of one mattress](#5-the-life-of-one-mattress)
 6. [Admin console, screen by screen](#6-admin-console-screen-by-screen)
+6a. [Warehouse panel, screen by screen](#6a-warehouse-panel-screen-by-screen)
+6b. [Field agent panel, screen by screen](#6b-field-agent-panel-screen-by-screen)
 7. [Dealer portal, screen by screen](#7-dealer-portal-screen-by-screen)
 8. [The warranty claim process](#8-the-warranty-claim-process)
 9. [Fraud risk indicators](#9-fraud-risk-indicators)
@@ -38,7 +40,7 @@ For installing it, see `INSTALL.txt` and `docs/HOSTINGER-DEPLOYMENT.md`.
 
 ## 1. What the software is for
 
-Every mattress POLYFIX MATTRESS makes gets a serial number and a QR code
+Every mattress POLYFIZZ makes gets a serial number and a QR code
 before it leaves the plant. From then on the software knows where that unit is
 and what has happened to it:
 
@@ -59,17 +61,22 @@ end of its warranty.
 
 ---
 
-## 2. The three parts
+## 2. The parts
 
 | Part | Address | Who uses it |
 |---|---|---|
 | **Public website** | `/` | Customers and prospective dealers. No sign-in. |
-| **Admin console** | `/admin` | POLYFIX MATTRESS staff. |
+| **Admin console** | `/admin` | Office staff: managers, warranty, reporting. |
+| **Warehouse panel** | `/warehouse` | The plant floor. Built for a phone, driven by scanning. |
+| **Field agent panel** | `/agent` | Agents visiting dealers. Built for a phone. |
 | **Dealer portal** | `/dealer` | Appointed dealers. Built for a phone. |
 
-All three are the same application and the same database. A dealer signing in
-cannot reach the admin console, and sees only their own dealership's
-information — that separation is enforced on the server, not by hiding links.
+All five are the same application and the same database. You are taken to your
+own part when you sign in — there is no menu to get lost in — and if you open
+somebody else's you are returned to yours with a line saying why.
+
+A dealer cannot reach any staff area, and sees only their own dealership's
+information. That separation is enforced on the server, not by hiding links.
 
 ---
 
@@ -109,23 +116,33 @@ will ask you to sign in again.
 ## 4. Who can do what — roles
 
 Each person is given one or more roles. A role is a bundle of permissions, and
-there are **55 permissions across 7 roles**. Nobody can give themselves a role,
+there are **64 permissions across 8 roles**. Nobody can give themselves a role,
 and nobody can create or edit an account more senior than their own.
 
-| Role | Permissions | What it is for |
-|---|---|---|
-| **Super Admin** | 55 | Everything, including the database tools. Keep this to one or two people. |
-| **Admin** | 45 | Runs the business day to day. Everything except the database tools. |
-| **Warranty Manager** | 18 | Claims, verification and replacements. |
-| **Sales Manager** | 14 | Dealer performance, sales figures and website leads. |
-| **Warehouse** | 12 | Production, serials, stock and dispatch. |
-| **Dealer** | 14 | Their own inventory, sales and claims. Nothing else, and nobody else's. |
-| **Reporting** | 9 | Read-only. Cannot change anything at all — useful for an accountant or an auditor. |
+| Role | Permissions | Lands in | What it is for |
+|---|---|---|---|
+| **Super Admin** | 64 | Console | Everything, including the database tools. Keep this to one or two people. |
+| **Admin** | 52 | Console | Runs the business day to day. Everything except the database tools. |
+| **Warranty Manager** | 23 | Console | Claims, verification, replacements, and deciding warranty rejections. |
+| **Sales Manager** | 17 | Console | Dealer performance, sales figures and website leads. |
+| **Warehouse** | 13 | Warehouse panel | Production, serials, stock and dispatch. |
+| **Field Agent** | 13 | Agent panel | Visits assigned dealers and verifies physical stock. |
+| **Dealer** | 16 | Dealer portal | Their own inventory, sales and claims. Nothing else, and nobody else's. |
+| **Reporting** | 12 | Console | Read-only. Cannot change anything at all — useful for an accountant or an auditor. |
 
 The permissions are grouped by the part of the business they cover:
-catalogue (4), manufacturing (5), logistics (6), dealer network (5), sales (5),
-warranty (9), marketing and website (7), reports (2), administration (5) and
-system (6).
+catalogue (4), manufacturing (6), logistics (6), dealer network (5), sales (5),
+warranty (9), field surveys (8), marketing and website (7), reports (2),
+administration (5) and system (6).
+
+Two boundaries are worth stating outright, because they are the point of the
+two newest roles:
+
+* A **warehouse** login cannot see sales, customers, other employees, the
+  audit trail or the settings. It is a floor tool.
+* A **field agent** cannot change anything they are checking. No sale, no
+  warranty, no serial, no dispatch, no stock level. They record what they
+  found; where it disagrees with the records, the office is asked to look.
 
 **Console → Roles & permissions** shows the full grid of which role holds
 which permission. It is worth looking at once before you decide who gets what.
@@ -166,7 +183,7 @@ and each step is recorded.
      │
      ▼
   Claim (if any)     Dealer portal → Claims  →  Console → Claims
-     │               raised by the dealer, decided by POLYFIX
+     │               raised by the dealer, decided by POLYFIZZ
      ▼
   Replacement        Console → Claims → Issue replacement
                      a new unit, carrying the original warranty end date
@@ -190,7 +207,7 @@ What needs attention today: claims waiting on a decision, consignments not yet
 received, recent sales, stock by location. What you see depends on your role.
 
 ### Products — `/admin/products`
-What POLYFIX MATTRESS makes. A product carries its name, description, **warranty
+What POLYFIZZ makes. A product carries its name, description, **warranty
 years** and its sizes (variants), each with its own SKU and price.
 
 The warranty years on the product is what decides a customer's cover. Change it
@@ -315,6 +332,154 @@ security. Section 13.
 
 ---
 
+## 6a. Warehouse panel, screen by screen
+
+`/warehouse`. Five buttons and nothing else on the front screen, because it is
+read standing up, one-handed, in poor light. Everything is driven by the
+camera: **no serial number is typed as part of the normal job.**
+
+### Batches — `/warehouse/batches`
+Every batch with how far it has been counted. Amber means units are still
+waiting to be scanned; green means the run is accounted for.
+
+### New batch — `/warehouse/batches/new`
+The date, the plant, and how many of each size. There is no "planned quantity"
+box — it is the sum of the sizes, shown as you type, because two numbers that
+have to agree are two numbers that will not.
+
+Pressing **Open batch** issues a serial number and a QR code for every unit,
+there and then, in one go. A hundred mattresses need one form.
+
+### Print labels — `/warehouse/batches/{id}/labels`
+The whole batch as a sheet of labels, three across on plain A4. Each label
+carries the POLYFIZZ name, the QR code, the serial number as a barcode, and
+the model and size. Print it, and apply the labels as the mattresses come off
+the line.
+
+### Scan mattresses — `/warehouse/batches/{id}/scan`
+The camera opens and stays open. Hold each label in the frame; the count at
+the top goes up — *"37 / 100 Mattresses Scanned"* — and you hear a short beep
+and feel a buzz. You do not have to look at the phone between units.
+
+* The same label scanned twice says **"Already Scanned — No Duplicate Added"**
+  and the count does not move. It cannot be counted twice even by two people
+  scanning at the same moment: the database refuses the second one.
+* A label from another batch says which batch it belongs to.
+* A label that will not read can be typed in the box below the camera. That
+  box is there for a torn label, not for the job.
+* The count is whatever the server says. If a scan does not reach the server
+  you are told it was **not recorded**, rather than shown a number that
+  disagrees with the database.
+
+### Stock — `/warehouse/stock`
+What is on the floor and can go out, by model and size. Units already on a
+lorry, delivered or sold are not counted here — showing them would have the
+floor promising stock it cannot send.
+
+### Prepare dispatch — `/warehouse/dispatch`
+Choose the dealer and the plant, and the consignment opens empty. Then put
+mattresses on it, three ways, in any combination:
+
+| Way | How |
+|---|---|
+| **Scan** | Camera open, each label as it goes on the lorry. One already on the list says so. |
+| **From batch** | Choose a batch, then tick all of it, tick one size, or tick units singly. |
+| **On board** | What is loaded, with a tick box to take any back off. |
+
+A mattress is reserved the moment it is listed, so two consignments can never
+hold the same one — the second operator is told which consignment has it.
+Ticking a stack adds all of it or none of it: adding most of a stack and
+quietly leaving two behind is how a lorry goes out short.
+
+### Confirm dispatch — `/warehouse/dispatch/{id}/confirm`
+Everything on the consignment in one view, with the lorry details. Confirming
+is the moment the mattresses become the dealer's, so it is a separate screen
+and it asks. It is one transaction: every unit moves and the dealer sees the
+consignment coming, or nothing happens.
+
+### Dispatch history — `/warehouse/dispatches`
+What has gone out, to whom, and whether the dealer has acknowledged it.
+
+### Find a mattress — `/warehouse/find`
+Scan or type a serial to see where one unit is and everything that has
+happened to it.
+
+---
+
+## 6b. Field agent panel, screen by screen
+
+`/agent`. An agent visits the dealers on their round every six months and
+checks the shelf against the records.
+
+**The rule the whole panel is built on: an agent reports, the office decides.**
+Nothing an agent does changes a sale, a warranty, a serial or a stock level.
+Where the shelf and the records disagree, a discrepancy is raised for someone
+with the standing to settle it.
+
+### My round — `/agent`
+The agent's own ID, and four figures: dealers assigned, visits due, surveys in
+progress and finished, discrepancies raised, warranty reviews waiting.
+
+### My dealers — `/agent/dealers`
+The dealers on the round, soonest due first, each marked **Overdue**,
+**Due now**, **Soon** or **Scheduled**.
+
+### One dealer — `/agent/dealers/{id}`
+Every mattress the records place with that dealer, with its model and size,
+when it was dispatched and received, whether it is sold and on what invoice,
+and the state of its warranty. The totals at the top are counted from the
+database every time the page loads — there is no stored figure that could be
+out of date.
+
+Filters fold away: serial or model, status, warranty, model, size, and the
+dispatch date range.
+
+### Conducting a survey — `/agent/surveys/{id}`
+Set **"What am I recording?"** once — normally *Physically available* — and
+scan down the shelf. The selector travels with each scan, so a shelf where
+everything is present is one tap per mattress. Change it only for the
+exceptions.
+
+What you can record, and what each means:
+
+| What you found | If the records say it is in stock | If the records say it is sold |
+|---|---|---|
+| **Physically available** | Matches | Review required |
+| **Dealer says sold** | **Possible unrecorded sale** | Matches |
+| **Not found** | **Stock discrepancy** | Matches |
+| **Damaged** | Damaged — raised either way | Damaged — raised either way |
+| **Other** | Review required | Review required |
+
+A unit whose label will not scan can be ticked off the list below the camera.
+Recording the same unit again replaces the line rather than adding a second —
+a mis-tap corrects itself.
+
+**Finish the survey** fixes the figures. They are frozen on purpose: the
+report has to show the position on the day of the visit, not a number that
+changes every time stock moves afterwards.
+
+### The report — `/agent/surveys/{id}/report`
+The dealer stock verification report: dealer, agent, date, the summary
+figures, the agent's remarks, every unit examined with what the records said
+and what was found, and space for both signatures. Press **Print / PDF** —
+your phone or browser will save it as a PDF. The office sees the identical
+document.
+
+### Report a warranty problem — `/agent/reviews/new`
+Where the paperwork on a sale is wrong: no invoice uploaded, the sale was
+never registered, the invoice does not match, the sale information is wrong,
+or something else.
+
+This opens a **recommendation**. The customer's warranty is not touched. The
+office looks at it, and can approve the rejection, dismiss it, or ask the
+dealer for the invoice. The agent can withdraw their own recommendation while
+nobody has decided it.
+
+### Discrepancies and reviews — `/agent/discrepancies`, `/agent/reviews`
+What the agent raised, and what came of it.
+
+---
+
 ## 7. Dealer portal, screen by screen
 
 Designed for a phone in a shop. Large targets, no sideways scrolling, works on
@@ -329,14 +494,14 @@ Point the camera at a label, or type the serial. The portal shows that unit and
 — depending on where it is in its life. This is the screen a dealer uses most.
 
 ### Incoming — `/dealer/incoming`
-Consignments POLYFIX has sent. Open one and confirm what arrived:
+Consignments POLYFIZZ has sent. Open one and confirm what arrived:
 
 - accept the units that are fine
 - mark anything **damaged**
 - mark anything **missing**
 
 Confirm, and the units accepted become the dealer's stock. Damage and shortages
-go straight back to POLYFIX — nobody has to telephone about it.
+go straight back to POLYFIZZ — nobody has to telephone about it.
 
 ### Inventory — `/dealer/inventory`
 What this dealer holds and can sell, by product and size.
@@ -351,6 +516,16 @@ This dealer's sales, with each one's warranty status.
 
 ### Claims — `/dealer/claims`
 Raise a claim and follow it. Section 8.
+
+### Warranty reviews — `/dealer/reviews`
+Where POLYFIZZ has questioned the paperwork on one of your sales — usually a
+missing invoice, or a sale that was never registered. You see what was
+questioned, where it has got to, and the decision with its reason.
+
+**The customer's warranty is unchanged while a review is open.** If the
+message says an invoice is needed, upload it here and the case goes back for
+another look. You do not see the reviewer's internal notes, only what is
+addressed to you.
 
 ### Notifications — `/dealer/notifications`
 A consignment is on its way; a claim has been decided.
@@ -391,7 +566,7 @@ If your trade needs a minimum period between a sale and a claim, set
 `warranty.claim_window_days` in **Settings → Warranty**. It is 0 by default,
 meaning no restriction.
 
-### What POLYFIX does
+### What POLYFIZZ does
 
 Open the claim in **Console → Claims**. You see the reported issue, the
 photographs, the unit's full history, the customer, the dealer, and the **risk
@@ -489,7 +664,7 @@ hundred are different situations, and the report lets you see which is which.
 
 ## 11. The public website and the CMS
 
-The public site has: home, mattresses (and a page per product), why POLYFIX,
+The public site has: home, mattresses (and a page per product), why POLYFIZZ,
 about, warranty, dealer locator, contact, privacy and terms, plus
 `robots.txt` and `sitemap.xml`.
 
@@ -516,11 +691,19 @@ send a `noindex` header on every page, and are excluded in `robots.txt`.
 
 Every mattress gets a label carrying:
 
+- the **POLYFIZZ** name
 - the **QR code**, which opens that unit's warranty page
 - the **barcode** (Code 128) of the serial number, for warehouse scanners
 - the **serial number** in plain text
+- the **model and size**, and the batch it came from
 
-Print it from **Console → Mattresses → [unit] → Label**.
+Print a whole batch at once from **Warehouse → Batches → [batch] → Print
+labels**: three across on plain A4. A single label comes from
+**Console → Mattresses → [unit] → Label**.
+
+The serials and QR codes already exist when the batch is opened — printing
+only puts them on paper. That is what makes the floor's "no typing" true, and
+it is why the labels must be applied before the units are scanned in.
 
 The QR code points at `https://your-domain.com/warranty/verify?q=…` with a
 token unique to that unit. A customer scans it and sees their product, their
@@ -666,15 +849,25 @@ they are written.
 
 | Looks like | Is a | Shape |
 |---|---|---|
-| `CLF26000001` | Mattress serial | `CLF` + 2-digit year + 6 digits |
-| `BAT260001` | Production batch | `BAT` + year + 4 digits |
+| `PFZ-2026-000001` | Mattress serial | `PFZ` + 4-digit year + 6 digits |
+| `CLF26000001` | Mattress serial, older units | the previous numbering, still in the field |
+| `PFZ-20261017-001` | Production batch | `PFZ` + the date + the day's run number |
+| `BAT260001` | Production batch, older runs | the previous numbering |
 | `DSP26000001` | Dispatch consignment | `DSP` + year + 6 digits |
 | `CLM26000001` | Warranty claim | `CLM` + year + 6 digits |
+| `SRV-26-000001` | Dealer stock survey | `SRV` + year + 6 digits |
+| `WRV-26-000001` | Warranty review | `WRV` + year + 6 digits |
 | `DLR0001` | Dealer code | `DLR` + 4 digits |
+| `AGT-A1B2C3` | Field agent | derived from the agent's own account |
 
-Numbers are issued in order, never reused, and never renumbered. The `CLF`
-prefix is kept from the previous platform deliberately, so serials printed and
-attached before the changeover still match their records.
+Numbers are issued in order, never reused, and never renumbered.
+
+**Nothing already printed was changed.** Mattresses numbered `CLF…` under the
+previous platform keep those serials for ever — they are on labels in
+customers' homes. Both shapes are accepted everywhere: scanning, searching,
+the agent's survey and the public verification page. New production is
+numbered `PFZ-YYYY-NNNNNN`, and new batches `PFZ-YYYYMMDD-NNN`, which reads
+off a whiteboard as the date and the run.
 
 ---
 
