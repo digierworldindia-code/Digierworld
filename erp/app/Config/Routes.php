@@ -60,6 +60,21 @@ $routes->group('admin', static function (RouteCollection $routes): void {
     $routes->get('audit/verify', 'Admin\AuditController::verify', ['filter' => 'perm:security.audit.view']);
     $routes->get('audit/(:num)', 'Admin\AuditController::show/$1', ['filter' => 'perm:security.audit.view']);
     $routes->get('diagnostics', 'Admin\DiagnosticsController::index', ['filter' => 'perm:security.diagnostics.view']);
+    $routes->get('ai', 'Admin\AiController::index', ['filter' => 'perm:ai.permissions.manage,ai.usage.view']);
+    $routes->post('ai/provider', 'Admin\AiController::saveProvider', ['filter' => 'perm:ai.permissions.manage']);
+    $routes->post('ai/capabilities/(:segment)', 'Admin\AiController::saveCapability/$1', ['filter' => 'perm:ai.permissions.manage']);
+    $routes->post('ai/tokens', 'Admin\AiController::issueToken', ['filter' => 'perm:ai.permissions.manage']);
+    $routes->post('ai/tokens/(:num)/revoke', 'Admin\AiController::revokeToken/$1', ['filter' => 'perm:ai.permissions.manage']);
+});
+
+// ---- AI service-token API (no session; each action checks capability + record scope) ----
+$routes->group('api/ai', ['filter' => 'aitoken'], static function (RouteCollection $routes): void {
+    $routes->get('recruitment/candidates/(:num)/evaluation-input', 'Api\AiController::evaluationInput/$1');
+    $routes->post('recruitment/candidates/(:num)/evaluation', 'Api\AiController::submitEvaluation/$1');
+    $routes->post('recruitment/candidates/(:num)/timeline-proposals', 'Api\AiController::proposeTimeline/$1');
+    $routes->get('payroll/summary', 'Api\AiController::payrollSummary');
+    $routes->get('payroll/period-summary', 'Api\AiController::payrollPeriod');
+    $routes->match(['GET', 'POST', 'PUT', 'PATCH', 'DELETE'], '(:any)', 'Api\AiController::refuse/$1');
 });
 
 // ---- Settings ----

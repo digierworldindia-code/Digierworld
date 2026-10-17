@@ -41,6 +41,37 @@ $routes->group('hr', static function (RouteCollection $routes): void {
     $routes->post('holidays/(:num)/delete', 'Hr\HolidaysController::delete/$1', ['filter' => 'perm:hr.holiday.manage']);
     $routes->post('holidays/rules', 'Hr\HolidaysController::saveRule', ['filter' => 'perm:hr.holiday.manage']);
     $routes->post('holidays/rules/(:num)/toggle', 'Hr\HolidaysController::toggleRule/$1', ['filter' => 'perm:hr.holiday.manage']);
+    // Recruitment: vacancies & JD versions
+    $routes->get('vacancies', 'Hr\VacanciesController::index', ['filter' => 'perm:hr.vacancy.view']);
+    $routes->get('vacancies/new', 'Hr\VacanciesController::new', ['filter' => 'perm:hr.vacancy.manage']);
+    $routes->post('vacancies', 'Hr\VacanciesController::create', ['filter' => 'perm:hr.vacancy.manage']);
+    $routes->get('vacancies/(:num)', 'Hr\VacanciesController::show/$1', ['filter' => 'perm:hr.vacancy.view']);
+    $routes->get('vacancies/(:num)/edit', 'Hr\VacanciesController::edit/$1', ['filter' => 'perm:hr.vacancy.manage']);
+    $routes->post('vacancies/(:num)', 'Hr\VacanciesController::update/$1', ['filter' => 'perm:hr.vacancy.manage']);
+    $routes->post('vacancies/(:num)/versions', 'Hr\VacanciesController::addVersion/$1', ['filter' => 'perm:hr.vacancy.manage']);
+
+    // Applicants
+    $routes->get('candidates', 'Hr\CandidatesController::index', ['filter' => 'perm:hr.candidate.view,hr.candidate.view_all']);
+    $routes->get('candidates/board', 'Hr\CandidatesController::board', ['filter' => 'perm:hr.candidate.view,hr.candidate.view_all']);
+    $routes->get('candidates/export', 'Hr\CandidatesController::export', ['filter' => 'perm:hr.candidate.export']);
+    $routes->get('candidates/new', 'Hr\CandidatesController::new', ['filter' => 'perm:hr.candidate.create']);
+    $routes->post('candidates', 'Hr\CandidatesController::create', ['filter' => 'perm:hr.candidate.create']);
+    $routes->get('candidates/(:num)', 'Hr\CandidatesController::show/$1', ['filter' => 'perm:hr.candidate.view,hr.candidate.view_all']);
+    $routes->get('candidates/(:num)/edit', 'Hr\CandidatesController::edit/$1', ['filter' => 'perm:hr.candidate.edit']);
+    $routes->post('candidates/(:num)', 'Hr\CandidatesController::update/$1', ['filter' => 'perm:hr.candidate.edit']);
+    $routes->post('candidates/(:num)/cv', 'Hr\CandidatesController::uploadCv/$1', ['filter' => 'perm:hr.candidate.create,hr.candidate.edit']);
+    $routes->post('candidates/(:num)/status', 'Hr\CandidatesController::status/$1', ['filter' => 'perm:hr.candidate.edit,hr.candidate.decide']);
+    $routes->post('candidates/(:num)/score', 'Hr\CandidatesController::score/$1', ['filter' => 'perm:hr.candidate.score']);
+    $routes->post('candidates/(:num)/notes', 'Hr\CandidatesController::note/$1', ['filter' => 'perm:hr.timeline.create']);
+    $routes->post('candidates/(:num)/interviews', 'Hr\CandidatesController::interview/$1', ['filter' => 'perm:hr.interview.manage']);
+    $routes->post('candidates/(:num)/convert', 'Hr\CandidatesController::convert/$1', ['filter' => 'perm:hr.candidate.convert']);
+    $routes->post('candidates/(:num)/evaluate', 'Hr\CandidatesController::evaluate/$1', ['filter' => 'perm:hr.candidate.score']);
+    $routes->post('candidates/(:num)/evaluations/(:num)/review', 'Hr\CandidatesController::review/$1/$2', ['filter' => 'perm:hr.candidate.score']);
+    $routes->post('candidates/(:num)/proposals/(:num)', 'Hr\CandidatesController::proposal/$1/$2', ['filter' => 'perm:hr.timeline.create']);
+
+    // Interviews
+    $routes->get('interviews', 'Hr\InterviewsController::index', ['filter' => 'perm:hr.interview.manage']);
+    $routes->post('interviews/(:num)/complete', 'Hr\InterviewsController::complete/$1', ['filter' => 'perm:hr.interview.manage']);
 });
 
 // ---- Employee self-service (always the caller's own employee record) ----
