@@ -39,6 +39,11 @@ class ReferenceData extends Seeder
         ['website.dealer_locator_enabled', 'true', 'website', 'Show the public dealer locator'],
         ['warranty.terms_version', '"v1.0"', 'warranty', 'Version of the warranty terms recorded against each new sale'],
         ['warranty.claim_window_days', '0', 'warranty', 'Days after warranty expiry a claim may still be raised (0 = none)'],
+        // How often a dealer is visited by default. The interval is stored
+        // on each assignment, so changing this affects new rounds only —
+        // an existing dealer's schedule is not rewritten under the agent
+        // who is already working to it.
+        ['survey.default_interval_days', '182', 'survey', 'Days between dealer stock surveys for a new assignment (182 is six months)'],
         ['risk.early_claim_days', '30', 'risk', 'A claim raised within this many days of the sale is flagged for a closer look'],
         ['risk.dealer_claim_ratio_threshold', '0.15', 'risk', 'Dealer claims-to-sales ratio above which the claim is flagged'],
         ['risk.repeat_customer_claim_threshold', '2', 'risk', 'Prior claims on one contact number before the claim is flagged'],

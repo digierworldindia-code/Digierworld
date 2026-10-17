@@ -114,6 +114,7 @@ $routes->group('admin', ['filter' => ['auth', 'staff', 'area:admin', 'noindex'],
     // --- the survey programme
     $routes->get('surveys', 'Surveys::index', ['filter' => 'can:survey.read']);
     $routes->get('surveys/(:uuid)', 'Surveys::show/$1', ['filter' => 'can:survey.read']);
+    $routes->get('surveys/(:uuid)/report', 'Surveys::report/$1', ['filter' => 'can:survey.read']);
     $routes->post('surveys/(:uuid)/reviewed', 'Surveys::markReviewed/$1', ['filter' => 'can:survey.assign']);
     $routes->get('discrepancies', 'Surveys::discrepancies', ['filter' => 'can:discrepancy.read']);
     $routes->post('discrepancies/(:uuid)/resolve', 'Surveys::resolve/$1', ['filter' => 'can:discrepancy.resolve']);

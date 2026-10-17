@@ -62,10 +62,64 @@ final class SurveyAdminTest extends PolyfixTestCase
             'admin/warranty-reviews',
             'admin/warranty-reviews?status=RECOMMENDED',
             'admin/warranty-reviews/' . $case['id'],
+            'admin/surveys/' . $survey['id'] . '/report',
         ] as $path) {
             $result = $this->get($path);
             $this->assertSame(200, $result->response()->getStatusCode(), "{$path} did not render");
         }
+    }
+
+    /**
+     * The office and the agent read the same document.
+     *
+     * Two renderings of a verification report would drift, and the one on
+     * the agent's phone is the one the dealer countersigned.
+     */
+    public function testTheOfficeAndTheAgentSeeTheSameReport(): void
+    {
+        $survey = $this->surveyWithADiscrepancy();
+
+        $this->signedInAs($this->agentId);
+        $theirs = $this->reportBody((string) $this->get('agent/surveys/' . $survey['id'] . '/report')->response()->getBody());
+
+        $this->signedInAs($this->adminId);
+        $ours = $this->reportBody((string) $this->get('admin/surveys/' . $survey['id'] . '/report')->response()->getBody());
+
+        $this->assertNotSame('', $theirs, 'the report body was not found on the page');
+        $this->assertSame($theirs, $ours);
+    }
+
+    /**
+     * How often a new round is scheduled is a setting, so the office can
+     * change it without a deploy — and changing it must not rewrite a
+     * schedule an agent is already working to.
+     */
+    public function testTheDefaultSurveyIntervalComesFromTheSettings(): void
+    {
+        $this->signedInAs($this->adminId);
+
+        $this->db->table('system_settings')->where('key', 'survey.default_interval_days')->update(['value' => '90']);
+        \App\Libraries\Settings::forget();
+
+        $this->assertSame(90, SurveyService::defaultIntervalDays());
+        $this->assertStringContainsString('value="90"',
+            (string) $this->get('admin/assignments')->response()->getBody());
+
+        // The round already running keeps the interval it was given.
+        $this->assertSame(
+            SurveyService::DEFAULT_INTERVAL_DAYS,
+            (int) $this->db->table('agent_dealer_assignments')->select('survey_interval_days')
+                ->where('agent_user_id', $this->agentId)->get()->getRow()->survey_interval_days,
+        );
+    }
+
+    /** An interval outside what the column allows is clamped, not stored wrong. */
+    public function testAnAbsurdIntervalSettingIsBroughtBackIntoRange(): void
+    {
+        $this->db->table('system_settings')->where('key', 'survey.default_interval_days')->update(['value' => '99999']);
+        \App\Libraries\Settings::forget();
+
+        $this->assertSame(1095, SurveyService::defaultIntervalDays());
     }
 
     /** The complete history of one serial, in one place. */
@@ -327,6 +381,26 @@ final class SurveyAdminTest extends PolyfixTestCase
             ->recommend($unit['id'], 'INVOICE_NOT_UPLOADED', 'Nothing on file.');
 
         return $case + ['warranty_id' => $sale['warranty_id']];
+    }
+
+    /**
+     * Just the report itself, without the page around it.
+     *
+     * It ends at its own closing tag — the footer's — because everything
+     * after that is the console's chrome or the panel's, which of course
+     * differ.
+     */
+    private function reportBody(string $html): string
+    {
+        $start = strpos($html, '<div class="report">');
+        if ($start === false) {
+            return '';
+        }
+
+        $footer = strpos($html, '</footer>', $start);
+        $end    = $footer === false ? false : strpos($html, '</div>', $footer);
+
+        return $end === false ? '' : trim(substr($html, $start, $end - $start + 6));
     }
 
     private function warrantyStatus(string $warrantyId): string

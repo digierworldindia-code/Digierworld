@@ -38,8 +38,24 @@ use CodeIgniter\Database\BaseConnection;
  */
 final class SurveyService
 {
-    /** The business asked for every six months; an administrator may change it per dealer. */
+    /**
+     * Six months, as the business asked for.
+     *
+     * This is the fallback. What a new assignment actually starts at comes
+     * from the `survey.default_interval_days` setting, so an administrator
+     * can change it without a deploy; and the interval then lives on the
+     * assignment, so changing the setting never rewrites a schedule an
+     * agent is already working to.
+     */
     public const DEFAULT_INTERVAL_DAYS = 182;
+
+    /** The interval a new assignment starts at, bounded to what the column allows. */
+    public static function defaultIntervalDays(): int
+    {
+        $days = (int) \App\Libraries\Settings::get('survey.default_interval_days', self::DEFAULT_INTERVAL_DAYS);
+
+        return max(7, min(1095, $days));
+    }
 
     /** A visit coming up inside this window is worth showing the agent. */
     public const UPCOMING_WINDOW_DAYS = 30;
@@ -612,6 +628,39 @@ final class SurveyService
             'damaged'          => (int) ($byObservation['DAMAGED'] ?? 0),
             'matched'          => (int) ($byOutcome['MATCHED'] ?? 0),
             'discrepancies'    => $examined - (int) ($byOutcome['MATCHED'] ?? 0),
+        ];
+    }
+
+    /**
+     * A survey's figures: live while the visit is happening, frozen once it
+     * has been submitted.
+     *
+     * Frozen is the point. A verification report shows the position on the
+     * day of the visit, so recomputing it afterwards would rewrite the past
+     * every time stock moved. Both the agent's copy and the office's go
+     * through here, so the two cannot disagree.
+     *
+     * @param array<string,mixed> $survey
+     *
+     * @return array<string,int>
+     */
+    public static function figuresFor(self $service, array $survey): array
+    {
+        if ($survey['status'] === 'IN_PROGRESS') {
+            return $service->counts($survey['id'], $survey['dealer_id']);
+        }
+
+        return [
+            'system_total'     => (int) $survey['system_total'],
+            'system_available' => (int) $survey['system_available'],
+            'system_sold'      => (int) $survey['system_sold'],
+            'physically_found' => (int) $survey['physically_found'],
+            'reported_sold'    => (int) $survey['reported_sold'],
+            'not_found'        => (int) $survey['not_found'],
+            'damaged'          => (int) $survey['damaged'],
+            'discrepancies'    => (int) $survey['discrepancy_count'],
+            'examined'         => (int) $survey['physically_found'] + (int) $survey['reported_sold']
+                + (int) $survey['not_found'] + (int) $survey['damaged'],
         ];
     }
 

@@ -147,22 +147,9 @@ class Surveys extends FloorController
         $this->mine($survey);
 
         return $this->render('agent/surveys/report', 'Report ' . $survey['reference'], [
-            's'      => $survey,
-            'items'  => $service->surveyItems($id),
-            'counts' => $survey['status'] === 'IN_PROGRESS'
-                ? $service->counts($id, $survey['dealer_id'])
-                : [
-                    'system_total'     => (int) $survey['system_total'],
-                    'system_available' => (int) $survey['system_available'],
-                    'system_sold'      => (int) $survey['system_sold'],
-                    'physically_found' => (int) $survey['physically_found'],
-                    'reported_sold'    => (int) $survey['reported_sold'],
-                    'not_found'        => (int) $survey['not_found'],
-                    'damaged'          => (int) $survey['damaged'],
-                    'discrepancies'    => (int) $survey['discrepancy_count'],
-                    'examined'         => (int) $survey['physically_found'] + (int) $survey['reported_sold']
-                        + (int) $survey['not_found'] + (int) $survey['damaged'],
-                ],
+            's'         => $survey,
+            'items'     => $service->surveyItems($id),
+            'counts'    => SurveyService::figuresFor($service, $survey),
             'agentCode' => Home::agentCode($survey['agent_user_id']),
         ], site_url('agent/surveys'));
     }

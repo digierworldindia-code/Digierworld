@@ -52,20 +52,24 @@ class Surveys extends AdminController
         return $this->render('admin/surveys/show', 'Survey ' . $survey['reference'], 'admin/surveys', [
             's'      => $survey,
             'items'  => $service->surveyItems($id),
-            'counts' => $survey['status'] === 'IN_PROGRESS'
-                ? $service->counts($id, $survey['dealer_id'])
-                : [
-                    'system_total'     => (int) $survey['system_total'],
-                    'system_available' => (int) $survey['system_available'],
-                    'system_sold'      => (int) $survey['system_sold'],
-                    'physically_found' => (int) $survey['physically_found'],
-                    'reported_sold'    => (int) $survey['reported_sold'],
-                    'not_found'        => (int) $survey['not_found'],
-                    'damaged'          => (int) $survey['damaged'],
-                    'discrepancies'    => (int) $survey['discrepancy_count'],
-                    'examined'         => (int) $survey['physically_found'] + (int) $survey['reported_sold']
-                        + (int) $survey['not_found'] + (int) $survey['damaged'],
-                ],
+            'counts' => SurveyService::figuresFor($service, $survey),
+        ]);
+    }
+
+    /**
+     * The printable verification report — the same document the agent
+     * signed, from the same partial, so the two cannot drift apart.
+     */
+    public function report(string $id): string
+    {
+        $service = SurveyService::instance();
+        $survey  = $service->survey($id);
+
+        return $this->render('admin/surveys/report', 'Report ' . $survey['reference'], 'admin/surveys', [
+            's'         => $survey,
+            'items'     => $service->surveyItems($id),
+            'counts'    => SurveyService::figuresFor($service, $survey),
+            'agentCode' => \App\Controllers\Agent\Home::agentCode($survey['agent_user_id']),
         ]);
     }
 
@@ -196,7 +200,7 @@ class Surveys extends AdminController
             'dealers' => $db->table('dealers')->select('id, code, business_name, city')
                 ->where(['status' => 'ACTIVE', 'deleted_at' => null])
                 ->orderBy('business_name')->get()->getResultArray(),
-            'defaultInterval' => SurveyService::DEFAULT_INTERVAL_DAYS,
+            'defaultInterval' => SurveyService::defaultIntervalDays(),
         ]);
     }
 
