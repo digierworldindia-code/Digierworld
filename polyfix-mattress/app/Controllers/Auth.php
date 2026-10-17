@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Exceptions\AppException;
 use App\Libraries\Mailer;
+use App\Libraries\Rbac;
 use App\Services\AuthService;
 use CodeIgniter\HTTP\RedirectResponse;
 
@@ -166,8 +167,17 @@ class Auth extends BaseController
         return redirect()->to($home);
     }
 
+    /**
+     * Where this account works. A warehouse operator and a field agent each
+     * have a panel built for the job and the phone they do it on; sending
+     * either to the console would land them on a screen they cannot use.
+     */
     private function home(?array $user): string
     {
-        return site_url($user !== null && $user['dealer_id'] !== null ? 'dealer' : 'admin');
+        if ($user === null) {
+            return site_url('admin');
+        }
+
+        return site_url(Rbac::homeArea($user['roles'] ?? [], $user['dealer_id'] !== null));
     }
 }

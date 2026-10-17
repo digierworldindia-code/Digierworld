@@ -10,8 +10,8 @@ use RuntimeException;
  * codes. Continues the previous platform's sequences exactly — the counters
  * were carried over at import — so no issued identifier can repeat.
  *
- *   serial    CLF + yy + 6 digits    CLF26000176
- *   batch     BAT + yy + 4 digits    BAT260032
+ *   serial    PFZ-yyyy-6 digits      PFZ-2026-000176   (was CLF26000176)
+ *   batch     PFZ-yyyymmdd-3 digits  PFZ-20261017-001  (was BAT260032)
  *   claim     CLM + yy + 6 digits    CLM26000038
  *   dispatch  DSP + yy + 6 digits    DSP26000047
  *   dealer    DLR + 4 digits         DLR0063
@@ -55,9 +55,26 @@ final class Identifiers
         return $out;
     }
 
+    /**
+     * A batch code: PFZ-20261017-001, the day's first batch.
+     *
+     * Readable off a whiteboard and off a label: the plant knows "yesterday's
+     * second run" without looking anything up. Batches made under the
+     * previous BAT260032 numbering keep their codes; they are history.
+     *
+     * Reserving from the shared counter is also the lock that makes the
+     * day's number safe — two supervisors pressing Create at the same moment
+     * are serialised by MySQL on that row, so they cannot both read the same
+     * count and both claim -001.
+     */
     public function batchCode(): string
     {
-        return 'BAT' . $this->year() . str_pad((string) $this->reserve('batch', 1), 4, '0', STR_PAD_LEFT);
+        $this->reserve('batch', 1);
+
+        $prefix = brand('serialPrefix') . '-' . local_time(utc_now(), 'Ymd') . '-';
+        $today  = $this->db->table('manufacturing_batches')->like('batch_code', $prefix, 'after')->countAllResults();
+
+        return $prefix . str_pad((string) ($today + 1), 3, '0', STR_PAD_LEFT);
     }
 
     public function claimNumber(): string

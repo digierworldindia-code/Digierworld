@@ -227,4 +227,35 @@ final class Rbac
     {
         return self::ROLE_METADATA[$role]['name'] ?? $role;
     }
+
+    /**
+     * The panel an account belongs in: 'admin', 'dealer', 'warehouse' or
+     * 'agent'. Used to land somebody after sign-in, and by the filters that
+     * keep each panel to the people it was built for.
+     *
+     * The console is checked first, so an administrator who also holds the
+     * warehouse role lands in the console and walks to the panel from there,
+     * rather than the other way round.
+     *
+     * @param list<string> $roles
+     */
+    public static function homeArea(array $roles, bool $isDealer): string
+    {
+        if ($isDealer) {
+            return 'dealer';
+        }
+        if (array_intersect($roles, self::CONSOLE_ROLES) !== []) {
+            return 'admin';
+        }
+        if (array_intersect($roles, self::WAREHOUSE_ROLES) !== []) {
+            return 'warehouse';
+        }
+        if (array_intersect($roles, self::AGENT_ROLES) !== []) {
+            return 'agent';
+        }
+
+        // A staff account with no panel role still has to go somewhere, and
+        // the console refuses what it may not do, one route at a time.
+        return 'admin';
+    }
 }

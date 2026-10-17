@@ -44,7 +44,10 @@ final class IdentifiersAndLabelsTest extends PolyfixTestCase
 
     public function testTheOtherIdentifiersHaveTheirOwnSequences(): void
     {
-        $this->assertMatchesRegularExpression('/^BAT\d{6}$/', $this->identifiers->batchCode());
+        $this->assertMatchesRegularExpression(
+            '/^' . preg_quote(brand('serialPrefix'), '/') . '-' . local_time(utc_now(), 'Ymd') . '-\d{3}$/',
+            $this->identifiers->batchCode(),
+        );
         $this->assertMatchesRegularExpression('/^CLM\d{8}$/', $this->identifiers->claimNumber());
         $this->assertMatchesRegularExpression('/^DSP\d{8}$/', $this->identifiers->dispatchCode());
         $this->assertMatchesRegularExpression('/^DLR\d{4}$/', $this->identifiers->dealerCode());

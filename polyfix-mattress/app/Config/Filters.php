@@ -33,6 +33,7 @@ class Filters extends BaseFilters
         'auth'          => \App\Filters\AuthFilter::class,
         'staff'         => \App\Filters\StaffFilter::class,
         'dealer'        => \App\Filters\DealerFilter::class,
+        'area'          => \App\Filters\AreaFilter::class,
         'can'           => \App\Filters\PermissionFilter::class,
         'noindex'       => \App\Filters\NoIndex::class,
         'throttle'      => \App\Filters\Throttle::class,
