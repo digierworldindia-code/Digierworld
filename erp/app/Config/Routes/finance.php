@@ -52,4 +52,21 @@ $routes->group('finance', static function (RouteCollection $routes): void {
     $routes->post('reconciliation/lines/(:num)/unmatch', 'Finance\ReconciliationController::unmatch/$1', ['filter' => 'perm:finance.bank.reconcile']);
     $routes->post('reconciliation/lines/(:num)/ignore', 'Finance\ReconciliationController::ignore/$1', ['filter' => 'perm:finance.bank.reconcile']);
     $routes->post('reconciliation/lines/(:num)/book', 'Finance\ReconciliationController::book/$1', ['filter' => 'perm:finance.bank.reconcile']);
+
+    // Expenses
+    $expView = 'perm:finance.expense.view_own,finance.expense.view_all';
+    $routes->get('expenses', 'Finance\ExpensesController::index', ['filter' => $expView]);
+    $routes->get('expenses/export', 'Finance\ExpensesController::export', ['filter' => 'perm:finance.expense.export']);
+    $routes->get('expenses/new', 'Finance\ExpensesController::new', ['filter' => 'perm:finance.expense.create']);
+    $routes->post('expenses', 'Finance\ExpensesController::create', ['filter' => 'perm:finance.expense.create']);
+    $routes->get('expenses/recurring', 'Finance\ExpensesController::recurring', ['filter' => $expView]);
+    $routes->post('expenses/recurring', 'Finance\ExpensesController::saveRecurring', ['filter' => 'perm:finance.expense.manage_categories']);
+    $routes->post('expenses/recurring/(:num)', 'Finance\ExpensesController::saveRecurring/$1', ['filter' => 'perm:finance.expense.manage_categories']);
+    $routes->get('expenses/(:num)', 'Finance\ExpensesController::show/$1', ['filter' => $expView]);
+    $routes->get('expenses/(:num)/edit', 'Finance\ExpensesController::edit/$1', ['filter' => 'perm:finance.expense.create,finance.expense.edit']);
+    $routes->post('expenses/(:num)', 'Finance\ExpensesController::update/$1', ['filter' => 'perm:finance.expense.create,finance.expense.edit']);
+    $routes->post('expenses/(:num)/files', 'Finance\ExpensesController::attach/$1', ['filter' => 'perm:finance.expense.create,finance.expense.edit']);
+    $routes->post('expenses/(:num)/approve', 'Finance\ExpensesController::approve/$1', ['filter' => 'perm:finance.expense.approve']);
+    $routes->post('expenses/(:num)/reject', 'Finance\ExpensesController::reject/$1', ['filter' => 'perm:finance.expense.approve']);
+    $routes->post('expenses/(:num)/pay', 'Finance\ExpensesController::pay/$1', ['filter' => 'perm:finance.expense.pay']);
 });

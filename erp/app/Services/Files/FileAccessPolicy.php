@@ -30,7 +30,7 @@ class FileAccessPolicy
             'contact'       => $this->authz->can('contacts.view_all'),
             'expense'       => $this->authz->can('finance.expense.view_all')
                 || ($this->authz->can('finance.expense.view_own') && $this->ownsExpense($id, $uid)),
-            'bank_import'   => $this->authz->canAny(['finance.bank.import', 'finance.bank.reconcile']),
+            'bank_import', 'bank_statement' => $this->authz->canAny(['finance.bank.import', 'finance.bank.reconcile']),
             'report_export' => $this->ownsExport((int) $file['id'], $uid),
             'billing_pdf'   => service('billingAccess')->canViewDocumentId($id),
             'jd'            => $this->authz->can('hr.vacancy.view'),
