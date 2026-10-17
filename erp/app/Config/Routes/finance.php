@@ -41,4 +41,15 @@ $routes->group('finance', static function (RouteCollection $routes): void {
     $routes->get('ledger/trial-balance', 'Finance\LedgerController::trialBalance', ['filter' => 'perm:finance.ledger.view']);
     $routes->get('ledger/journal/new', 'Finance\LedgerController::newJournal', ['filter' => 'perm:finance.ledger.journal']);
     $routes->post('ledger/journal', 'Finance\LedgerController::createJournal', ['filter' => 'perm:finance.ledger.journal']);
+
+    // Bank statement import & reconciliation
+    $routes->get('reconciliation', 'Finance\ReconciliationController::index', ['filter' => 'perm:finance.bank.reconcile,finance.bank.import']);
+    $routes->get('reconciliation/import', 'Finance\ReconciliationController::importForm', ['filter' => 'perm:finance.bank.import']);
+    $routes->post('reconciliation/import', 'Finance\ReconciliationController::preview', ['filter' => 'perm:finance.bank.import']);
+    $routes->get('reconciliation/map', 'Finance\ReconciliationController::map', ['filter' => 'perm:finance.bank.import']);
+    $routes->post('reconciliation/import/commit', 'Finance\ReconciliationController::commit', ['filter' => 'perm:finance.bank.import']);
+    $routes->post('reconciliation/lines/(:num)/confirm', 'Finance\ReconciliationController::confirm/$1', ['filter' => 'perm:finance.bank.reconcile']);
+    $routes->post('reconciliation/lines/(:num)/unmatch', 'Finance\ReconciliationController::unmatch/$1', ['filter' => 'perm:finance.bank.reconcile']);
+    $routes->post('reconciliation/lines/(:num)/ignore', 'Finance\ReconciliationController::ignore/$1', ['filter' => 'perm:finance.bank.reconcile']);
+    $routes->post('reconciliation/lines/(:num)/book', 'Finance\ReconciliationController::book/$1', ['filter' => 'perm:finance.bank.reconcile']);
 });

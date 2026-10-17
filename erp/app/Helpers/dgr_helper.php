@@ -229,6 +229,7 @@ if (! function_exists('journal_source')) {
             'opening_balance'    => ['Opening balance', $id ? site_url('finance/accounts/' . $id) : null],
             'payroll_run'        => ['Payroll', $id ? site_url('hr/payroll/' . $id) : null],
             'manual'             => ['Manual journal', $entryId ? site_url('finance/ledger/entries/' . $entryId) : null],
+            'bank_statement'     => ['Booked from bank statement', $entryId ? site_url('finance/ledger/entries/' . $entryId) : null],
             default              => [ucwords(str_replace('_', ' ', $type)), null],
         };
     }

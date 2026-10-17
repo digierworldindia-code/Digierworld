@@ -31,6 +31,7 @@ final class SheetIO
         if ($ext === 'csv' || $ext === 'txt') {
             $reader = IOFactory::createReader('Csv');
             $reader->setInputEncoding(\PhpOffice\PhpSpreadsheet\Reader\Csv::GUESS_ENCODING);
+            $reader->setDelimiter(self::csvDelimiter($path));
         } else {
             $reader = IOFactory::createReader('Xlsx');
             $reader->setReadDataOnly(true);
@@ -57,6 +58,26 @@ final class SheetIO
         }
 
         return ['headers' => array_values(array_filter($headers)), 'rows' => $rows];
+    }
+
+    /**
+     * The library's own guess can pick a space when a file starts with
+     * free-text preamble lines (bank statements), so count real separators.
+     */
+    public static function csvDelimiter(string $path): string
+    {
+        $sample = (string) file_get_contents($path, false, null, 0, 65536);
+        $sample = preg_replace('/"[^"]*"/', '""', $sample) ?? $sample; // ignore separators inside quotes
+        $best   = ',';
+        $max    = -1;
+        foreach ([',', ';', "\t", '|'] as $d) {
+            $n = substr_count($sample, $d);
+            if ($n > $max) {
+                [$best, $max] = [$d, $n];
+            }
+        }
+
+        return $best;
     }
 
     public static function key(string $header): string

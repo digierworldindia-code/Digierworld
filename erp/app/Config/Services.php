@@ -208,4 +208,13 @@ class Services extends BaseService
 
         return new \App\Services\Reports\ExportService(db_connect());
     }
+
+    public static function reconciliation(bool $getShared = true): \App\Services\Finance\ReconciliationService
+    {
+        if ($getShared) {
+            return static::getSharedInstance('reconciliation');
+        }
+
+        return new \App\Services\Finance\ReconciliationService(db_connect(), static::ledger());
+    }
 }
