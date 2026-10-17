@@ -59,6 +59,7 @@ class MasterDataSeeder extends Seeder
             ['2412', 'ESI Payable', 'liability', 'esi_payable'],
             ['2413', 'Professional Tax Payable', 'liability', 'pt_payable'],
             ['2414', 'TDS Payable', 'liability', 'tds_payable'],
+            ['2415', 'Labour Welfare Fund Payable', 'liability', 'lwf_payable'],
             ['2420', 'Employee Reimbursements Payable', 'liability', 'reimbursement_payable'],
             ['3100', "Owner's Capital", 'equity', 'capital'],
             ['3200', 'Opening Balance Equity', 'equity', 'opening_equity'],

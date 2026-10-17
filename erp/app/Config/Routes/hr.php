@@ -72,6 +72,35 @@ $routes->group('hr', static function (RouteCollection $routes): void {
     // Interviews
     $routes->get('interviews', 'Hr\InterviewsController::index', ['filter' => 'perm:hr.interview.manage']);
     $routes->post('interviews/(:num)/complete', 'Hr\InterviewsController::complete/$1', ['filter' => 'perm:hr.interview.manage']);
+    // Payroll
+    $routes->get('payroll', 'Hr\PayrollController::index', ['filter' => 'perm:hr.payroll.view']);
+    $routes->post('payroll', 'Hr\PayrollController::create', ['filter' => 'perm:hr.payroll.calculate']);
+    $routes->get('payroll/statutory', 'Hr\PayrollController::statutory', ['filter' => 'perm:hr.payroll.statutory']);
+    $routes->post('payroll/statutory/(:segment)', 'Hr\PayrollController::saveStatutory/$1', ['filter' => 'perm:hr.payroll.statutory']);
+    $routes->post('payroll/advances', 'Hr\PayrollController::advance', ['filter' => 'perm:hr.payroll.pay']);
+    $routes->get('payroll/(:num)', 'Hr\PayrollController::show/$1', ['filter' => 'perm:hr.payroll.view']);
+    $routes->post('payroll/(:num)/calculate', 'Hr\PayrollController::calculate/$1', ['filter' => 'perm:hr.payroll.calculate']);
+    $routes->post('payroll/(:num)/finalize', 'Hr\PayrollController::finalize/$1', ['filter' => 'perm:hr.payroll.finalize']);
+    $routes->post('payroll/(:num)/delete', 'Hr\PayrollController::delete/$1', ['filter' => 'perm:hr.payroll.calculate']);
+    $routes->post('payroll/(:num)/pay', 'Hr\PayrollController::pay/$1', ['filter' => 'perm:hr.payroll.pay']);
+    $routes->get('payroll/(:num)/register', 'Hr\PayrollController::register/$1', ['filter' => 'perm:hr.salary.export']);
+    $routes->get('payroll/items/(:num)', 'Hr\PayrollController::item/$1', ['filter' => 'perm:hr.payroll.view']);
+    $routes->get('payroll/items/(:num)/preview', 'Hr\PayrollController::preview/$1', ['filter' => 'perm:hr.payslip.view_all']);
+    $routes->post('payroll/items/(:num)/lines', 'Hr\PayrollController::addLine/$1', ['filter' => 'perm:hr.payroll.calculate']);
+    $routes->post('payroll/lines/(:num)/delete', 'Hr\PayrollController::removeLine/$1', ['filter' => 'perm:hr.payroll.calculate']);
+    $routes->post('payroll/items/(:num)/adjust', 'Hr\PayrollController::adjust/$1', ['filter' => 'perm:hr.payroll.adjust']);
+    $routes->post('payroll/items/(:num)/pay', 'Hr\PayrollController::payItem/$1', ['filter' => 'perm:hr.payroll.pay']);
+
+    // Incentives
+    $routes->get('incentives', 'Hr\IncentivesController::index', ['filter' => 'perm:hr.incentive.view_all,hr.incentive.policy_manage']);
+    $routes->post('incentives/generate', 'Hr\IncentivesController::generate', ['filter' => 'perm:hr.incentive.approve,hr.incentive.policy_manage']);
+    $routes->post('incentives/approve', 'Hr\IncentivesController::bulkApprove', ['filter' => 'perm:hr.incentive.approve']);
+    $routes->post('incentives/manual', 'Hr\IncentivesController::manual', ['filter' => 'perm:hr.incentive.approve']);
+    $routes->get('incentives/policies', 'Hr\IncentivesController::policies', ['filter' => 'perm:hr.incentive.policy_manage']);
+    $routes->post('incentives/policies', 'Hr\IncentivesController::savePolicy', ['filter' => 'perm:hr.incentive.policy_manage']);
+    $routes->post('incentives/policies/(:num)', 'Hr\IncentivesController::savePolicy/$1', ['filter' => 'perm:hr.incentive.policy_manage']);
+    $routes->post('incentives/(:num)/decide', 'Hr\IncentivesController::decide/$1', ['filter' => 'perm:hr.incentive.approve']);
+    $routes->post('incentives/(:num)/split', 'Hr\IncentivesController::split/$1', ['filter' => 'perm:hr.incentive.approve']);
 });
 
 // ---- Employee self-service (always the caller's own employee record) ----

@@ -236,6 +236,8 @@ if (! function_exists('journal_source')) {
             'expense_payment'    => ['Expense payment', $id ? site_url('finance/expenses/' . (int) (db_connect()->table('expense_payments')->select('expense_id')->where('id', $id)->get()->getRow()->expense_id ?? 0)) : null],
             'opening_balance'    => ['Opening balance', $id ? site_url('finance/accounts/' . $id) : null],
             'payroll_run'        => ['Payroll', $id ? site_url('hr/payroll/' . $id) : null],
+            'payroll_payment', 'payroll_adjustment' => [$type === 'payroll_payment' ? 'Salary payment' : 'Payroll correction', $id ? site_url('hr/payroll/items/' . $id) : null],
+            'employee_advance'   => ['Salary advance', site_url('hr/payroll')],
             'manual'             => ['Manual journal', $entryId ? site_url('finance/ledger/entries/' . $entryId) : null],
             'bank_statement'     => ['Booked from bank statement', $entryId ? site_url('finance/ledger/entries/' . $entryId) : null],
             default              => [ucwords(str_replace('_', ' ', $type)), null],

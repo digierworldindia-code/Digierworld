@@ -17,8 +17,8 @@ class CronCommand extends BaseCommand
 {
     protected $group       = 'DGR Office';
     protected $name        = 'dgr:cron';
-    protected $description = 'Run scheduled jobs: reminders, Google Sheets sync, recurring retainer drafts.';
-    protected $usage       = 'dgr:cron [--only reminders|sheets|recurring]';
+    protected $description = 'Run scheduled jobs: reminders, Google Sheets sync, recurring retainer drafts, HR retention and incentive proposals.';
+    protected $usage       = 'dgr:cron [--only reminders|sheets|recurring|hr]';
 
     public function run(array $params)
     {
@@ -54,6 +54,15 @@ class CronCommand extends BaseCommand
                 $ran = $db->table('cron_runs')->where('task', 'recurring')->where('status', 'ok')->where('started_at >=', date('Y-m-d 00:00:00'))->countAllResults();
 
                 return $ran > 0 ? ['skipped' => 'already ran today'] : (new \App\Services\Billing\RecurringBillingService($db))->runDue();
+            },
+            'hr' => static function () use ($db) {
+                // once a day: purge applicant data past retention, propose this month's incentives
+                $ran = $db->table('cron_runs')->where('task', 'hr')->where('status', 'ok')->where('started_at >=', date('Y-m-d 00:00:00'))->countAllResults();
+                if ($ran > 0) {
+                    return ['skipped' => 'already ran today'];
+                }
+
+                return ['purged_applicants' => service('recruitment')->purgeExpired(), 'incentives' => service('incentives')->generate(date('Y-m'))];
             },
         ];
 
