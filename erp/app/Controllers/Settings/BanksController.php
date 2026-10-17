@@ -173,6 +173,7 @@ class BanksController extends BaseController
                 $this->db->table('bank_cash_accounts')->where('id', $id)->update($data);
                 $this->db->table('ledger_accounts')->where('id', $before['ledger_account_id'])->update(['name' => $display . ($ownership === 'owner_personal' ? ' (owner clearing)' : '')]);
             }
+            service('ledger')->syncOpeningBalance($id);
             service('audit')->log($before ? 'bank_account.updated' : 'bank_account.created', 'bank_cash_account', $id, $before, $data, ($before ? 'Updated ' : 'Created ') . $display);
             $this->db->transCommit();
         } catch (\Throwable $e) {

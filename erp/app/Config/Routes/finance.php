@@ -17,4 +17,28 @@ $routes->group('finance', static function (RouteCollection $routes): void {
     $routes->post('receipts/(:num)/cheque', 'Finance\ReceiptsController::cheque/$1', ['filter' => 'perm:finance.receipt.create']);
     $routes->get('refunds/new', 'Finance\ReceiptsController::newRefund', ['filter' => 'perm:finance.receipt.refund']);
     $routes->post('refunds', 'Finance\ReceiptsController::createRefund', ['filter' => 'perm:finance.receipt.refund']);
+
+    // Bank / cash accounts and statements
+    $routes->get('accounts', 'Finance\AccountsController::index', ['filter' => 'perm:finance.bank.view']);
+    $routes->get('accounts/(:num)', 'Finance\AccountsController::show/$1', ['filter' => 'perm:finance.bank.view']);
+    $routes->get('accounts/(:num)/export', 'Finance\AccountsController::export/$1', ['filter' => 'perm:finance.bank.view']);
+
+    // Internal transfers (cash deposits etc.) — never income
+    $routes->get('transfers', 'Finance\TransfersController::index', ['filter' => 'perm:finance.transfer.view']);
+    $routes->get('transfers/export', 'Finance\TransfersController::export', ['filter' => 'perm:reports.export']);
+    $routes->get('transfers/new', 'Finance\TransfersController::new', ['filter' => 'perm:finance.transfer.create']);
+    $routes->post('transfers', 'Finance\TransfersController::create', ['filter' => 'perm:finance.transfer.create']);
+    $routes->get('transfers/(:num)', 'Finance\TransfersController::show/$1', ['filter' => 'perm:finance.transfer.view']);
+    $routes->post('transfers/(:num)/void', 'Finance\TransfersController::void/$1', ['filter' => 'perm:finance.transfer.void']);
+
+    // Journal & ledgers
+    $routes->get('ledger', 'Finance\LedgerController::index', ['filter' => 'perm:finance.ledger.view']);
+    $routes->get('ledger/entries/(:num)', 'Finance\LedgerController::entry/$1', ['filter' => 'perm:finance.ledger.view']);
+    $routes->post('ledger/entries/(:num)/reverse', 'Finance\LedgerController::reverse/$1', ['filter' => 'perm:finance.ledger.journal']);
+    $routes->get('ledger/accounts', 'Finance\LedgerController::accounts', ['filter' => 'perm:finance.ledger.view']);
+    $routes->post('ledger/accounts', 'Finance\LedgerController::createAccount', ['filter' => 'perm:finance.ledger.journal']);
+    $routes->get('ledger/accounts/(:num)', 'Finance\LedgerController::account/$1', ['filter' => 'perm:finance.ledger.view']);
+    $routes->get('ledger/trial-balance', 'Finance\LedgerController::trialBalance', ['filter' => 'perm:finance.ledger.view']);
+    $routes->get('ledger/journal/new', 'Finance\LedgerController::newJournal', ['filter' => 'perm:finance.ledger.journal']);
+    $routes->post('ledger/journal', 'Finance\LedgerController::createJournal', ['filter' => 'perm:finance.ledger.journal']);
 });

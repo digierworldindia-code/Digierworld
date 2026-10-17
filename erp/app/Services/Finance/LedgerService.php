@@ -141,11 +141,37 @@ class LedgerService
         return Dec::round($b->get()->getRow()->bal ?? '0');
     }
 
-    /** Book balance of a bank/cash account = opening + journal movements. */
+    /** Book balance of a bank/cash account (opening balance is a journal entry too). */
     public function bankBalance(int $bankCashAccountId, ?string $upTo = null): string
     {
-        $acc = $this->db->table('bank_cash_accounts')->where('id', $bankCashAccountId)->get()->getRowArray();
+        return $this->balance($this->bankLedger($bankCashAccountId), $upTo);
+    }
 
-        return Dec::add($acc['opening_balance'] ?? '0', $this->balance((int) $acc['ledger_account_id'], $upTo));
+    /**
+     * Keep the opening-balance journal of a bank/cash account in step with
+     * its master record: Dr bank / Cr Opening Balance Equity (or the reverse
+     * for an overdraft). Changing it reverses the previous opening entry.
+     * Must be called inside the caller's transaction.
+     */
+    public function syncOpeningBalance(int $bankCashAccountId): void
+    {
+        $acc     = $this->db->table('bank_cash_accounts')->where('id', $bankCashAccountId)->get()->getRowArray() ?? throw new BusinessRuleException('Unknown bank/cash account.');
+        $amount  = Dec::round($acc['opening_balance'] ?? '0');
+        $date    = $acc['opening_date'] ?: date('Y-m-d');
+        $current = $this->db->table('journal_entries')->where(['source_type' => 'opening_balance', 'source_id' => $bankCashAccountId, 'reversed_by_id' => null, 'reversal_of_id' => null])->get()->getRowArray();
+        if ($current !== null) {
+            $posted = $this->db->table('journal_lines')->select('COALESCE(SUM(debit - credit),0) n', false)->where(['journal_entry_id' => $current['id'], 'ledger_account_id' => $acc['ledger_account_id']])->get()->getRow()->n;
+            if (Dec::cmp($posted, $amount) === 0 && $current['entry_date'] === $date) {
+                return;
+            }
+            $this->reverse((int) $current['id'], $date, 'Opening balance changed');
+        }
+        if (Dec::isZero($amount)) {
+            return;
+        }
+        $this->post($date, 'opening_balance', $bankCashAccountId, 'Opening balance — ' . $acc['display_name'], [
+            ['account' => (int) $acc['ledger_account_id'], 'debit' => $amount, 'bank_cash_account_id' => $bankCashAccountId],
+            ['account' => $this->account('opening_equity'), 'credit' => $amount],
+        ]);
     }
 }

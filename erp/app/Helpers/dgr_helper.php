@@ -211,3 +211,38 @@ if (! function_exists('fy_for_date')) {
         ];
     }
 }
+
+if (! function_exists('journal_source')) {
+    /**
+     * Human label and link for a journal entry's source record.
+     *
+     * @return array{0: string, 1: string|null} [label, url]
+     */
+    function journal_source(string $type, ?int $id, ?int $entryId = null): array
+    {
+        return match ($type) {
+            'billing_document'   => ['Billing document', $id ? site_url('billing/documents/' . $id) : null],
+            'payment_receipt', 'refund', 'payment_allocation' => [$type === 'refund' ? 'Refund' : ($type === 'payment_allocation' ? 'Advance applied' : 'Receipt'), $id ? site_url('finance/receipts/' . $id) : null],
+            'money_transfer'     => ['Transfer', $id ? site_url('finance/transfers/' . $id) : null],
+            'expense'            => ['Expense', $id ? site_url('finance/expenses/' . $id) : null],
+            'expense_payment'    => ['Expense payment', $id ? site_url('finance/expenses/' . (int) (db_connect()->table('expense_payments')->select('expense_id')->where('id', $id)->get()->getRow()->expense_id ?? 0)) : null],
+            'opening_balance'    => ['Opening balance', $id ? site_url('finance/accounts/' . $id) : null],
+            'payroll_run'        => ['Payroll', $id ? site_url('hr/payroll/' . $id) : null],
+            'manual'             => ['Manual journal', $entryId ? site_url('finance/ledger/entries/' . $entryId) : null],
+            default              => [ucwords(str_replace('_', ' ', $type)), null],
+        };
+    }
+}
+
+if (! function_exists('dr_cr')) {
+    /** Signed ledger balance as "₹1,234.00 Dr" / "₹1,234.00 Cr" ("—" for zero). */
+    function dr_cr(int|float|string|null $balance): string
+    {
+        $b = \App\Libraries\Dec::round((string) ($balance ?? '0'));
+        if (\App\Libraries\Dec::isZero($b)) {
+            return '—';
+        }
+
+        return inr(\App\Libraries\Dec::abs($b)) . (\App\Libraries\Dec::isPositive($b) ? ' Dr' : ' Cr');
+    }
+}
