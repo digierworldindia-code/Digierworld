@@ -14,6 +14,8 @@ use App\Services\Finance\ExpenseService;
 use App\Services\Finance\LedgerService;
 use App\Services\Finance\ReceiptService;
 use App\Services\Finance\TransferService;
+use App\Services\Pdf\DocumentPdfService;
+use App\Services\Pdf\PdfRenderer;
 use App\Services\Security\UserService;
 use App\Services\Files\FileStorage;
 use App\Services\Notify\Notifier;
@@ -178,5 +180,23 @@ class Services extends BaseService
         }
 
         return new ExpenseService(db_connect(), static::ledger(), static::numbers());
+    }
+
+    public static function pdf(bool $getShared = true): PdfRenderer
+    {
+        if ($getShared) {
+            return static::getSharedInstance('pdf');
+        }
+
+        return new PdfRenderer();
+    }
+
+    public static function documentPdf(bool $getShared = true): DocumentPdfService
+    {
+        if ($getShared) {
+            return static::getSharedInstance('documentPdf');
+        }
+
+        return new DocumentPdfService(db_connect(), static::pdf());
     }
 }

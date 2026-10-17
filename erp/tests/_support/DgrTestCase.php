@@ -52,6 +52,9 @@ abstract class DgrTestCase extends CIUnitTestCase
 
     protected function loginAs(User $user): void
     {
+        if (auth('session')->loggedIn()) {
+            auth('session')->logout();
+        }
         $this->actingAs($user);
         service('authz')->forget();
     }
@@ -140,6 +143,21 @@ abstract class DgrTestCase extends CIUnitTestCase
     protected function line(string $amount = '10000', string $rate = '18', array $extra = []): array
     {
         return $extra + ['item_name' => 'SEO Monthly Retainer', 'qty' => '1', 'unit_rate' => $amount, 'tax_treatment' => 'regular', 'gst_rate' => $rate, 'sac_code' => '998361'];
+    }
+
+    /**
+     * HTTP status of a request, mapping the 404/403 exceptions that the
+     * framework would render outside of tests.
+     */
+    protected function statusOf(\Closure $request): int
+    {
+        try {
+            return $request()->response()->getStatusCode();
+        } catch (\CodeIgniter\Exceptions\PageNotFoundException) {
+            return 404;
+        } catch (\App\Exceptions\AccessDeniedException) {
+            return 403;
+        }
     }
 
     /** POST with a valid CSRF token (feature tests). */

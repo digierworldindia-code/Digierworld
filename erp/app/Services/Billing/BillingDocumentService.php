@@ -110,6 +110,21 @@ class BillingDocumentService
             'taxable_doc'           => $isTaxable,
         ]);
 
+        // Rule 46: SAC on statutory documents (mandatory for B2B; 4+ digits).
+        if (! empty($this->config()->docTypes[$docType]['statutory'])) {
+            $b2b = ! empty($customer['gstin']);
+            foreach (array_values($lines) as $i => $l) {
+                if (strlen(preg_replace('/\D/', '', (string) ($l['sac_code'] ?? ''))) < 4) {
+                    $advice['messages'][] = $b2b
+                        ? ['level' => 'block', 'text' => 'Line ' . ($i + 1) . ': enter the SAC code (at least 4 digits). It is mandatory on documents to registered customers.']
+                        : ['level' => 'info', 'text' => 'Line ' . ($i + 1) . ': no SAC code. Recommended on every line; mandatory for B2B supplies.'];
+                }
+            }
+            if (in_array('block', array_column($advice['messages'], 'level'), true)) {
+                $advice['status'] = 'block';
+            }
+        }
+
         return ['lines' => $calc['lines'], 'totals' => $calc['totals'], 'summary' => $calc['summary'], 'advice' => $advice, 'customer' => $customer];
     }
 
