@@ -365,6 +365,18 @@
     body.append('source', source);
     if (this.csrfName) body.append(this.csrfName, this.csrfToken);
 
+    /*
+     * Anything the page wants sent with every scan. The survey screen uses
+     * it for what the agent is recording — walk the floor with "found"
+     * selected and scan everything you see, switch for the exceptions —
+     * so the observation travels with the scan instead of needing a tap
+     * between each one.
+     */
+    this.root.querySelectorAll('[data-scanner-field]').forEach(function (field) {
+      var name = field.getAttribute('data-scanner-field') || field.name;
+      if (name) body.append(name, field.value);
+    });
+
     return fetch(this.endpoint, {
       method: 'POST',
       body: body,

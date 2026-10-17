@@ -12,7 +12,8 @@ use LogicException;
  * On the previous platform, PostgreSQL enforced this with FORCE ROW LEVEL
  * SECURITY on sixteen tables. MySQL has no equivalent, so the same rules live
  * here, and every dealer-facing query goes through this class. The rules are a
- * direct transcription of those sixteen policies:
+ * direct transcription of those sixteen policies, plus the three tables the
+ * survey programme added afterwards:
  *
  *   own row when   <table>.<column> = the signed-in dealer
  *   claim_events   the claim is theirs AND the event is not internal — staff
@@ -41,6 +42,12 @@ final class DealerScope
         'sales'           => 'dealer_id',
         'warranties'      => 'dealer_id',
         'warranty_claims' => 'dealer_id',
+        // The survey programme. A dealer sees the visits made to them, the
+        // discrepancies raised against their stock and the reviews opened on
+        // their warranties — their own and no others.
+        'dealer_surveys'          => 'dealer_id',
+        'inventory_discrepancies' => 'dealer_id',
+        'warranty_review_cases'   => 'dealer_id',
     ];
 
     private function __construct(public readonly string $dealerId)

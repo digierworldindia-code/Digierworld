@@ -11,10 +11,16 @@
  * label, a refused camera or a device without one — never the normal way to
  * work, which is why it sits below the camera and not above it.
  *
+ * A page can put its own control inside the scanner — the survey screen
+ * puts "what am I recording?" there — by passing it as $before. Anything in
+ * it marked data-scanner-field is sent with every scan, so the agent sets it
+ * once and walks the floor.
+ *
  * @var string      $endpoint  URL each scan is posted to
  * @var string|null $counter   the count as it stands when the page loads
  * @var string|null $hint      one line telling the operator what to scan
  * @var bool|null   $autostart open the camera without waiting for a tap
+ * @var string|null $before    markup placed above the camera
  */
 $hint ??= 'Point the camera at the QR code on the mattress label.';
 ?>
@@ -25,6 +31,8 @@ $hint ??= 'Point the camera at the QR code on the mattress label.';
      data-csrf-token="<?= esc(csrf_hash(), 'attr') ?>"
      data-jsqr="<?= base_url('assets/vendor/jsqr/jsQR.js') ?>"
      <?= ! empty($autostart) ? 'data-scanner-autostart' : '' ?>>
+
+    <?= $before ?? '' ?>
 
     <div class="scanner__view">
         <video data-scanner-video playsinline muted></video>

@@ -320,6 +320,72 @@
 .label-card__batch { font-size: .64rem; color: #6d7177; }
 
 /* ==========================================================================
+   The verification report
+   --------------------------------------------------------------------------
+   Read on a phone and printed on A4 from the same markup. Printing is also
+   how it becomes a PDF: every browser can save a page as one, which beats a
+   second rendering path that would drift from this one.
+   ========================================================================== */
+.report {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+}
+.report__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding-bottom: .9rem;
+  border-bottom: 2px solid var(--ink);
+  margin-bottom: 1rem;
+}
+.report__brand { font-weight: 700; letter-spacing: .15em; font-size: 1.1rem; color: var(--ink); }
+.report__sub { font-size: .75rem; color: var(--ink-muted); }
+.report__meta dl {
+  display: grid;
+  grid-template-columns: 9rem 1fr;
+  gap: .25rem .75rem;
+  margin: 0 0 1.25rem;
+  font-size: .875rem;
+}
+.report__meta dt { color: var(--ink-muted); }
+.report__meta dd { margin: 0; color: var(--ink); }
+.report h2.h2 { margin: 1.25rem 0 .5rem; }
+.report__summary { max-width: 26rem; }
+.report__summary th { font-weight: 400; color: var(--ink-body); }
+.report__summary td { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+.report__remarks { white-space: pre-line; font-size: .9rem; }
+.report__items { font-size: .82rem; }
+.report__items th { white-space: nowrap; }
+.report__foot { margin-top: 1.5rem; padding-top: .9rem; border-top: 1px solid var(--line); }
+.report__foot p { font-size: .75rem; color: var(--ink-muted); }
+.report__signatures {
+  display: flex;
+  gap: 2.5rem;
+  margin-top: 2.5rem;
+  font-size: .8rem;
+  color: var(--ink-muted);
+}
+.report__signatures div { flex: 1; }
+.report__signatures span {
+  display: block;
+  border-top: 1px solid var(--ink-faint);
+  margin-bottom: .25rem;
+}
+
+@media (max-width: 575.98px) {
+  .report { padding: .9rem; }
+  .report__meta dl { grid-template-columns: 1fr; gap: 0 0; }
+  .report__meta dt { margin-top: .5rem; font-size: .72rem; text-transform: uppercase; letter-spacing: .05em; }
+  /* A five-column table does not fit a phone; it scrolls rather than
+     shrinking to the point of being unreadable. */
+  .report__items { display: block; overflow-x: auto; white-space: nowrap; }
+}
+
+/* ==========================================================================
    Printing
    Label sheets and survey reports print from these panels; the chrome does
    not belong on paper.
@@ -329,5 +395,8 @@
   .floor-main { padding: 0; }
   .label-card { border-color: #bbb; }
   .label-grid { grid-template-columns: repeat(3, 1fr); gap: .35rem; }
+  .report { border: 0; padding: 0; }
+  .report__items { font-size: .72rem; display: table; white-space: normal; }
+  .report tr, .report section { break-inside: avoid; page-break-inside: avoid; }
 }
 @page { margin: 10mm; }

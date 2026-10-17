@@ -78,7 +78,12 @@ $routes->group('', ['filter' => 'noindex'], static function (RouteCollection $ro
 // =============================================================================
 // Admin console — staff only
 // =============================================================================
-$routes->group('admin', ['filter' => ['auth', 'staff', 'noindex'], 'namespace' => 'App\Controllers\Admin'], static function (RouteCollection $routes): void {
+// `area:admin` keeps the console to the roles whose work is in it. A
+// warehouse operator and a field agent are staff, and hold permissions the
+// console also uses, but each has a panel built for the job and the device
+// they do it on; without this they could reach console screens — dispatch
+// history, the mattress register — that the brief puts outside their reach.
+$routes->group('admin', ['filter' => ['auth', 'staff', 'area:admin', 'noindex'], 'namespace' => 'App\Controllers\Admin'], static function (RouteCollection $routes): void {
     $routes->get('/', 'Dashboard::index', ['filter' => 'can:dashboard.view']);
 
     // --- operations
@@ -237,4 +242,40 @@ $routes->group('warehouse', [
     $routes->post('dispatch/(:uuid)/send', 'Dispatch::send/$1', ['filter' => 'can:dispatch.update']);
     $routes->post('dispatch/(:uuid)/cancel', 'Dispatch::cancel/$1', ['filter' => 'can:dispatch.cancel']);
     $routes->get('dispatches', 'Dispatch::history', ['filter' => 'can:dispatch.read']);
+});
+
+// =============================================================================
+// Field agent panel — the round, on a phone
+//
+// An agent reports; the office decides. Nothing in this tree can change a
+// sale, a warranty or a mattress's lifecycle: the permissions FIELD_AGENT
+// holds do not include any of it, and the services refuse it besides.
+// =============================================================================
+$routes->group('agent', [
+    'filter'    => ['auth', 'staff', 'area:agent', 'noindex'],
+    'namespace' => 'App\Controllers\Agent',
+], static function (RouteCollection $routes): void {
+    $routes->get('/', 'Home::index', ['filter' => 'can:dashboard.view']);
+
+    // --- the round
+    $routes->get('dealers', 'Dealers::index', ['filter' => 'can:survey.read']);
+    $routes->get('dealers/(:uuid)', 'Dealers::show/$1', ['filter' => 'can:survey.read']);
+    $routes->post('dealers/(:uuid)/survey', 'Surveys::open/$1', ['filter' => 'can:survey.conduct']);
+
+    // --- conducting one
+    $routes->get('surveys', 'Surveys::index', ['filter' => 'can:survey.read']);
+    $routes->get('surveys/(:uuid)', 'Surveys::show/$1', ['filter' => 'can:survey.conduct']);
+    $routes->post('surveys/(:uuid)/record', 'Surveys::record/$1', ['filter' => 'can:survey.conduct']);
+    $routes->post('surveys/(:uuid)/observe', 'Surveys::observe/$1', ['filter' => 'can:survey.conduct']);
+    $routes->post('surveys/(:uuid)/submit', 'Surveys::submit/$1', ['filter' => 'can:survey.conduct']);
+    $routes->post('surveys/(:uuid)/abandon', 'Surveys::abandon/$1', ['filter' => 'can:survey.conduct']);
+    $routes->get('surveys/(:uuid)/report', 'Surveys::report/$1', ['filter' => 'can:survey.read']);
+
+    // --- what was raised
+    $routes->get('discrepancies', 'Surveys::discrepancies', ['filter' => 'can:discrepancy.read']);
+    $routes->get('reviews', 'Reviews::index', ['filter' => 'can:warranty_review.read']);
+    $routes->get('reviews/new', 'Reviews::new', ['filter' => 'can:warranty_review.recommend']);
+    $routes->post('reviews', 'Reviews::create', ['filter' => 'can:warranty_review.recommend']);
+    $routes->get('reviews/(:uuid)', 'Reviews::show/$1', ['filter' => 'can:warranty_review.read']);
+    $routes->post('reviews/(:uuid)/withdraw', 'Reviews::withdraw/$1', ['filter' => 'can:warranty_review.recommend']);
 });

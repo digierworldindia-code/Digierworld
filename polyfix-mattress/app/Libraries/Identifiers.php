@@ -15,6 +15,8 @@ use RuntimeException;
  *   claim     CLM + yy + 6 digits    CLM26000038
  *   dispatch  DSP + yy + 6 digits    DSP26000047
  *   dealer    DLR + 4 digits         DLR0063
+ *   survey    SRV-yy-6 digits        SRV-26-000012
+ *   review    WRV-yy-6 digits        WRV-26-000004
  *
  * The counter row is locked with SELECT ... FOR UPDATE, so two requests issuing
  * at the same moment are serialised by MySQL. Must be called inside the
@@ -90,6 +92,18 @@ final class Identifiers
     public function dealerCode(): string
     {
         return 'DLR' . str_pad((string) $this->reserve('dealer', 1), 4, '0', STR_PAD_LEFT);
+    }
+
+    /** One dealer visit: SRV-26-000001. Quoted down the phone, so it is grouped. */
+    public function surveyReference(): string
+    {
+        return 'SRV-' . $this->year() . '-' . str_pad((string) $this->reserve('survey', 1), 6, '0', STR_PAD_LEFT);
+    }
+
+    /** One recommendation that a warranty be reviewed: WRV-26-000001. */
+    public function warrantyReviewReference(): string
+    {
+        return 'WRV-' . $this->year() . '-' . str_pad((string) $this->reserve('warranty_review', 1), 6, '0', STR_PAD_LEFT);
     }
 
     /** A QR token: 24 random bytes, base64url. Never derived from the serial. */
