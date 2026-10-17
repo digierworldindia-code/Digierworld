@@ -580,4 +580,19 @@
       root.scanner = new Scanner(root);
     });
   });
+
+  /*
+   * A page may show the same running total somewhere outside the scanner —
+   * the "On board (12)" tab on the picking screen, for instance. Without
+   * this it would still read the number the page loaded with, which after
+   * twenty scans is worse than no number at all.
+   */
+  document.addEventListener('polyfizz:scan', function (event) {
+    var counter = event.detail.data && event.detail.data.counter;
+    if (!counter) return;
+
+    document.querySelectorAll('[data-scan-total]').forEach(function (el) {
+      el.textContent = String(counter.done);
+    });
+  });
 })();

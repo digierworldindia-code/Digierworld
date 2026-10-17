@@ -284,6 +284,42 @@
 .scanner__entry-note { font-size: .78rem; color: var(--ink-muted); margin-top: .1rem; }
 
 /* ==========================================================================
+   Label sheets
+   --------------------------------------------------------------------------
+   A batch's worth of labels on plain A4, three across. Each label holds the
+   four things the floor and the customer both need: the name, the QR code,
+   the serial as a barcode, and the model and size. Nothing is positioned in
+   millimetres — the grid is in rem so it survives a printer that scales, and
+   `break-inside: avoid` keeps a label whole across a page break.
+   ========================================================================== */
+.label-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+  gap: .5rem;
+}
+.label-card {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  padding: .55rem;
+  background: #fff;
+  border: 1px dashed var(--line);
+  border-radius: 6px;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+.label-card__qr { flex: none; width: 4.6rem; }
+.label-card__qr svg { width: 100%; height: auto; display: block; }
+.label-card__text { min-width: 0; flex: 1; }
+.label-card__brand { font-weight: 700; letter-spacing: .13em; font-size: .78rem; color: #17181a; }
+.label-card__model { font-size: .78rem; font-weight: 600; color: #17181a; }
+.label-card__size { font-size: .72rem; color: #43464b; }
+.label-card__barcode { margin-top: .2rem; max-width: 100%; }
+.label-card__barcode svg { width: 100%; height: 1.5rem; display: block; }
+.label-card__serial { font-size: .76rem; font-weight: 600; color: #17181a; }
+.label-card__batch { font-size: .64rem; color: #6d7177; }
+
+/* ==========================================================================
    Printing
    Label sheets and survey reports print from these panels; the chrome does
    not belong on paper.
@@ -291,4 +327,7 @@
 @media print {
   .floor-top, .floor-commit, .scanner, .no-print { display: none !important; }
   .floor-main { padding: 0; }
+  .label-card { border-color: #bbb; }
+  .label-grid { grid-template-columns: repeat(3, 1fr); gap: .35rem; }
 }
+@page { margin: 10mm; }

@@ -208,6 +208,51 @@ abstract class PolyfixTestCase extends CIUnitTestCase
         return $signedIn;
     }
 
+    /**
+     * Signs a user in for real, the way the browser is signed in.
+     *
+     * actingAs() above fills the request context directly, which is all a
+     * service test needs. A feature test goes through the whole request —
+     * AuthFilter included — and that reads the server-side session record and
+     * nothing else, so a context set in memory is simply overwritten. This
+     * writes the session row and the cookie payload that the filter resolves,
+     * so the request arrives authenticated.
+     *
+     * @return array{session_id:string, token:string}
+     */
+    protected function signedInAs(string $userId): array
+    {
+        $token     = Crypto::randomToken(32);
+        $sessionId = uuid4();
+        $now       = utc_now();
+
+        $this->insert('sessions', [
+            'id'              => $sessionId,
+            'user_id'         => $userId,
+            'token_hash'      => hash('sha256', $token),
+            'ip'              => '127.0.0.1',
+            'user_agent'      => 'PHPUnit',
+            'created_at'      => $now,
+            'last_seen_at'    => $now,
+            'absolute_expiry' => gmdate('Y-m-d H:i:s', time() + 86400) . '.000000',
+        ]);
+
+        $auth = ['sid' => $sessionId, 'token' => $token];
+        session()->set('auth', $auth);
+
+        // A feature test's request starts from a blank $_SESSION and fills it
+        // from whatever withSession() was given, so the session set above
+        // would not survive the call. Seeding it here means a test can sign
+        // in and then make requests without having to know that.
+        if (method_exists($this, 'withSession')) {
+            $this->withSession(['auth' => $auth]);
+        }
+
+        $this->actingAs($userId);
+
+        return ['session_id' => $sessionId, 'token' => $token];
+    }
+
     protected function crypto(): Crypto
     {
         return Crypto::instance();

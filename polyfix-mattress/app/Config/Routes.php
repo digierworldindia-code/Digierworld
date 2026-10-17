@@ -196,3 +196,45 @@ $routes->group('dealer', ['filter' => ['auth', 'dealer', 'noindex'], 'namespace'
     $routes->get('notifications', 'Home::notifications', ['filter' => 'can:dashboard.view']);
     $routes->post('notifications/(:uuid)/read', 'Home::read/$1', ['filter' => 'can:dashboard.view']);
 });
+
+// =============================================================================
+// Warehouse panel — the shop floor, on a phone
+//
+// A separate tree from /admin on purpose. The work here is scanning, not
+// administration, and the screens are built for one hand and poor light.
+// `area:warehouse` keeps the panel to the people it was built for (and to
+// Super Admin, who has to be able to stand at the station and see what the
+// operator sees); each route still names the permission it needs.
+// =============================================================================
+$routes->group('warehouse', [
+    'filter'    => ['auth', 'staff', 'area:warehouse', 'noindex'],
+    'namespace' => 'App\Controllers\Warehouse',
+], static function (RouteCollection $routes): void {
+    $routes->get('/', 'Home::index', ['filter' => 'can:dashboard.view']);
+
+    // --- batches and production scanning
+    $routes->get('batches', 'Batches::index', ['filter' => 'can:batch.read']);
+    $routes->get('batches/new', 'Batches::new', ['filter' => 'can:mattress.create']);
+    $routes->post('batches', 'Batches::create', ['filter' => 'can:mattress.create']);
+    $routes->get('batches/(:uuid)', 'Batches::show/$1', ['filter' => 'can:batch.read']);
+    $routes->get('batches/(:uuid)/scan', 'Batches::scan/$1', ['filter' => 'can:warehouse.scan']);
+    $routes->post('batches/(:uuid)/scan', 'Batches::record/$1', ['filter' => 'can:warehouse.scan']);
+    $routes->get('batches/(:uuid)/labels', 'Batches::labels/$1', ['filter' => 'can:mattress.read']);
+    $routes->post('batches/(:uuid)/close', 'Batches::close/$1', ['filter' => 'can:batch.write']);
+
+    // --- stock
+    $routes->get('stock', 'Stock::index', ['filter' => 'can:mattress.read']);
+    $routes->get('find', 'Stock::lookup', ['filter' => 'can:mattress.read']);
+
+    // --- picking a consignment
+    $routes->get('dispatch', 'Dispatch::index', ['filter' => 'can:dispatch.read']);
+    $routes->post('dispatch', 'Dispatch::start', ['filter' => 'can:dispatch.create']);
+    $routes->get('dispatch/(:uuid)', 'Dispatch::show/$1', ['filter' => 'can:dispatch.read']);
+    $routes->post('dispatch/(:uuid)/add', 'Dispatch::add/$1', ['filter' => 'can:dispatch.update']);
+    $routes->post('dispatch/(:uuid)/remove', 'Dispatch::remove/$1', ['filter' => 'can:dispatch.update']);
+    $routes->post('dispatch/(:uuid)/scan', 'Dispatch::scan/$1', ['filter' => 'can:warehouse.scan']);
+    $routes->get('dispatch/(:uuid)/confirm', 'Dispatch::confirm/$1', ['filter' => 'can:dispatch.update']);
+    $routes->post('dispatch/(:uuid)/send', 'Dispatch::send/$1', ['filter' => 'can:dispatch.update']);
+    $routes->post('dispatch/(:uuid)/cancel', 'Dispatch::cancel/$1', ['filter' => 'can:dispatch.cancel']);
+    $routes->get('dispatches', 'Dispatch::history', ['filter' => 'can:dispatch.read']);
+});
