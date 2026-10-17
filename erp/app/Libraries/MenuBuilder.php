@@ -16,6 +16,17 @@ final class MenuBuilder
         $query   = (string) $request->getUri()->getQuery();
         $current = $path . ($query !== '' ? '?' . $query : '');
 
+        // Only the most specific match is highlighted (e.g. reports/gst, not also reports).
+        $best = 0;
+        foreach (config(Menu::class)->sections as $section) {
+            foreach ($section['items'] as $item) {
+                $url = trim($item['url'], '/');
+                if (self::isActive($url, $path, $current)) {
+                    $best = max($best, strlen($url) + 1);
+                }
+            }
+        }
+
         $out = [];
         foreach (config(Menu::class)->sections as $section) {
             $items = [];
@@ -24,7 +35,7 @@ final class MenuBuilder
                     continue;
                 }
                 $url    = trim($item['url'], '/');
-                $active = self::isActive($url, $path, $current);
+                $active = self::isActive($url, $path, $current) && strlen($url) + 1 === $best;
                 $items[] = $item + ['active' => $active, 'href' => site_url($url === '' ? '/' : $url)];
             }
             if ($items !== []) {

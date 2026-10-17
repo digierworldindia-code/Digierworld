@@ -209,4 +209,6 @@
         if (!b) { return; }
         navigator.clipboard.writeText(b.dataset.copy).then(() => DGR.toast('Copied to clipboard', 'info'));
     });
+    // Print buttons (no inline handlers under CSP)
+    document.addEventListener('click', (e) => { if (e.target.closest('[data-print]')) { window.print(); } });
 })();
