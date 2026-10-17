@@ -111,6 +111,26 @@ $routes->group('admin', ['filter' => ['auth', 'staff', 'area:admin', 'noindex'],
     $routes->post('dispatches/(:uuid)/send', 'Dispatches::send/$1', ['filter' => 'can:dispatch.update']);
     $routes->post('dispatches/(:uuid)/cancel', 'Dispatches::cancel/$1', ['filter' => 'can:dispatch.cancel']);
 
+    // --- the survey programme
+    $routes->get('surveys', 'Surveys::index', ['filter' => 'can:survey.read']);
+    $routes->get('surveys/(:uuid)', 'Surveys::show/$1', ['filter' => 'can:survey.read']);
+    $routes->post('surveys/(:uuid)/reviewed', 'Surveys::markReviewed/$1', ['filter' => 'can:survey.assign']);
+    $routes->get('discrepancies', 'Surveys::discrepancies', ['filter' => 'can:discrepancy.read']);
+    $routes->post('discrepancies/(:uuid)/resolve', 'Surveys::resolve/$1', ['filter' => 'can:discrepancy.resolve']);
+    $routes->get('assignments', 'Surveys::assignments', ['filter' => 'can:survey.read']);
+    $routes->post('assignments', 'Surveys::assign', ['filter' => 'can:survey.assign']);
+    $routes->post('assignments/(:uuid)/end', 'Surveys::unassign/$1', ['filter' => 'can:survey.assign']);
+
+    // --- warranty rejection recommendations
+    $routes->get('warranty-reviews', 'WarrantyReviews::index', ['filter' => 'can:warranty_review.read']);
+    $routes->get('warranty-reviews/(:uuid)', 'WarrantyReviews::show/$1', ['filter' => 'can:warranty_review.read']);
+    $routes->post('warranty-reviews/(:uuid)/take', 'WarrantyReviews::take/$1', ['filter' => 'can:warranty_review.decide']);
+    $routes->post('warranty-reviews/(:uuid)/request-information', 'WarrantyReviews::requestInformation/$1', ['filter' => 'can:warranty_review.decide']);
+    $routes->post('warranty-reviews/(:uuid)/comment', 'WarrantyReviews::comment/$1', ['filter' => 'can:warranty_review.decide']);
+    $routes->post('warranty-reviews/(:uuid)/uphold', 'WarrantyReviews::uphold/$1', ['filter' => 'can:warranty_review.decide']);
+    $routes->post('warranty-reviews/(:uuid)/dismiss', 'WarrantyReviews::dismiss/$1', ['filter' => 'can:warranty_review.decide']);
+    $routes->post('warranty-reviews/(:uuid)/restore', 'WarrantyReviews::restore/$1', ['filter' => 'can:warranty_review.decide']);
+
     // --- warranty
     $routes->get('claims', 'Claims::index', ['filter' => 'can:claim.read']);
     $routes->get('claims/(:uuid)', 'Claims::show/$1', ['filter' => 'can:claim.read']);
@@ -198,6 +218,12 @@ $routes->group('dealer', ['filter' => ['auth', 'dealer', 'noindex'], 'namespace'
     $routes->get('claims/(:uuid)', 'Claims::show/$1', ['filter' => 'can:claim.read']);
     $routes->post('claims/(:uuid)/media', 'Claims::media/$1', ['filter' => 'can:claim.create']);
     $routes->post('claims/(:uuid)/reply', 'Claims::reply/$1', ['filter' => 'can:claim.create']);
+    // A review opened against one of this dealer's warranties: they see the
+    // decision and the reason, and can supply the invoice that was asked
+    // for. They decide nothing.
+    $routes->get('reviews', 'Reviews::index', ['filter' => 'can:warranty_review.read']);
+    $routes->get('reviews/(:uuid)', 'Reviews::show/$1', ['filter' => 'can:warranty_review.read']);
+    $routes->post('reviews/(:uuid)/invoice', 'Reviews::invoice/$1', ['filter' => 'can:warranty_review.read']);
     $routes->get('notifications', 'Home::notifications', ['filter' => 'can:dashboard.view']);
     $routes->post('notifications/(:uuid)/read', 'Home::read/$1', ['filter' => 'can:dashboard.view']);
 });

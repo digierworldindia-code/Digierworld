@@ -43,6 +43,7 @@ $tabs = [
                 <li><h6 class="dropdown-header"><?= esc($user['full_name'] ?? '') ?><br><span class="fw-normal"><?= esc($user['dealer_name'] ?? '') ?></span></h6></li>
                 <li><a class="dropdown-item" href="<?= site_url('dealer/incoming') ?>"><i class="bi bi-truck me-2"></i>Incoming stock</a></li>
                 <li><a class="dropdown-item" href="<?= site_url('dealer/sales') ?>"><i class="bi bi-list-check me-2"></i>My sales</a></li>
+                <li><a class="dropdown-item" href="<?= site_url('dealer/reviews') ?>"><i class="bi bi-shield-exclamation me-2"></i>Warranty reviews</a></li>
                 <li><a class="dropdown-item" href="<?= site_url('dealer/notifications') ?>"><i class="bi bi-bell me-2"></i>Notifications</a></li>
                 <li><a class="dropdown-item" href="<?= site_url('account/security') ?>"><i class="bi bi-shield-lock me-2"></i>Password &amp; security</a></li>
                 <li><hr class="dropdown-divider"></li>

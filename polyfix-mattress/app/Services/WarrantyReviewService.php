@@ -395,9 +395,11 @@ final class WarrantyReviewService
         return Tx::run(function (BaseConnection $db) use ($caseId, $mediaId, $note): array {
             $case = $this->openCaseForUpdate($db, $caseId);
 
-            // A dealer answers only on their own case.
+            // A dealer answers only on their own case. assertOwns takes the
+            // row, not the id: a case belonging to someone else then reads
+            // exactly as a case that does not exist.
             if ($this->context->isDealer()) {
-                DealerScope::current()->assertOwns('warranty_review_cases', $caseId);
+                DealerScope::current()->assertOwns('warranty_review_cases', $case, 'warranty review');
             }
 
             $db->table('warranty_review_cases')->where('id', $caseId)->update([

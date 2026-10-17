@@ -1,6 +1,42 @@
 <?= $this->extend('layouts/console') ?>
 <?= $this->section('content') ?>
-<?php /** @var array $m @var array|null $warranty @var array|null $sale @var list<array> $claims @var list<array> $events */ ?>
+<?php
+/**
+ * One serial, end to end.
+ *
+ * Three records, kept apart on purpose. The lifecycle is what the mattress
+ * did. The field observations are what somebody saw — an agent reporting a
+ * unit missing does not move it, so it is not a lifecycle event, and mixing
+ * the two would make an observation look like a fact. The scans are the
+ * physical confirmations: when it was counted into production and when it
+ * was picked onto a lorry.
+ *
+ * @var array                   $m
+ * @var array|null              $warranty
+ * @var array|null              $sale
+ * @var list<array>             $claims
+ * @var list<array>             $events
+ * @var list<array>             $surveyed
+ * @var list<array>             $discrepancies
+ * @var list<array>             $reviews
+ * @var list<array>             $scans
+ * @var array<string,string>    $reasons
+ */
+$observationLabels = [
+    'PRESENT'          => 'Physically available',
+    'DEALER_SAYS_SOLD' => 'Dealer says sold',
+    'NOT_FOUND'        => 'Not found',
+    'DAMAGED'          => 'Damaged',
+    'OTHER'            => 'Other',
+];
+$outcomeTone = [
+    'MATCHED'                  => 'success',
+    'POSSIBLE_UNRECORDED_SALE' => 'warning',
+    'REVIEW_REQUIRED'          => 'warning',
+    'STOCK_DISCREPANCY'        => 'danger',
+    'DAMAGED'                  => 'danger',
+];
+?>
 <div class="page-head">
     <div>
         <div class="small"><a href="<?= site_url('admin/mattresses') ?>">Mattresses</a></div>
@@ -89,6 +125,111 @@
                 </ol>
             </div>
         </div>
+
+        <?php if ($scans !== []): ?>
+            <div class="panel mt-3">
+                <div class="panel-head"><h2>Scans</h2></div>
+                <div class="panel-body">
+                    <ol class="timeline">
+                        <?php foreach ($scans as $scan): ?>
+                            <li>
+                                <div class="fw-semibold">
+                                    <?= $scan['purpose'] === 'PRODUCTION' ? 'Counted into production' : 'Picked onto a dispatch' ?>
+                                    <?= $scan['batch_code'] !== null ? '<span class="mono small">' . esc($scan['batch_code']) . '</span>' : '' ?>
+                                    <?= $scan['dispatch_code'] !== null ? '<span class="mono small">' . esc($scan['dispatch_code']) . '</span>' : '' ?>
+                                </div>
+                                <div class="when"><?= esc(local_time($scan['scanned_at'])) ?>
+                                    · <?= esc($scan['scanned_by_name'] ?? 'System') ?>
+                                    · <?= $scan['source'] === 'MANUAL' ? 'typed' : 'camera' ?></div>
+                            </li>
+                        <?php endforeach ?>
+                    </ol>
+                </div>
+            </div>
+        <?php endif ?>
+
+        <?php if ($surveyed !== []): ?>
+            <div class="panel mt-3">
+                <div class="panel-head"><h2>Seen on a field visit</h2></div>
+                <div class="panel-body">
+                    <p class="small text-muted">What an agent observed. An observation does not change
+                        this unit's status — anything that disagreed with the records was raised below.</p>
+                    <ol class="timeline">
+                        <?php foreach ($surveyed as $seen): ?>
+                            <li>
+                                <div class="fw-semibold">
+                                    <?= esc($observationLabels[$seen['observation']] ?? $seen['observation']) ?>
+                                    <span class="badge text-bg-<?= $outcomeTone[$seen['outcome']] ?? 'secondary' ?>"><?= esc(humanise($seen['outcome'])) ?></span>
+                                </div>
+                                <div class="when">
+                                    <?= esc(local_time($seen['recorded_at'])) ?> · <?= esc($seen['agent'] ?? 'agent') ?>
+                                    · <?= esc($seen['dealer']) ?>
+                                    · <a class="mono" href="<?= site_url('admin/surveys/' . $seen['survey_id']) ?>"><?= esc($seen['reference']) ?></a>
+                                </div>
+                                <div class="small text-muted">
+                                    records said <?= esc(strtolower(humanise($seen['system_status']))) ?>
+                                    <?= (int) $seen['scanned'] === 0 ? ' · entered by hand' : '' ?>
+                                </div>
+                                <?php if ($seen['remark'] !== null): ?>
+                                    <div class="small">“<?= esc($seen['remark']) ?>”</div>
+                                <?php endif ?>
+                            </li>
+                        <?php endforeach ?>
+                    </ol>
+                </div>
+            </div>
+        <?php endif ?>
+
+        <?php if ($discrepancies !== []): ?>
+            <div class="panel mt-3">
+                <div class="panel-head"><h2>Discrepancies</h2></div>
+                <ul class="list-unstyled mb-0">
+                    <?php foreach ($discrepancies as $disc): ?>
+                        <li class="p-3 border-bottom">
+                            <div class="d-flex justify-content-between gap-2">
+                                <strong><?= esc(humanise($disc['kind'])) ?></strong>
+                                <?= pill($disc['status']) ?>
+                            </div>
+                            <div class="small text-muted">
+                                raised <?= esc(local_date($disc['raised_at'])) ?> by <?= esc($disc['raised_by_name'] ?? 'an agent') ?>
+                            </div>
+                            <?php if ($disc['agent_remark'] !== null): ?>
+                                <div class="small">“<?= esc($disc['agent_remark']) ?>”</div>
+                            <?php endif ?>
+                            <?php if ($disc['resolution_note'] !== null): ?>
+                                <div class="small text-success">
+                                    <?= esc($disc['resolved_by_name'] ?? 'Office') ?>: <?= esc($disc['resolution_note']) ?>
+                                </div>
+                            <?php endif ?>
+                        </li>
+                    <?php endforeach ?>
+                </ul>
+            </div>
+        <?php endif ?>
+
+        <?php if ($reviews !== []): ?>
+            <div class="panel mt-3">
+                <div class="panel-head"><h2>Warranty reviews</h2></div>
+                <ul class="list-unstyled mb-0">
+                    <?php foreach ($reviews as $review): ?>
+                        <li class="p-3 border-bottom">
+                            <div class="d-flex justify-content-between gap-2">
+                                <a class="mono fw-semibold" href="<?= site_url('admin/warranty-reviews/' . $review['id']) ?>"><?= esc($review['reference']) ?></a>
+                                <?= pill($review['status']) ?>
+                            </div>
+                            <div class="small text-muted">
+                                <?= esc($reasons[$review['reason']] ?? $review['reason']) ?>
+                                · raised <?= esc(local_date($review['raised_at'])) ?>
+                                by <?= esc($review['raised_by_name'] ?? 'an agent') ?>
+                            </div>
+                            <?php if ($review['decision_reason'] !== null): ?>
+                                <div class="small">Decision: <?= esc($review['decision_reason']) ?></div>
+                            <?php endif ?>
+                        </li>
+                    <?php endforeach ?>
+                </ul>
+            </div>
+        <?php endif ?>
     </div>
 </div>
 <?= $this->endSection() ?>

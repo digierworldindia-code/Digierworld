@@ -125,7 +125,24 @@ final class MediaService
     /** Moves an inspected upload into storage. Returns the storage key. */
     public function store(UploadedFile $file, string $claimId, string $extension): string
     {
-        $key = 'claims/' . $claimId . '/' . uuid4() . '.' . $extension;
+        return $this->storeUnder('claims', $claimId, $file, $extension);
+    }
+
+    /**
+     * The same, for a file that belongs to something other than a claim —
+     * the invoice a dealer uploads against a warranty review.
+     *
+     * The folder is part of the key and the key is validated on the way
+     * back out, so a file can only ever be read from the shape of path it
+     * was written to.
+     */
+    public function storeUnder(string $folder, string $ownerId, UploadedFile $file, string $extension): string
+    {
+        if (! in_array($folder, ['claims', 'reviews'], true)) {
+            throw new \RuntimeException('Unknown upload folder.');
+        }
+
+        $key = $folder . '/' . $ownerId . '/' . uuid4() . '.' . $extension;
         $dir = dirname($this->absolute($key));
         if (! is_dir($dir) && ! mkdir($dir, 0750, true) && ! is_dir($dir)) {
             throw new \RuntimeException('Could not create the upload directory.');
@@ -138,7 +155,7 @@ final class MediaService
     /** Absolute path for a key. Refuses anything that would leave the upload root. */
     public function absolute(string $key): string
     {
-        if (! preg_match('#^claims/[0-9a-f-]{36}/[0-9a-f-]{36}\.[a-z0-9]{2,5}$#', $key)) {
+        if (! preg_match('#^(claims|reviews)/[0-9a-f-]{36}/[0-9a-f-]{36}\.[a-z0-9]{2,5}$#', $key)) {
             throw new \RuntimeException('Invalid storage key.');
         }
 

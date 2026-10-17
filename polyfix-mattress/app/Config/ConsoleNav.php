@@ -23,8 +23,14 @@ class ConsoleNav extends BaseConfig
             ['Batches', 'admin/batches', 'batch:read', 'bi-boxes'],
             ['Dispatches', 'admin/dispatches', 'dispatch:read', 'bi-truck'],
         ],
+        'Field surveys' => [
+            ['Surveys', 'admin/surveys', 'survey:read', 'bi-clipboard-check'],
+            ['Discrepancies', 'admin/discrepancies', 'discrepancy:read', 'bi-exclamation-triangle'],
+            ['Agent assignments', 'admin/assignments', 'survey:read', 'bi-person-check'],
+        ],
         'Warranty' => [
             ['Claims', 'admin/claims', 'claim:read', 'bi-clipboard2-pulse'],
+            ['Rejection reviews', 'admin/warranty-reviews', 'warranty_review:read', 'bi-shield-exclamation'],
             ['Warranties', 'admin/warranties', 'warranty:read', 'bi-shield-check'],
             ['Replacements', 'admin/replacements', 'claim:read', 'bi-arrow-repeat'],
         ],

@@ -87,6 +87,41 @@ class Mattresses extends AdminController
             'events' => $db->table('mattress_events e')->select('e.*, u.full_name actor, d.business_name dealer')
                 ->join('users u', 'u.id = e.actor_user_id', 'left')->join('dealers d', 'd.id = e.dealer_id', 'left')
                 ->where('e.mattress_id', $id)->orderBy('e.occurred_at')->get()->getResultArray(),
+
+            // Field observations are not lifecycle events — an agent saying
+            // a unit is missing does not move it — so they are kept apart
+            // from the passport and shown beside it. Together these three
+            // are what "the complete history of one serial" means.
+            'surveyed' => $db->table('dealer_survey_items i')
+                ->select('i.observation, i.outcome, i.system_status, i.remark, i.recorded_at, i.scanned,'
+                    . ' s.id AS survey_id, s.reference, s.status AS survey_status,'
+                    . ' d.business_name AS dealer, u.full_name AS agent')
+                ->join('dealer_surveys s', 's.id = i.survey_id')
+                ->join('dealers d', 'd.id = s.dealer_id')
+                ->join('users u', 'u.id = s.agent_user_id', 'left')
+                ->where('i.mattress_id', $id)->orderBy('i.recorded_at', 'DESC')->get()->getResultArray(),
+
+            'discrepancies' => $db->table('inventory_discrepancies disc')
+                ->select('disc.*, u.full_name AS raised_by_name, r.full_name AS resolved_by_name')
+                ->join('users u', 'u.id = disc.raised_by', 'left')
+                ->join('users r', 'r.id = disc.resolved_by', 'left')
+                ->where('disc.mattress_id', $id)->orderBy('disc.raised_at', 'DESC')->get()->getResultArray(),
+
+            'reviews' => $db->table('warranty_review_cases c')
+                ->select('c.id, c.reference, c.reason, c.status, c.raised_at, c.decided_at, c.decision_reason,'
+                    . ' u.full_name AS raised_by_name')
+                ->join('users u', 'u.id = c.raised_by', 'left')
+                ->where('c.mattress_id', $id)->orderBy('c.raised_at', 'DESC')->get()->getResultArray(),
+
+            'scans' => $db->table('warehouse_scans sc')
+                ->select('sc.purpose, sc.source, sc.scanned_at, u.full_name AS scanned_by_name,'
+                    . ' b.batch_code, dsp.dispatch_code')
+                ->join('users u', 'u.id = sc.scanned_by', 'left')
+                ->join('manufacturing_batches b', 'b.id = sc.batch_id', 'left')
+                ->join('dispatches dsp', 'dsp.id = sc.dispatch_id', 'left')
+                ->where('sc.mattress_id', $id)->orderBy('sc.scanned_at')->get()->getResultArray(),
+
+            'reasons' => \App\Services\WarrantyReviewService::REASONS,
         ]);
     }
 
