@@ -135,6 +135,10 @@ final class RecruitmentAiTest extends DgrTestCase
 
         // payload = JD + rubric + de-identified CV text only
         $sent = $fake->system . $fake->user;
+        if ($dir = getenv('DGR_EVIDENCE_DIR')) {
+            file_put_contents($dir . '/16-ai-cv-review-exact-request.txt', "=== SYSTEM ===\n" . $fake->system . "\n\n=== USER (the only data sent) ===\n" . $fake->user . "\n");
+            file_put_contents($dir . '/17-ai-cv-review-stored-result.json', json_encode(array_intersect_key($e, array_flip(['engine', 'status', 'fit_score', 'category_scores', 'matched_requirements', 'unmet_requirements', 'unclear_requirements', 'interview_questions', 'summary', 'confidence', 'injection_flags', 'hr_decision', 'prompt_version'])), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+        }
         $this->assertStringContainsString('2+ years running Google Ads campaigns for clients', $fake->user);
         $this->assertStringContainsString('<rubric>', $fake->user);
         $this->assertStringContainsString(self::QUOTE, preg_replace('/\s+/', ' ', $fake->user));
