@@ -515,7 +515,8 @@ class ImportPostgres extends BaseCommand
 
     private function promptHidden(string $label): string
     {
-        if (! CLI::isInteractive()) {
+        // No terminal to prompt at (cron, a deployment script, CI).
+        if (! stream_isatty(STDIN)) {
             return '';
         }
         CLI::print($label);

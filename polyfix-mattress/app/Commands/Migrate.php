@@ -87,7 +87,9 @@ class Migrate extends BaseCommand
 
     private function promptHidden(string $label): string
     {
-        if (! CLI::isInteractive()) {
+        // There is no terminal to prompt at under cron, a deployment script
+        // or a CI job; asking there would block until something killed it.
+        if (! stream_isatty(STDIN)) {
             return '';
         }
 

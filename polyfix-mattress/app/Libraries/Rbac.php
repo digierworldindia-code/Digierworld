@@ -19,10 +19,31 @@ namespace App\Libraries;
  */
 final class Rbac
 {
-    public const ROLE_KEYS = ['SUPER_ADMIN', 'ADMIN', 'WAREHOUSE', 'WARRANTY_MANAGER', 'SALES_MANAGER', 'DEALER', 'REPORTING'];
+    public const ROLE_KEYS = ['SUPER_ADMIN', 'ADMIN', 'WAREHOUSE', 'WARRANTY_MANAGER', 'SALES_MANAGER', 'FIELD_AGENT', 'DEALER', 'REPORTING'];
 
-    /** Roles whose users work in the admin console; everyone else is a dealer. */
-    public const STAFF_ROLES = ['SUPER_ADMIN', 'ADMIN', 'WAREHOUSE', 'WARRANTY_MANAGER', 'SALES_MANAGER', 'REPORTING'];
+    /**
+     * Roles whose users are POLYFIZZ staff rather than a dealership.
+     *
+     * A field agent is staff — they are employed by the company and visit
+     * dealers — but they do not work in the admin console. isStaff() answers
+     * "not a dealer"; CONSOLE_ROLES below answers "may open /admin".
+     */
+    public const STAFF_ROLES = ['SUPER_ADMIN', 'ADMIN', 'WAREHOUSE', 'WARRANTY_MANAGER', 'SALES_MANAGER', 'FIELD_AGENT', 'REPORTING'];
+
+    /**
+     * Roles that land in the admin console at sign-in.
+     *
+     * A warehouse operator and a field agent each have their own panel, built
+     * for the job and the device they do it on. Sending them to /admin would
+     * put them in front of a screen they do not need and cannot mostly use.
+     */
+    public const CONSOLE_ROLES = ['SUPER_ADMIN', 'ADMIN', 'WARRANTY_MANAGER', 'SALES_MANAGER', 'REPORTING'];
+
+    /** Roles whose home is the warehouse panel. */
+    public const WAREHOUSE_ROLES = ['WAREHOUSE'];
+
+    /** Roles whose home is the field-agent panel. */
+    public const AGENT_ROLES = ['FIELD_AGENT'];
 
     /** @var array<string, array{group:string, description:string}> */
     public const PERMISSIONS = [
@@ -75,6 +96,15 @@ final class Rbac
         'user:role:assign' => ['group' => 'administration', 'description' => 'Grant or revoke roles'],
         'user:reset_password' => ['group' => 'administration', 'description' => 'Force a password reset for another user'],
         'audit:read' => ['group' => 'administration', 'description' => 'Read the audit trail'],
+        'survey:read' => ['group' => 'survey', 'description' => 'View dealer stock surveys and their reports'],
+        'survey:conduct' => ['group' => 'survey', 'description' => 'Start a survey at an assigned dealer and record findings'],
+        'survey:assign' => ['group' => 'survey', 'description' => 'Assign dealers to field agents and set the survey schedule'],
+        'discrepancy:read' => ['group' => 'survey', 'description' => 'View stock discrepancies raised by a survey'],
+        'discrepancy:resolve' => ['group' => 'survey', 'description' => 'Resolve or dismiss a stock discrepancy'],
+        'warranty_review:recommend' => ['group' => 'survey', 'description' => 'Recommend that a warranty be reviewed for rejection'],
+        'warranty_review:read' => ['group' => 'survey', 'description' => 'View warranty review cases'],
+        'warranty_review:decide' => ['group' => 'survey', 'description' => 'Uphold or dismiss a warranty rejection recommendation'],
+        'warehouse:scan' => ['group' => 'manufacturing', 'description' => 'Scan units into production and onto a dispatch'],
         'system:settings:read' => ['group' => 'system', 'description' => 'View system settings'],
         'system:settings:write' => ['group' => 'system', 'description' => 'Change system settings'],
         'system:health' => ['group' => 'system', 'description' => 'View system and database health'],
@@ -98,8 +128,10 @@ final class Rbac
             'lead:update', 'cms:read', 'cms:write', 'cms:publish',
             'seo:read', 'seo:write', 'report:view', 'report:export',
             'user:read', 'user:write', 'user:role:assign', 'user:reset_password',
-            'audit:read', 'system:settings:read', 'system:settings:write', 'system:health',
-            'system:backup', 'system:export', 'system:sql:read',
+            'audit:read', 'survey:read', 'survey:conduct', 'survey:assign',
+            'discrepancy:read', 'discrepancy:resolve', 'warranty_review:recommend', 'warranty_review:read',
+            'warranty_review:decide', 'warehouse:scan', 'system:settings:read', 'system:settings:write',
+            'system:health', 'system:backup', 'system:export', 'system:sql:read',
         ],
         'ADMIN' => [
             'dashboard:view', 'product:read', 'product:write', 'product:publish',
@@ -112,37 +144,47 @@ final class Rbac
             'claim:media:view', 'risk:view', 'lead:read', 'lead:update',
             'cms:read', 'cms:write', 'cms:publish', 'seo:read',
             'seo:write', 'report:view', 'report:export', 'user:read',
-            'user:write', 'user:reset_password', 'audit:read', 'system:settings:read',
-            'system:health',
+            'user:write', 'user:reset_password', 'audit:read', 'survey:read',
+            'survey:assign', 'discrepancy:read', 'discrepancy:resolve', 'warranty_review:read',
+            'warranty_review:decide', 'warehouse:scan', 'system:settings:read', 'system:health',
         ],
         'WAREHOUSE' => [
             'dashboard:view', 'product:read', 'batch:read', 'batch:write',
             'mattress:read', 'mattress:create', 'dispatch:read', 'dispatch:create',
             'dispatch:update', 'receipt:read', 'dealer:read', 'report:view',
+            'warehouse:scan',
         ],
         'WARRANTY_MANAGER' => [
             'dashboard:view', 'product:read', 'mattress:read', 'dealer:read',
             'customer:read', 'sale:read', 'warranty:read', 'warranty:void',
             'claim:read', 'claim:review', 'claim:decide', 'claim:replace',
             'claim:media:view', 'risk:view', 'dispatch:read', 'dispatch:create',
-            'dispatch:update', 'report:view',
+            'dispatch:update', 'report:view', 'survey:read', 'discrepancy:read',
+            'discrepancy:resolve', 'warranty_review:read', 'warranty_review:decide',
         ],
         'SALES_MANAGER' => [
             'dashboard:view', 'product:read', 'mattress:read', 'dealer:read',
             'dealer:write', 'dealer_application:read', 'customer:read', 'sale:read',
             'warranty:read', 'claim:read', 'lead:read', 'lead:update',
-            'report:view', 'report:export',
+            'report:view', 'report:export', 'survey:read', 'discrepancy:read',
+            'warranty_review:read',
+        ],
+        'FIELD_AGENT' => [
+            'dashboard:view', 'product:read', 'mattress:read', 'dealer:read',
+            'customer:read', 'sale:read', 'warranty:read', 'dispatch:read',
+            'survey:read', 'survey:conduct', 'discrepancy:read', 'warranty_review:recommend',
+            'warranty_review:read',
         ],
         'DEALER' => [
             'dashboard:view', 'product:read', 'mattress:read', 'receipt:create',
             'receipt:read', 'dispatch:read', 'customer:read', 'customer:write',
             'sale:read', 'sale:create', 'warranty:read', 'claim:read',
-            'claim:create', 'claim:media:view',
+            'claim:create', 'claim:media:view', 'survey:read', 'warranty_review:read',
         ],
         'REPORTING' => [
             'dashboard:view', 'product:read', 'mattress:read', 'dealer:read',
             'sale:read', 'warranty:read', 'claim:read', 'report:view',
-            'report:export',
+            'report:export', 'survey:read', 'discrepancy:read', 'warranty_review:read',
         ],
     ];
 
@@ -153,6 +195,7 @@ final class Rbac
         'WARRANTY_MANAGER' => ['name' => 'Warranty Manager', 'rank' => 30, 'description' => 'Warranty claims, verification and replacements'],
         'SALES_MANAGER' => ['name' => 'Sales Manager', 'rank' => 30, 'description' => 'Dealer performance, sales analytics and leads'],
         'WAREHOUSE' => ['name' => 'Warehouse', 'rank' => 40, 'description' => 'Manufacturing, stock and dispatch operations'],
+        'FIELD_AGENT' => ['name' => 'Field Agent', 'rank' => 50, 'description' => 'Visits assigned dealers and verifies physical stock'],
         'DEALER' => ['name' => 'Dealer', 'rank' => 60, 'description' => 'Own inventory, sales and warranty claims only'],
         'REPORTING' => ['name' => 'Reporting', 'rank' => 70, 'description' => 'Read-only access for reporting and analysis'],
     ];
