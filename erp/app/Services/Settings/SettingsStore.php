@@ -99,6 +99,17 @@ class SettingsStore
         return $row !== null && $row['setting_value'] !== null && $row['setting_value'] !== '';
     }
 
+    /** Mark a Billing Setup Wizard step as completed. */
+    public function markSetupStep(string $step): void
+    {
+        $row   = $this->db->table('company_settings')->select('setup_steps')->where('id', 1)->get()->getRowArray();
+        $steps = json_decode((string) ($row['setup_steps'] ?? '{}'), true) ?: [];
+        if (empty($steps[$step])) {
+            $steps[$step] = true;
+            $this->db->table('company_settings')->where('id', 1)->update(['setup_steps' => json_encode($steps)]);
+        }
+    }
+
     /** Encrypt an arbitrary sensitive value (bank numbers, CIF) for column storage. */
     public static function encrypt(?string $plain): ?string
     {

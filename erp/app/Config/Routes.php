@@ -91,10 +91,10 @@ $routes->group('settings', static function (RouteCollection $routes): void {
     $routes->get('integrations', 'Settings\IntegrationsController::index', ['filter' => 'perm:settings.integrations.manage']);
     $routes->post('integrations/(:segment)', 'Settings\IntegrationsController::save/$1', ['filter' => 'perm:settings.integrations.manage']);
     $routes->post('integrations/(:segment)/test', 'Settings\IntegrationsController::test/$1', ['filter' => 'perm:settings.integrations.manage']);
-    $routes->get('masters', 'Settings\MastersController::index', ['filter' => 'perm:settings.app.edit,crm.settings.manage,finance.expense.manage_categories,hr.leave.manage_types']);
-    $routes->get('masters/(:segment)', 'Settings\MastersController::list/$1', ['filter' => 'perm:settings.app.edit,crm.settings.manage,finance.expense.manage_categories,hr.leave.manage_types']);
-    $routes->post('masters/(:segment)', 'Settings\MastersController::save/$1', ['filter' => 'perm:settings.app.edit,crm.settings.manage,finance.expense.manage_categories,hr.leave.manage_types']);
-    $routes->post('masters/(:segment)/(:num)', 'Settings\MastersController::save/$1/$2', ['filter' => 'perm:settings.app.edit,crm.settings.manage,finance.expense.manage_categories,hr.leave.manage_types']);
+    $routes->get('masters', 'Settings\MastersController::index', ['filter' => 'perm:settings.app.edit,crm.settings.manage,finance.expense.manage_categories,hr.leave.manage_types,hr.employee.manage']);
+    $routes->get('masters/(:segment)', 'Settings\MastersController::list/$1', ['filter' => 'perm:settings.app.edit,crm.settings.manage,finance.expense.manage_categories,hr.leave.manage_types,hr.employee.manage']);
+    $routes->post('masters/(:segment)', 'Settings\MastersController::save/$1', ['filter' => 'perm:settings.app.edit,crm.settings.manage,finance.expense.manage_categories,hr.leave.manage_types,hr.employee.manage']);
+    $routes->post('masters/(:segment)/(:num)', 'Settings\MastersController::save/$1/$2', ['filter' => 'perm:settings.app.edit,crm.settings.manage,finance.expense.manage_categories,hr.leave.manage_types,hr.employee.manage']);
 });
 
 // Module route files (added per phase)

@@ -3,6 +3,7 @@
 namespace Config;
 
 use App\Services\Access\BillingAccess;
+use App\Services\Ai\AiConfig;
 use App\Services\Access\CandidateAccess;
 use App\Services\Access\LeadAccess;
 use App\Services\Audit\AuditLogger;
@@ -108,5 +109,14 @@ class Services extends BaseService
         }
 
         return new FinancialYearService(db_connect());
+    }
+
+    public static function aiConfig(bool $getShared = true): AiConfig
+    {
+        if ($getShared) {
+            return static::getSharedInstance('aiConfig');
+        }
+
+        return new AiConfig(static::settingsStore());
     }
 }
