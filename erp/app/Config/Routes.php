@@ -60,6 +60,9 @@ $routes->group('admin', static function (RouteCollection $routes): void {
     $routes->get('audit/verify', 'Admin\AuditController::verify', ['filter' => 'perm:security.audit.view']);
     $routes->get('audit/(:num)', 'Admin\AuditController::show/$1', ['filter' => 'perm:security.audit.view']);
     $routes->get('diagnostics', 'Admin\DiagnosticsController::index', ['filter' => 'perm:security.diagnostics.view']);
+    $routes->get('backups', 'Admin\BackupsController::index', ['filter' => 'perm:security.backup.manage']);
+    $routes->post('backups', 'Admin\BackupsController::create', ['filter' => 'perm:security.backup.manage']);
+    $routes->get('backups/(:segment)', 'Admin\BackupsController::download/$1', ['filter' => 'perm:security.backup.manage']);
     $routes->get('ai', 'Admin\AiController::index', ['filter' => 'perm:ai.permissions.manage,ai.usage.view']);
     $routes->post('ai/provider', 'Admin\AiController::saveProvider', ['filter' => 'perm:ai.permissions.manage']);
     $routes->post('ai/capabilities/(:segment)', 'Admin\AiController::saveCapability/$1', ['filter' => 'perm:ai.permissions.manage']);

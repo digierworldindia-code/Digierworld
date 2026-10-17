@@ -35,7 +35,7 @@ class IntegrationsController extends BaseController
     public function save($integration)
     {
         // Nothing on this screen stores credentials; later modules add their own non-secret settings here.
-        return redirect()->to(site_url('settings/integrations'))->with('error', 'Credentials are configured in the server .env file (see docs/06-DEPLOYMENT.md), not through the browser.');
+        return redirect()->to(site_url('settings/integrations'))->with('error', 'Credentials are configured in the server .env file (see docs/04-DEPLOYMENT.md), not through the browser.');
     }
 
     public function test($integration)

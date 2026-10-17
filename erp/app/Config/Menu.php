@@ -72,6 +72,7 @@ class Menu extends BaseConfig
             ['label' => 'Activity / Audit Logs', 'url' => 'admin/audit', 'icon' => 'clock-history', 'perms' => ['security.audit.view']],
             ['label' => 'AI Permissions', 'url' => 'admin/ai', 'icon' => 'robot', 'perms' => ['ai.permissions.manage', 'ai.usage.view']],
             ['label' => 'Diagnostics', 'url' => 'admin/diagnostics', 'icon' => 'activity', 'perms' => ['security.diagnostics.view']],
+            ['label' => 'Backups', 'url' => 'admin/backups', 'icon' => 'database', 'perms' => ['security.backup.manage']],
         ]],
         ['label' => 'Settings', 'icon' => 'gear', 'items' => [
             ['label' => 'Billing Setup Wizard', 'url' => 'settings/setup', 'icon' => 'magic', 'perms' => ['settings.company.edit']],

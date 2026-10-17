@@ -44,6 +44,7 @@ class Diagnostics
             'Google Sheets API'   => \Google\Service\Sheets::class,
             'PDF parser'          => \Smalot\PdfParser\Parser::class,
             'brick/math'          => \Brick\Math\BigDecimal::class,
+            'Anthropic SDK'       => \Anthropic\Client::class,
         ] as $label => $class) {
             $add('Dependencies', $label, class_exists($class) ? 'ok' : 'fail', class_exists($class) ? 'autoloads' : 'class not found');
         }
@@ -107,7 +108,7 @@ class Diagnostics
             $add('Integrations', 'Google Sheets last sync', ! empty($gs['last_error']) && (empty($gs['last_success_at']) || $gs['last_error_at'] > $gs['last_success_at']) ? 'warn' : 'ok', 'Last success: ' . dmy($gs['last_success_at'] ?? null, true) . (! empty($gs['last_error']) ? ' · last error: ' . mb_strimwidth((string) $gs['last_error'], 0, 80, '…') : ''));
         }
         $ai = service('aiConfig');
-        $add('Integrations', 'AI provider', $ai->isConfigured() ? 'ok' : 'warn', $ai->isConfigured() ? $ai->provider() . ' / ' . $ai->model() . ' (key stored, not shown)' : 'Not configured — CV review uses the rules-based fallback');
+        $add('Integrations', 'AI provider', $ai->isConfigured() ? 'ok' : 'warn', $ai->isConfigured() ? $ai->provider() . ' / ' . $ai->model() . ' (key stored, not shown)' : 'Not configured — recruitment works with manual HR assessment and the keyword check');
         $enabledCaps = $this->db->table('ai_capabilities')->where('enabled', 1)->countAllResults();
         $add('Integrations', 'AI capabilities enabled', 'ok', $enabledCaps . ' of ' . $this->db->table('ai_capabilities')->countAllResults());
         $mail = \App\Services\Notify\Notifier::mailConfigured();
