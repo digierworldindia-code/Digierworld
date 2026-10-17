@@ -235,4 +235,68 @@ class Services extends BaseService
 
         return new \App\Services\Crm\LeadService(db_connect(), static::sheetsSync());
     }
+
+    // ---- Phase 5: HR, recruitment, AI gateway, payroll ----
+
+    public static function hrCalendar(bool $getShared = true): \App\Services\Hr\HrCalendar
+    {
+        return $getShared ? static::getSharedInstance('hrCalendar') : new \App\Services\Hr\HrCalendar(db_connect());
+    }
+
+    public static function employees(bool $getShared = true): \App\Services\Hr\EmployeeService
+    {
+        return $getShared ? static::getSharedInstance('employees') : new \App\Services\Hr\EmployeeService(db_connect());
+    }
+
+    public static function leaves(bool $getShared = true): \App\Services\Hr\LeaveService
+    {
+        return $getShared ? static::getSharedInstance('leaves') : new \App\Services\Hr\LeaveService(db_connect(), static::hrCalendar());
+    }
+
+    public static function attendance(bool $getShared = true): \App\Services\Hr\AttendanceService
+    {
+        return $getShared ? static::getSharedInstance('attendance') : new \App\Services\Hr\AttendanceService(db_connect(), static::hrCalendar());
+    }
+
+    public static function recruitment(bool $getShared = true): \App\Services\Hr\RecruitmentService
+    {
+        return $getShared ? static::getSharedInstance('recruitment') : new \App\Services\Hr\RecruitmentService(db_connect());
+    }
+
+    public static function salaries(bool $getShared = true): \App\Services\Hr\SalaryService
+    {
+        return $getShared ? static::getSharedInstance('salaries') : new \App\Services\Hr\SalaryService(db_connect());
+    }
+
+    public static function payroll(bool $getShared = true): \App\Services\Hr\PayrollService
+    {
+        return $getShared ? static::getSharedInstance('payroll') : new \App\Services\Hr\PayrollService(db_connect(), static::ledger(), static::attendance(), static::salaries());
+    }
+
+    public static function incentives(bool $getShared = true): \App\Services\Hr\IncentiveService
+    {
+        return $getShared ? static::getSharedInstance('incentives') : new \App\Services\Hr\IncentiveService(db_connect());
+    }
+
+    public static function payslips(bool $getShared = true): \App\Services\Hr\PayslipService
+    {
+        return $getShared ? static::getSharedInstance('payslips') : new \App\Services\Hr\PayslipService(db_connect(), static::pdf(), static::files());
+    }
+
+    /** The one place AI requests are authorised, scoped and logged. */
+    public static function aiGateway(bool $getShared = true): \App\Services\Ai\AiGateway
+    {
+        return $getShared ? static::getSharedInstance('aiGateway') : new \App\Services\Ai\AiGateway(db_connect(), static::aiConfig());
+    }
+
+    /** Model provider client (tests inject a fake with Services::injectMock). */
+    public static function aiProvider(bool $getShared = true): \App\Services\Ai\AiProvider
+    {
+        return $getShared ? static::getSharedInstance('aiProvider') : new \App\Services\Ai\AnthropicProvider(static::aiConfig());
+    }
+
+    public static function cvEvaluation(bool $getShared = true): \App\Services\Ai\CvEvaluationService
+    {
+        return $getShared ? static::getSharedInstance('cvEvaluation') : new \App\Services\Ai\CvEvaluationService(db_connect(), static::aiGateway());
+    }
 }

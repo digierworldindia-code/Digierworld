@@ -139,6 +139,14 @@ if (! function_exists('status_badge')) {
             'resolved' => 'success', 'blocked' => 'danger', 'calculated' => 'info', 'locked' => 'dark',
             'proposed' => 'warning', 'included' => 'info', 'clawed_back' => 'danger', 'open' => 'success',
             'closed' => 'secondary', 'expired' => 'secondary', 'suggested' => 'warning', 'accountant_reviewed' => 'success',
+            'probation' => 'info', 'notice' => 'warning', 'exited' => 'secondary', 'present' => 'success', 'absent' => 'danger',
+            'half_day' => 'info', 'leave' => 'primary', 'holiday' => 'light', 'week_off' => 'light', 'unmarked' => 'warning',
+            'applied' => 'secondary', 'resume_screened' => 'info', 'hr_screening' => 'info', 'interview_scheduled' => 'primary',
+            'interview_completed' => 'primary', 'assignment_gd' => 'primary', 'shortlisted' => 'success', 'on_hold' => 'warning',
+            'offer_sent' => 'info', 'offer_accepted' => 'success', 'joined' => 'success', 'withdrawn' => 'secondary',
+            'filled' => 'success', 'unavailable' => 'warning', 'accepted' => 'success', 'overridden' => 'info',
+            'pass' => 'success', 'fail' => 'danger', 'hold' => 'warning', 'no_show' => 'dark', 'partially_paid' => 'info',
+            'revoked' => 'dark', 'denied' => 'danger', 'allowed' => 'success', 'error' => 'danger', 'fallback' => 'warning',
         ];
         $status = (string) $status;
         $cls    = $map[$status] ?? 'secondary';

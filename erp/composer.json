@@ -5,6 +5,7 @@
     "type": "project",
     "require": {
         "php": "^8.3",
+        "anthropic-ai/sdk": "^0.59",
         "brick/math": "^1.0",
         "codeigniter4/framework": "^4.7",
         "codeigniter4/shield": "^1.4",
