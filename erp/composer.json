@@ -1,0 +1,49 @@
+{
+    "name": "digierworld/dgr-office",
+    "description": "DGR Office \u2014 Business ERP for DIGIE R WORLD (GST billing, cash memo, CRM, Google Sheets, HRM, payroll, scoped AI)",
+    "license": "proprietary",
+    "type": "project",
+    "require": {
+        "php": "^8.3",
+        "brick/math": "^1.0",
+        "codeigniter4/framework": "^4.7",
+        "codeigniter4/shield": "^1.4",
+        "dompdf/dompdf": "^3.1",
+        "google/apiclient": "^2.20",
+        "phpoffice/phpspreadsheet": "^5.10",
+        "smalot/pdfparser": "^2.13"
+    },
+    "require-dev": {
+        "fakerphp/faker": "^1.9",
+        "mikey179/vfsstream": "^1.6",
+        "phpunit/phpunit": "^10.5.16"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/",
+            "Config\\": "app/Config/"
+        },
+        "exclude-from-classmap": [
+            "**/Database/Migrations/**"
+        ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\Support\\": "tests/_support"
+        }
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "preferred-install": "dist",
+        "sort-packages": true
+    },
+    "scripts": {
+        "test": "phpunit",
+        "pre-autoload-dump": "Google\\Task\\Composer::cleanup"
+    },
+    "extra": {
+        "google/apiclient-services": [
+            "Sheets"
+        ]
+    }
+}

@@ -31,10 +31,15 @@ jobs:
         with:
           enablement: true
 
+      - name: Stage static site (exclude ERP application source)
+        run: |
+          mkdir -p _site
+          rsync -a --exclude '.git' --exclude '.github' --exclude '.claude' --exclude 'erp' --exclude '_site' ./ _site/
+
       - name: Upload site
         uses: actions/upload-pages-artifact@v3
         with:
-          path: .
+          path: _site
 
       - name: Deploy to GitHub Pages
         id: deployment
