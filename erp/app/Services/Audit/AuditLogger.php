@@ -53,9 +53,8 @@ class AuditLogger
     ): void {
         try {
             $userId = $this->actorOverride;
-            if ($userId === null && $this->actorType === 'user' && function_exists('auth')) {
-                $session = auth('session');
-                $userId  = $session->loggedIn() ? (int) $session->id() : null;
+            if ($userId === null && $this->actorType === 'user') {
+                $userId = service('authz')->currentUserId();
             }
 
             $request   = service('request');
@@ -68,27 +67,33 @@ class AuditLogger
             $occurred  = (new \DateTimeImmutable('now'))->format('Y-m-d H:i:s.u');
             $actorType = $this->actorType;
 
-            $this->db->transStart();
-            $prev     = $this->db->query('SELECT row_hash FROM audit_logs ORDER BY id DESC LIMIT 1 FOR UPDATE')->getRowArray();
-            $prevHash = $prev['row_hash'] ?? null;
-            $row      = [
-                'occurred_at' => $occurred,
-                'user_id'     => $userId,
-                'actor_type'  => $actorType,
-                'action'      => $action,
-                'entity_type' => $entityType,
-                'entity_id'   => $entityId === null ? null : (int) $entityId,
-                'summary'     => $summary === null ? null : mb_substr($summary, 0, 255),
-                'before_data' => $beforeJ,
-                'after_data'  => $afterJ,
-                'meta'        => $metaJ,
-                'ip_address'  => $ip,
-                'user_agent'  => $ua,
-                'prev_hash'   => $prevHash,
-            ];
-            $row['row_hash'] = self::hashRow($row);
-            $this->db->table('audit_logs')->insert($row);
-            $this->db->transComplete();
+            $this->db->transBegin();
+            try {
+                $prev     = $this->db->query('SELECT row_hash FROM audit_logs ORDER BY id DESC LIMIT 1 FOR UPDATE')->getRowArray();
+                $prevHash = $prev['row_hash'] ?? null;
+                $row      = [
+                    'occurred_at' => $occurred,
+                    'user_id'     => $userId,
+                    'actor_type'  => $actorType,
+                    'action'      => $action,
+                    'entity_type' => $entityType,
+                    'entity_id'   => $entityId === null ? null : (int) $entityId,
+                    'summary'     => $summary === null ? null : mb_substr($summary, 0, 255),
+                    'before_data' => $beforeJ,
+                    'after_data'  => $afterJ,
+                    'meta'        => $metaJ,
+                    'ip_address'  => $ip,
+                    'user_agent'  => $ua,
+                    'prev_hash'   => $prevHash,
+                ];
+                $row['row_hash'] = self::hashRow($row);
+                $this->db->table('audit_logs')->insert($row);
+                $this->db->transCommit();
+            } catch (\Throwable $e) {
+                $this->db->transRollback();
+
+                throw $e;
+            }
         } catch (Throwable $e) {
             // Auditing must never be silently skipped for financial actions:
             // surface it in logs; callers inside transactions will roll back.

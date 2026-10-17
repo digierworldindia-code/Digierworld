@@ -25,15 +25,34 @@ class Authorization
 
     private ?array $registry = null;
 
+    /** Explicit acting user for CLI/cron/system contexts (never set from HTTP input). */
+    private ?int $actingUserId = null;
+
     public function __construct(private readonly BaseConnection $db)
     {
     }
 
     public function currentUserId(): ?int
     {
+        if ($this->actingUserId !== null) {
+            return $this->actingUserId;
+        }
         $auth = auth('session');
 
         return $auth->loggedIn() ? (int) $auth->id() : null;
+    }
+
+    /**
+     * Run subsequent checks as a specific user in CLI contexts (cron jobs,
+     * workers). Refused for web requests so it can never be abused remotely.
+     */
+    public function actAs(?int $userId): void
+    {
+        if (! is_cli() && ENVIRONMENT !== 'testing') {
+            throw new \LogicException('actAs() is only available in CLI contexts.');
+        }
+        $this->actingUserId = $userId;
+        $this->forget();
     }
 
     /** @return array<string, array{module: string, description: string, danger: bool, scope: string|null}> */

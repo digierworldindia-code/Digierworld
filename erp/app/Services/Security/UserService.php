@@ -42,22 +42,28 @@ class UserService
             'active'   => 1,
         ]);
 
-        $this->db->transException(true)->transStart();
-        $users->save($user);
-        $userId = (int) $users->getInsertID();
-        $this->db->table('user_profiles')->insert([
-            'user_id'              => $userId,
-            'full_name'            => $fullName,
-            'phone'                => $profile['phone'] ?? null,
-            'designation'          => $profile['designation'] ?? null,
-            'manager_user_id'      => $profile['manager_user_id'] ?? null,
-            'is_service_account'   => (int) ($profile['is_service_account'] ?? 0),
-            'must_change_password' => (int) ($profile['must_change_password'] ?? 0),
-            'created_by'           => service('authz')->currentUserId(),
-        ]);
-        $this->assignRoles($userId, $roleCodes, $profile['role_expires_at'] ?? null);
-        service('audit')->log('user.created', 'user', $userId, null, ['email' => $email, 'full_name' => $fullName, 'roles' => $roleCodes], 'User created: ' . $email);
-        $this->db->transComplete();
+        $this->db->transBegin();
+        try {
+            $users->save($user);
+            $userId = (int) $users->getInsertID();
+            $this->db->table('user_profiles')->insert([
+                'user_id'              => $userId,
+                'full_name'            => $fullName,
+                'phone'                => $profile['phone'] ?? null,
+                'designation'          => $profile['designation'] ?? null,
+                'manager_user_id'      => $profile['manager_user_id'] ?? null,
+                'is_service_account'   => (int) ($profile['is_service_account'] ?? 0),
+                'must_change_password' => (int) ($profile['must_change_password'] ?? 0),
+                'created_by'           => service('authz')->currentUserId(),
+            ]);
+            $this->assignRoles($userId, $roleCodes, $profile['role_expires_at'] ?? null);
+            service('audit')->log('user.created', 'user', $userId, null, ['email' => $email, 'full_name' => $fullName, 'roles' => $roleCodes], 'User created: ' . $email);
+            $this->db->transCommit();
+        } catch (\Throwable $e) {
+            $this->db->transRollback();
+
+            throw $e;
+        }
 
         return $userId;
     }
@@ -94,14 +100,20 @@ class UserService
             throw new BusinessRuleException('This is the last active Owner/Super Admin. Assign another Super Admin before removing this role.');
         }
         $actor = service('authz')->currentUserId();
-        $this->db->transException(true)->transStart();
-        $this->db->table('user_roles')->where('user_id', $userId)->delete();
-        foreach ($roleIdToExpiry as $roleId => $exp) {
-            $this->db->table('user_roles')->insert(['user_id' => $userId, 'role_id' => (int) $roleId, 'expires_at' => $exp ?: null, 'assigned_by' => $actor]);
+        $this->db->transBegin();
+        try {
+            $this->db->table('user_roles')->where('user_id', $userId)->delete();
+            foreach ($roleIdToExpiry as $roleId => $exp) {
+                $this->db->table('user_roles')->insert(['user_id' => $userId, 'role_id' => (int) $roleId, 'expires_at' => $exp ?: null, 'assigned_by' => $actor]);
+            }
+            $this->touchPermissions($userId);
+            service('audit')->log('user.roles_changed', 'user', $userId, ['role_ids' => $before], ['role_ids' => array_keys($roleIdToExpiry)], 'Roles changed');
+            $this->db->transCommit();
+        } catch (\Throwable $e) {
+            $this->db->transRollback();
+
+            throw $e;
         }
-        $this->touchPermissions($userId);
-        service('audit')->log('user.roles_changed', 'user', $userId, ['role_ids' => $before], ['role_ids' => array_keys($roleIdToExpiry)], 'Roles changed');
-        $this->db->transComplete();
     }
 
     /** @return list<int> */

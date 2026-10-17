@@ -130,11 +130,17 @@ class CompanyController extends BaseController
         $steps['company']   = true;
         $data['setup_steps'] = json_encode($steps);
 
-        $this->db->transException(true)->transStart();
-        $this->db->table('company_settings')->where('id', 1)->update($data);
-        $this->db->query('INSERT INTO company_profile_versions (profile_version, data, created_by) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE data = VALUES(data), created_by = VALUES(created_by), created_at = NOW()', [$version, json_encode($data), $this->userId]);
-        service('audit')->log('company.profile_updated', 'company_settings', 1, $before, $data, 'Company legal profile saved (v' . $version . ')');
-        $this->db->transComplete();
+        $this->db->transBegin();
+        try {
+            $this->db->table('company_settings')->where('id', 1)->update($data);
+            $this->db->query('INSERT INTO company_profile_versions (profile_version, data, created_by) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE data = VALUES(data), created_by = VALUES(created_by), created_at = NOW()', [$version, json_encode($data), $this->userId]);
+            service('audit')->log('company.profile_updated', 'company_settings', 1, $before, $data, 'Company legal profile saved (v' . $version . ')');
+            $this->db->transCommit();
+        } catch (\Throwable $e) {
+            $this->db->transRollback();
+
+            throw $e;
+        }
 
         if ($this->request->getPost('wizard')) {
             return redirect()->to(site_url('settings/branding?wizard=1'))->with('success', 'Legal profile saved. Next: brand assets.');

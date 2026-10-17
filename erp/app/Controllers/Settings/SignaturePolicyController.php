@@ -49,31 +49,37 @@ class SignaturePolicyController extends BaseController
         $before   = $this->db->table('signature_policies')->get()->getResultArray();
         $now      = date('Y-m-d H:i:s');
 
-        $this->db->transException(true)->transStart();
-        $this->db->table('signature_policies')->where('1 = 1', null, false)->delete();
-        foreach ($allowed as $subject => $types) {
-            if (! preg_match('/^([ru])(\d+)$/', (string) $subject, $m)) {
-                continue;
-            }
-            foreach (array_keys((array) $types) as $docType) {
-                if (! in_array($docType, $docTypes, true)) {
+        $this->db->transBegin();
+        try {
+            $this->db->table('signature_policies')->where('1 = 1', null, false)->delete();
+            foreach ($allowed as $subject => $types) {
+                if (! preg_match('/^([ru])(\d+)$/', (string) $subject, $m)) {
                     continue;
                 }
-                $this->db->table('signature_policies')->insert([
-                    'role_id'     => $m[1] === 'r' ? (int) $m[2] : null,
-                    'user_id'     => $m[1] === 'u' ? (int) $m[2] : null,
-                    'doc_type'    => $docType,
-                    'allowed'     => 1,
-                    'approved_by' => $this->userId,
-                    'approved_at' => $now,
-                    'created_by'  => $this->userId,
-                ]);
+                foreach (array_keys((array) $types) as $docType) {
+                    if (! in_array($docType, $docTypes, true)) {
+                        continue;
+                    }
+                    $this->db->table('signature_policies')->insert([
+                        'role_id'     => $m[1] === 'r' ? (int) $m[2] : null,
+                        'user_id'     => $m[1] === 'u' ? (int) $m[2] : null,
+                        'doc_type'    => $docType,
+                        'allowed'     => 1,
+                        'approved_by' => $this->userId,
+                        'approved_at' => $now,
+                        'created_by'  => $this->userId,
+                    ]);
+                }
             }
+            $after = $this->db->table('signature_policies')->get()->getResultArray();
+            service('audit')->log('signature_policy.updated', 'signature_policy', null, ['rules' => count($before)], ['rules' => count($after)], 'Signature policy approved by owner (' . count($after) . ' rules)');
+            service('settingsStore')->markSetupStep('signature');
+            $this->db->transCommit();
+        } catch (\Throwable $e) {
+            $this->db->transRollback();
+
+            throw $e;
         }
-        $after = $this->db->table('signature_policies')->get()->getResultArray();
-        service('audit')->log('signature_policy.updated', 'signature_policy', null, ['rules' => count($before)], ['rules' => count($after)], 'Signature policy approved by owner (' . count($after) . ' rules)');
-        service('settingsStore')->markSetupStep('signature');
-        $this->db->transComplete();
 
         return redirect()->back()->with('success', 'Signature policy saved and approved by you. Users also need the billing.apply_signature permission.');
     }

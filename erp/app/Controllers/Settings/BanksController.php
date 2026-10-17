@@ -142,38 +142,44 @@ class BanksController extends BaseController
             }
         }
 
-        $this->db->transException(true)->transStart();
-        if ($data['is_default_on_invoice']) {
-            $this->db->table('bank_cash_accounts')->update(['is_default_on_invoice' => 0]);
-        }
-        if ($before === null) {
-            $subType = match (true) {
-                $kind === 'cash'               => 'cash',
-                $ownership === 'owner_personal' => 'owner_clearing',
-                $kind === 'upi_clearing'       => 'upi_clearing',
-                $kind === 'card_clearing'      => 'card_clearing',
-                default                        => 'bank',
-            };
-            $next = (int) ($this->db->query("SELECT COALESCE(MAX(CAST(code AS UNSIGNED)),1199) m FROM ledger_accounts WHERE code BETWEEN '1200' AND '1299'")->getRow()->m ?? 1199) + 1;
-            $this->db->table('ledger_accounts')->insert([
-                'code' => (string) $next, 'name' => $display . ($ownership === 'owner_personal' ? ' (owner clearing)' : ''),
-                'account_group' => 'asset', 'sub_type' => $subType, 'is_system' => 0, 'created_by' => $this->userId,
-            ]);
-            $data['ledger_account_id'] = (int) $this->db->insertID();
-            $data['code']              = strtoupper(substr(preg_replace('/[^A-Z0-9]/i', '', $display), 0, 10)) . '-' . $next;
-            $data['created_by']        = $this->userId;
-            $this->db->table('bank_cash_accounts')->insert($data);
-            $id = (int) $this->db->insertID();
-            if ($kind === 'bank') {
-                service('settingsStore')->markSetupStep('banks');
+        $this->db->transBegin();
+        try {
+            if ($data['is_default_on_invoice']) {
+                $this->db->table('bank_cash_accounts')->update(['is_default_on_invoice' => 0]);
             }
-        } else {
-            $id = (int) $before['id'];
-            $this->db->table('bank_cash_accounts')->where('id', $id)->update($data);
-            $this->db->table('ledger_accounts')->where('id', $before['ledger_account_id'])->update(['name' => $display . ($ownership === 'owner_personal' ? ' (owner clearing)' : '')]);
+            if ($before === null) {
+                $subType = match (true) {
+                    $kind === 'cash'               => 'cash',
+                    $ownership === 'owner_personal' => 'owner_clearing',
+                    $kind === 'upi_clearing'       => 'upi_clearing',
+                    $kind === 'card_clearing'      => 'card_clearing',
+                    default                        => 'bank',
+                };
+                $next = (int) ($this->db->query("SELECT COALESCE(MAX(CAST(code AS UNSIGNED)),1199) m FROM ledger_accounts WHERE code BETWEEN '1200' AND '1299'")->getRow()->m ?? 1199) + 1;
+                $this->db->table('ledger_accounts')->insert([
+                    'code' => (string) $next, 'name' => $display . ($ownership === 'owner_personal' ? ' (owner clearing)' : ''),
+                    'account_group' => 'asset', 'sub_type' => $subType, 'is_system' => 0, 'created_by' => $this->userId,
+                ]);
+                $data['ledger_account_id'] = (int) $this->db->insertID();
+                $data['code']              = strtoupper(substr(preg_replace('/[^A-Z0-9]/i', '', $display), 0, 10)) . '-' . $next;
+                $data['created_by']        = $this->userId;
+                $this->db->table('bank_cash_accounts')->insert($data);
+                $id = (int) $this->db->insertID();
+                if ($kind === 'bank') {
+                    service('settingsStore')->markSetupStep('banks');
+                }
+            } else {
+                $id = (int) $before['id'];
+                $this->db->table('bank_cash_accounts')->where('id', $id)->update($data);
+                $this->db->table('ledger_accounts')->where('id', $before['ledger_account_id'])->update(['name' => $display . ($ownership === 'owner_personal' ? ' (owner clearing)' : '')]);
+            }
+            service('audit')->log($before ? 'bank_account.updated' : 'bank_account.created', 'bank_cash_account', $id, $before, $data, ($before ? 'Updated ' : 'Created ') . $display);
+            $this->db->transCommit();
+        } catch (\Throwable $e) {
+            $this->db->transRollback();
+
+            throw $e;
         }
-        service('audit')->log($before ? 'bank_account.updated' : 'bank_account.created', 'bank_cash_account', $id, $before, $data, ($before ? 'Updated ' : 'Created ') . $display);
-        $this->db->transComplete();
 
         $msg = 'Account saved.';
         if ($ownership === 'owner_personal' && empty($approved)) {

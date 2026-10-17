@@ -243,14 +243,20 @@ class UsersController extends BaseController
         $this->assertUserExists($id);
         $ids = array_values(array_unique(array_map('intval', (array) $this->request->getPost('employee_ids'))));
         $before = array_map('intval', array_column($this->db->table('user_record_scopes')->where(['user_id' => $id, 'scope_type' => 'hr.employee'])->get()->getResultArray(), 'record_id'));
-        $this->db->transStart();
-        $this->db->table('user_record_scopes')->where(['user_id' => $id, 'scope_type' => 'hr.employee'])->delete();
-        foreach ($ids as $eid) {
-            if ($eid > 0) {
-                $this->db->table('user_record_scopes')->insert(['user_id' => $id, 'scope_type' => 'hr.employee', 'record_id' => $eid, 'created_by' => $this->userId]);
+        $this->db->transBegin();
+        try {
+            $this->db->table('user_record_scopes')->where(['user_id' => $id, 'scope_type' => 'hr.employee'])->delete();
+            foreach ($ids as $eid) {
+                if ($eid > 0) {
+                    $this->db->table('user_record_scopes')->insert(['user_id' => $id, 'scope_type' => 'hr.employee', 'record_id' => $eid, 'created_by' => $this->userId]);
+                }
             }
+            $this->db->transCommit();
+        } catch (\Throwable $e) {
+            $this->db->transRollback();
+
+            throw $e;
         }
-        $this->db->transComplete();
         service('users')->touchPermissions($id);
         service('audit')->log('user.scopes_changed', 'user', $id, ['employee_ids' => $before], ['employee_ids' => $ids], 'Employee allowlist changed');
 

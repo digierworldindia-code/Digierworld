@@ -38,7 +38,7 @@ class SettingsStore
             'bool'  => $value ? '1' : '0',
             default => $value === null ? null : (string) $value,
         };
-        $userId = auth('session')->loggedIn() ? (int) auth('session')->id() : null;
+        $userId = service('authz')->currentUserId();
         $this->db->query(
             'INSERT INTO app_settings (setting_key, setting_value, value_type, updated_by) VALUES (?, ?, ?, ?)
              ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value), value_type = VALUES(value_type), updated_by = VALUES(updated_by)',
@@ -83,7 +83,7 @@ class SettingsStore
         if ($secret && $value !== null && $value !== '') {
             $stored = base64_encode(service('encrypter')->encrypt($value));
         }
-        $userId = auth('session')->loggedIn() ? (int) auth('session')->id() : null;
+        $userId = service('authz')->currentUserId();
         $this->db->query(
             'INSERT INTO integration_settings (integration, setting_key, setting_value, is_secret, updated_by) VALUES (?, ?, ?, ?, ?)
              ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value), is_secret = VALUES(is_secret), updated_by = VALUES(updated_by)',

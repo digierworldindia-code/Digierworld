@@ -64,28 +64,34 @@ class BrandingController extends BaseController
         $prev   = $this->db->table('branding_assets')->where('asset_type', $type)->orderBy('version', 'DESC')->get()->getRowArray();
         $version = (int) ($prev['version'] ?? 0) + 1;
 
-        $this->db->transException(true)->transStart();
-        $this->db->table('branding_assets')->where(['asset_type' => $type, 'is_active' => 1])->update(['is_active' => 0, 'replaced_at' => date('Y-m-d H:i:s')]);
-        $this->db->table('branding_assets')->insert([
-            'asset_type'        => $type,
-            'version'           => $version,
-            'stored_file_id'    => $fileId,
-            'width_px'          => $dims[0],
-            'height_px'         => $dims[1],
-            'position_preset'   => $prev['position_preset'] ?? ($type === 'logo' ? 'top_left' : 'bottom_right'),
-            'display_width_mm'  => $prev['display_width_mm'] ?? ($type === 'logo' ? '45.0' : '35.0'),
-            'enabled_doc_types' => $prev['enabled_doc_types'] ?? json_encode(array_keys(config(Billing::class)->docTypes)),
-            'bank_account_id'   => $prev['bank_account_id'] ?? null,
-            'is_active'         => 1,
-            'created_by'        => $this->userId,
-        ]);
-        $assetId = (int) $this->db->insertID();
-        $this->db->table('stored_files')->where('id', $fileId)->update(['entity_type' => 'branding_asset', 'entity_id' => $assetId]);
-        service('audit')->log('branding.uploaded', 'branding_asset', $assetId, $prev ? ['version' => $prev['version']] : null, ['type' => $type, 'version' => $version, 'sha256' => $stored['sha256']], self::TYPES[$type][0] . ' v' . $version . ' uploaded');
-        if ($type === 'logo') {
-            service('settingsStore')->markSetupStep('branding');
+        $this->db->transBegin();
+        try {
+            $this->db->table('branding_assets')->where(['asset_type' => $type, 'is_active' => 1])->update(['is_active' => 0, 'replaced_at' => date('Y-m-d H:i:s')]);
+            $this->db->table('branding_assets')->insert([
+                'asset_type'        => $type,
+                'version'           => $version,
+                'stored_file_id'    => $fileId,
+                'width_px'          => $dims[0],
+                'height_px'         => $dims[1],
+                'position_preset'   => $prev['position_preset'] ?? ($type === 'logo' ? 'top_left' : 'bottom_right'),
+                'display_width_mm'  => $prev['display_width_mm'] ?? ($type === 'logo' ? '45.0' : '35.0'),
+                'enabled_doc_types' => $prev['enabled_doc_types'] ?? json_encode(array_keys(config(Billing::class)->docTypes)),
+                'bank_account_id'   => $prev['bank_account_id'] ?? null,
+                'is_active'         => 1,
+                'created_by'        => $this->userId,
+            ]);
+            $assetId = (int) $this->db->insertID();
+            $this->db->table('stored_files')->where('id', $fileId)->update(['entity_type' => 'branding_asset', 'entity_id' => $assetId]);
+            service('audit')->log('branding.uploaded', 'branding_asset', $assetId, $prev ? ['version' => $prev['version']] : null, ['type' => $type, 'version' => $version, 'sha256' => $stored['sha256']], self::TYPES[$type][0] . ' v' . $version . ' uploaded');
+            if ($type === 'logo') {
+                service('settingsStore')->markSetupStep('branding');
+            }
+            $this->db->transCommit();
+        } catch (\Throwable $e) {
+            $this->db->transRollback();
+
+            throw $e;
         }
-        $this->db->transComplete();
 
         return redirect()->back()->with('success', self::TYPES[$type][0] . ' uploaded as version ' . $version . ' (stored unchanged; previous version kept in history).');
     }
@@ -103,14 +109,20 @@ class BrandingController extends BaseController
             'updated_by'        => $this->userId,
         ];
         $activate = $this->request->getPost('is_active') ? 1 : 0;
-        $this->db->transStart();
-        if ($activate && ! $asset['is_active']) {
-            $this->db->table('branding_assets')->where(['asset_type' => $asset['asset_type'], 'is_active' => 1])->update(['is_active' => 0, 'replaced_at' => date('Y-m-d H:i:s')]);
+        $this->db->transBegin();
+        try {
+            if ($activate && ! $asset['is_active']) {
+                $this->db->table('branding_assets')->where(['asset_type' => $asset['asset_type'], 'is_active' => 1])->update(['is_active' => 0, 'replaced_at' => date('Y-m-d H:i:s')]);
+            }
+            $data['is_active'] = $activate;
+            $this->db->table('branding_assets')->where('id', $asset['id'])->update($data);
+            service('audit')->log('branding.updated', 'branding_asset', (int) $asset['id'], array_intersect_key($asset, $data), $data, 'Brand asset settings changed');
+            $this->db->transCommit();
+        } catch (\Throwable $e) {
+            $this->db->transRollback();
+
+            throw $e;
         }
-        $data['is_active'] = $activate;
-        $this->db->table('branding_assets')->where('id', $asset['id'])->update($data);
-        service('audit')->log('branding.updated', 'branding_asset', (int) $asset['id'], array_intersect_key($asset, $data), $data, 'Brand asset settings changed');
-        $this->db->transComplete();
 
         return redirect()->back()->with('success', 'Asset settings saved.');
     }

@@ -7,7 +7,13 @@ use App\Services\Ai\AiConfig;
 use App\Services\Access\CandidateAccess;
 use App\Services\Access\LeadAccess;
 use App\Services\Audit\AuditLogger;
+use App\Services\Billing\BillingDocumentService;
+use App\Services\Billing\DocumentNumberAllocator;
 use App\Services\Billing\FinancialYearService;
+use App\Services\Finance\ExpenseService;
+use App\Services\Finance\LedgerService;
+use App\Services\Finance\ReceiptService;
+use App\Services\Finance\TransferService;
 use App\Services\Security\UserService;
 use App\Services\Files\FileStorage;
 use App\Services\Notify\Notifier;
@@ -118,5 +124,59 @@ class Services extends BaseService
         }
 
         return new AiConfig(static::settingsStore());
+    }
+
+    public static function numbers(bool $getShared = true): DocumentNumberAllocator
+    {
+        if ($getShared) {
+            return static::getSharedInstance('numbers');
+        }
+
+        return new DocumentNumberAllocator(db_connect(), static::fy());
+    }
+
+    public static function ledger(bool $getShared = true): LedgerService
+    {
+        if ($getShared) {
+            return static::getSharedInstance('ledger');
+        }
+
+        return new LedgerService(db_connect(), static::numbers());
+    }
+
+    public static function billing(bool $getShared = true): BillingDocumentService
+    {
+        if ($getShared) {
+            return static::getSharedInstance('billing');
+        }
+
+        return new BillingDocumentService(db_connect(), static::ledger(), static::numbers());
+    }
+
+    public static function receipts(bool $getShared = true): ReceiptService
+    {
+        if ($getShared) {
+            return static::getSharedInstance('receipts');
+        }
+
+        return new ReceiptService(db_connect(), static::ledger(), static::numbers());
+    }
+
+    public static function transfers(bool $getShared = true): TransferService
+    {
+        if ($getShared) {
+            return static::getSharedInstance('transfers');
+        }
+
+        return new TransferService(db_connect(), static::ledger(), static::numbers());
+    }
+
+    public static function expenses(bool $getShared = true): ExpenseService
+    {
+        if ($getShared) {
+            return static::getSharedInstance('expenses');
+        }
+
+        return new ExpenseService(db_connect(), static::ledger(), static::numbers());
     }
 }

@@ -213,18 +213,24 @@ class ContactService
             }
         }
         $uid = service('authz')->currentUserId();
-        $this->db->transException(true)->transStart();
-        $this->db->table('contacts')->insert($n['data'] + ['contact_code' => 'TMP-' . bin2hex(random_bytes(6)), 'created_by' => $uid]);
-        $id = (int) $this->db->insertID();
-        $this->db->table('contacts')->where('id', $id)->update(['contact_code' => 'C' . str_pad((string) $id, 5, '0', STR_PAD_LEFT)]);
-        $this->saveChildren($id, $n);
-        service('audit')->log('contact.created', 'contact', $id, null, $n['data'], 'Contact created: ' . $n['data']['name']);
-        foreach ($n['warnings'] as $w) {
-            if (str_starts_with($w, 'State overridden')) {
-                service('audit')->log('contact.state_override', 'contact', $id, null, ['state_code' => $n['data']['state_code']], $w);
+        $this->db->transBegin();
+        try {
+            $this->db->table('contacts')->insert($n['data'] + ['contact_code' => 'TMP-' . bin2hex(random_bytes(6)), 'created_by' => $uid]);
+            $id = (int) $this->db->insertID();
+            $this->db->table('contacts')->where('id', $id)->update(['contact_code' => 'C' . str_pad((string) $id, 5, '0', STR_PAD_LEFT)]);
+            $this->saveChildren($id, $n);
+            service('audit')->log('contact.created', 'contact', $id, null, $n['data'], 'Contact created: ' . $n['data']['name']);
+            foreach ($n['warnings'] as $w) {
+                if (str_starts_with($w, 'State overridden')) {
+                    service('audit')->log('contact.state_override', 'contact', $id, null, ['state_code' => $n['data']['state_code']], $w);
+                }
             }
+            $this->db->transCommit();
+        } catch (\Throwable $e) {
+            $this->db->transRollback();
+
+            throw $e;
         }
-        $this->db->transComplete();
 
         return ['id' => $id, 'warnings' => $n['warnings']];
     }
@@ -239,14 +245,20 @@ class ContactService
         $before = $this->db->table('contacts')->where('id', $id)->get()->getRowArray() ?? throw new BusinessRuleException('Contact not found.');
         $n      = $this->normalize($in, $before);
         unset($n['data']['opening_balance'], $n['data']['opening_balance_type']); // opening balance changes go through finance
-        $this->db->transException(true)->transStart();
-        $this->db->table('contacts')->where('id', $id)->update($n['data'] + ['updated_by' => service('authz')->currentUserId()]);
-        $this->saveChildren($id, $n, true);
-        service('audit')->log('contact.updated', 'contact', $id, $before, $n['data'], 'Contact updated: ' . $n['data']['name']);
-        if ($before['state_code'] !== $n['data']['state_code']) {
-            service('audit')->log('contact.state_changed', 'contact', $id, ['state_code' => $before['state_code']], ['state_code' => $n['data']['state_code']], 'Tax state changed' . ($n['warnings'] ? ': ' . implode('; ', $n['warnings']) : ''));
+        $this->db->transBegin();
+        try {
+            $this->db->table('contacts')->where('id', $id)->update($n['data'] + ['updated_by' => service('authz')->currentUserId()]);
+            $this->saveChildren($id, $n, true);
+            service('audit')->log('contact.updated', 'contact', $id, $before, $n['data'], 'Contact updated: ' . $n['data']['name']);
+            if ($before['state_code'] !== $n['data']['state_code']) {
+                service('audit')->log('contact.state_changed', 'contact', $id, ['state_code' => $before['state_code']], ['state_code' => $n['data']['state_code']], 'Tax state changed' . ($n['warnings'] ? ': ' . implode('; ', $n['warnings']) : ''));
+            }
+            $this->db->transCommit();
+        } catch (\Throwable $e) {
+            $this->db->transRollback();
+
+            throw $e;
         }
-        $this->db->transComplete();
 
         return $n['warnings'];
     }
@@ -312,33 +324,39 @@ class ContactService
             ['contact_addresses', 'contact_id'], ['contact_people', 'contact_id'], ['contact_files', 'contact_id'],
         ];
         $moved = [];
-        $this->db->transException(true)->transStart();
-        foreach ($refs as [$table, $col]) {
-            $this->db->table($table)->where($col, $sourceId)->update([$col => $targetId]);
-            $moved[$table . '.' . $col] = $this->db->affectedRows();
+        $this->db->transBegin();
+        try {
+            foreach ($refs as [$table, $col]) {
+                $this->db->table($table)->where($col, $sourceId)->update([$col => $targetId]);
+                $moved[$table . '.' . $col] = $this->db->affectedRows();
+            }
+            $this->db->table('contacts')->where('id', $targetId)->update([
+                'is_customer' => (int) ($src['is_customer'] || $tgt['is_customer']),
+                'is_vendor'   => (int) ($src['is_vendor'] || $tgt['is_vendor']),
+                'is_prospect' => (int) ($src['is_prospect'] || $tgt['is_prospect']),
+                'gstin'       => $tgt['gstin'] ?? $src['gstin'],
+                'phone'       => $tgt['phone'] ?? $src['phone'],
+                'phone_normalized' => $tgt['phone_normalized'] ?? $src['phone_normalized'],
+                'email'       => $tgt['email'] ?? $src['email'],
+                'opening_balance' => number_format((float) $tgt['opening_balance'] * ($tgt['opening_balance_type'] === 'cr' ? -1 : 1) + (float) $src['opening_balance'] * ($src['opening_balance_type'] === 'cr' ? -1 : 1), 2, '.', ''),
+                'updated_by'  => service('authz')->currentUserId(),
+            ]);
+            $ob = (float) $this->db->table('contacts')->select('opening_balance')->where('id', $targetId)->get()->getRow()->opening_balance;
+            $this->db->table('contacts')->where('id', $targetId)->update(['opening_balance' => number_format(abs($ob), 2, '.', ''), 'opening_balance_type' => $ob < 0 ? 'cr' : 'dr']);
+            $this->db->table('contacts')->where('id', $sourceId)->update([
+                'merged_into_id' => $targetId, 'is_active' => 0, 'deleted_at' => date('Y-m-d H:i:s'),
+                'gstin' => null, 'phone_normalized' => null, 'updated_by' => service('authz')->currentUserId(),
+            ]);
+            $this->db->table('contact_merges')->insert([
+                'source_contact_id' => $sourceId, 'target_contact_id' => $targetId,
+                'snapshot' => json_encode(['source' => $src, 'moved' => $moved]), 'merged_by' => service('authz')->currentUserId(),
+            ]);
+            service('audit')->log('contact.merged', 'contact', $targetId, ['merged_from' => $src['contact_code'] . ' ' . $src['name']], ['moved' => $moved], $src['contact_code'] . ' merged into ' . $tgt['contact_code']);
+            $this->db->transCommit();
+        } catch (\Throwable $e) {
+            $this->db->transRollback();
+
+            throw $e;
         }
-        $this->db->table('contacts')->where('id', $targetId)->update([
-            'is_customer' => (int) ($src['is_customer'] || $tgt['is_customer']),
-            'is_vendor'   => (int) ($src['is_vendor'] || $tgt['is_vendor']),
-            'is_prospect' => (int) ($src['is_prospect'] || $tgt['is_prospect']),
-            'gstin'       => $tgt['gstin'] ?? $src['gstin'],
-            'phone'       => $tgt['phone'] ?? $src['phone'],
-            'phone_normalized' => $tgt['phone_normalized'] ?? $src['phone_normalized'],
-            'email'       => $tgt['email'] ?? $src['email'],
-            'opening_balance' => number_format((float) $tgt['opening_balance'] * ($tgt['opening_balance_type'] === 'cr' ? -1 : 1) + (float) $src['opening_balance'] * ($src['opening_balance_type'] === 'cr' ? -1 : 1), 2, '.', ''),
-            'updated_by'  => service('authz')->currentUserId(),
-        ]);
-        $ob = (float) $this->db->table('contacts')->select('opening_balance')->where('id', $targetId)->get()->getRow()->opening_balance;
-        $this->db->table('contacts')->where('id', $targetId)->update(['opening_balance' => number_format(abs($ob), 2, '.', ''), 'opening_balance_type' => $ob < 0 ? 'cr' : 'dr']);
-        $this->db->table('contacts')->where('id', $sourceId)->update([
-            'merged_into_id' => $targetId, 'is_active' => 0, 'deleted_at' => date('Y-m-d H:i:s'),
-            'gstin' => null, 'phone_normalized' => null, 'updated_by' => service('authz')->currentUserId(),
-        ]);
-        $this->db->table('contact_merges')->insert([
-            'source_contact_id' => $sourceId, 'target_contact_id' => $targetId,
-            'snapshot' => json_encode(['source' => $src, 'moved' => $moved]), 'merged_by' => service('authz')->currentUserId(),
-        ]);
-        service('audit')->log('contact.merged', 'contact', $targetId, ['merged_from' => $src['contact_code'] . ' ' . $src['name']], ['moved' => $moved], $src['contact_code'] . ' merged into ' . $tgt['contact_code']);
-        $this->db->transComplete();
     }
 }

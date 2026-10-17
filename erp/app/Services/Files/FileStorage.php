@@ -71,7 +71,7 @@ class FileStorage
         }
         @chmod($full, 0640);
 
-        $userId = function_exists('auth') && auth('session')->loggedIn() ? (int) auth('session')->id() : null;
+        $userId = service('authz')->currentUserId();
         $this->db->table('stored_files')->insert([
             'disk_path'     => $relative,
             'original_name' => mb_substr(basename(str_replace('\\', '/', $originalName)), 0, 255),

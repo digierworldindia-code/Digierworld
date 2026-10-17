@@ -74,15 +74,21 @@ class RolesController extends BaseController
         if (($err = $this->dangerCheck($perms, [])) !== null) {
             return $this->backWithErrors(['admin_password' => $err]);
         }
-        $this->db->transStart();
-        $this->db->table('roles')->insert([
-            'code' => $code, 'name' => $name, 'description' => $this->post('description'), 'is_super' => 0, 'is_system' => 0,
-            'is_active' => 1, 'created_by' => $this->userId,
-        ]);
-        $id = (int) $this->db->insertID();
-        $this->syncPerms($id, $perms);
-        service('audit')->log('role.created', 'role', $id, null, ['code' => $code, 'name' => $name, 'perms' => $perms], 'Role created: ' . $name);
-        $this->db->transComplete();
+        $this->db->transBegin();
+        try {
+            $this->db->table('roles')->insert([
+                'code' => $code, 'name' => $name, 'description' => $this->post('description'), 'is_super' => 0, 'is_system' => 0,
+                'is_active' => 1, 'created_by' => $this->userId,
+            ]);
+            $id = (int) $this->db->insertID();
+            $this->syncPerms($id, $perms);
+            service('audit')->log('role.created', 'role', $id, null, ['code' => $code, 'name' => $name, 'perms' => $perms], 'Role created: ' . $name);
+            $this->db->transCommit();
+        } catch (\Throwable $e) {
+            $this->db->transRollback();
+
+            throw $e;
+        }
 
         return redirect()->to(site_url('admin/roles/' . $id))->with('success', 'Role created with ' . count($perms) . ' permissions.');
     }
@@ -107,18 +113,24 @@ class RolesController extends BaseController
         if (($err = $this->dangerCheck($perms, $before)) !== null) {
             return $this->backWithErrors(['admin_password' => $err]);
         }
-        $this->db->transStart();
-        $this->db->table('roles')->where('id', $role['id'])->update([
-            'name' => $name, 'description' => $this->post('description'), 'is_active' => $active, 'updated_by' => $this->userId,
-        ]);
-        $this->syncPerms((int) $role['id'], $perms);
-        service('audit')->log('role.permissions_changed', 'role', (int) $role['id'], ['perms' => $before], ['perms' => $perms], sprintf(
-            'Role %s: +%d / -%d permissions',
-            $name,
-            count(array_diff($perms, $before)),
-            count(array_diff($before, $perms))
-        ));
-        $this->db->transComplete();
+        $this->db->transBegin();
+        try {
+            $this->db->table('roles')->where('id', $role['id'])->update([
+                'name' => $name, 'description' => $this->post('description'), 'is_active' => $active, 'updated_by' => $this->userId,
+            ]);
+            $this->syncPerms((int) $role['id'], $perms);
+            service('audit')->log('role.permissions_changed', 'role', (int) $role['id'], ['perms' => $before], ['perms' => $perms], sprintf(
+                'Role %s: +%d / -%d permissions',
+                $name,
+                count(array_diff($perms, $before)),
+                count(array_diff($before, $perms))
+            ));
+            $this->db->transCommit();
+        } catch (\Throwable $e) {
+            $this->db->transRollback();
+
+            throw $e;
+        }
         foreach (array_column($this->db->table('user_roles')->select('user_id')->where('role_id', $role['id'])->get()->getResultArray(), 'user_id') as $uid) {
             service('users')->touchPermissions((int) $uid);
         }
@@ -142,12 +154,18 @@ class RolesController extends BaseController
         if ($this->db->table('user_roles')->where('role_id', $role['id'])->countAllResults() > 0) {
             return redirect()->back()->with('error', 'Remove this role from all users before deleting it (or deactivate it instead).');
         }
-        $this->db->transStart();
-        $this->db->table('signature_policies')->where('role_id', $role['id'])->delete();
-        $this->db->table('role_permissions')->where('role_id', $role['id'])->delete();
-        $this->db->table('roles')->where('id', $role['id'])->delete();
-        service('audit')->log('role.deleted', 'role', (int) $role['id'], ['code' => $role['code'], 'name' => $role['name']], null, 'Role deleted');
-        $this->db->transComplete();
+        $this->db->transBegin();
+        try {
+            $this->db->table('signature_policies')->where('role_id', $role['id'])->delete();
+            $this->db->table('role_permissions')->where('role_id', $role['id'])->delete();
+            $this->db->table('roles')->where('id', $role['id'])->delete();
+            service('audit')->log('role.deleted', 'role', (int) $role['id'], ['code' => $role['code'], 'name' => $role['name']], null, 'Role deleted');
+            $this->db->transCommit();
+        } catch (\Throwable $e) {
+            $this->db->transRollback();
+
+            throw $e;
+        }
 
         return redirect()->to(site_url('admin/roles'))->with('success', 'Role deleted.');
     }
