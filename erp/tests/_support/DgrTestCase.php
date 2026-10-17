@@ -105,7 +105,7 @@ abstract class DgrTestCase extends CIUnitTestCase
     {
         $db = db_connect();
         self::$seq++;
-        $db->table('ledger_accounts')->insert(['code' => (string) (1250 + self::$seq), 'name' => $name, 'account_group' => 'asset', 'sub_type' => $ownership === 'owner_personal' ? 'owner_clearing' : 'bank']);
+        $db->table('ledger_accounts')->insert(['code' => 'T' . str_pad((string) self::$seq, 4, '0', STR_PAD_LEFT), 'name' => $name, 'account_group' => 'asset', 'sub_type' => $ownership === 'owner_personal' ? 'owner_clearing' : 'bank']);
         $lid = (int) $db->insertID();
         $db->table('bank_cash_accounts')->insert([
             'code' => 'BANK' . self::$seq, 'account_kind' => 'bank', 'ownership' => $ownership, 'display_name' => $name, 'bank_name' => 'Test Bank',

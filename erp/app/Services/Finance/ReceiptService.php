@@ -245,6 +245,34 @@ class ReceiptService
         }
     }
 
+    /** Cheque cleared, or bounced (bounce voids the receipt and re-opens the invoices). */
+    public function chequeStatus(int $receiptId, string $status, string $note = ''): void
+    {
+        $r = $this->db->table('payment_receipts')->where('id', $receiptId)->get()->getRowArray() ?? throw new BusinessRuleException('Receipt not found.');
+        if ($r['mode'] !== 'cheque' || $r['cheque_status'] !== 'pending' || $r['status'] !== 'active') {
+            throw new BusinessRuleException('Only active receipts with a pending cheque can be updated.');
+        }
+        if ($status === 'cleared') {
+            $this->db->table('payment_receipts')->where('id', $receiptId)->update(['cheque_status' => 'cleared']);
+            service('audit')->log('receipt.cheque_cleared', 'payment_receipt', $receiptId, ['cheque_status' => 'pending'], ['cheque_status' => 'cleared'], 'Cheque cleared on ' . $r['receipt_number']);
+
+            return;
+        }
+        if ($status !== 'bounced') {
+            throw new BusinessRuleException('Unknown cheque status.');
+        }
+        $this->db->transBegin();
+        try {
+            $this->void($receiptId, 'Cheque bounced' . ($note !== '' ? ': ' . $note : ''));
+            $this->db->table('payment_receipts')->where('id', $receiptId)->update(['cheque_status' => 'bounced']);
+            $this->db->transCommit();
+        } catch (\Throwable $e) {
+            $this->db->transRollback();
+
+            throw $e;
+        }
+    }
+
     /**
      * Refund money to a customer from an advance (unapplied receipt) or from a
      * credit balance created by credit notes.

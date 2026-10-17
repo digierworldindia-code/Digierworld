@@ -199,4 +199,13 @@ class Services extends BaseService
 
         return new DocumentPdfService(db_connect(), static::pdf());
     }
+
+    public static function exports(bool $getShared = true): \App\Services\Reports\ExportService
+    {
+        if ($getShared) {
+            return static::getSharedInstance('exports');
+        }
+
+        return new \App\Services\Reports\ExportService(db_connect());
+    }
 }

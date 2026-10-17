@@ -29,29 +29,7 @@ class SnapshotBuilder
     {
         $c      = $this->db->table('company_settings')->where('id', 1)->get()->getRowArray() ?? [];
         $states = array_column($this->db->table('states')->get()->getResultArray(), 'name', 'code');
-
-        $supplier = [
-            'legal_name'   => $c['legal_name'] ?? null,
-            'trade_name'   => $c['trade_name'] ?? null,
-            'tagline'      => $c['tagline'] ?? null,
-            'gstin'        => $c['gstin'] ?? null,
-            'pan'          => $c['pan'] ?? null,
-            'registration' => $c['gst_registration_type'] ?? 'regular',
-            'state_code'   => $c['state_code'] ?? null,
-            'state_name'   => $states[$c['state_code'] ?? ''] ?? null,
-            'address'      => array_values(array_filter([
-                $c['bill_address_line1'] ?? $c['reg_address_line1'] ?? null,
-                $c['bill_address_line2'] ?? $c['reg_address_line2'] ?? null,
-                trim(($c['bill_city'] ?? $c['reg_city'] ?? '') . ' ' . ($c['bill_pincode'] ?? $c['reg_pincode'] ?? '')),
-            ])),
-            'phone'        => $c['phone'] ?? null,
-            'email'        => $c['email'] ?? null,
-            'website'      => $c['website'] ?? null,
-            'footer'       => $c['invoice_footer'] ?? null,
-            'disclaimer'   => $c['legal_disclaimer'] ?? null,
-            'lut_number'   => $c['lut_number'] ?? null,
-            'profile_version' => (int) ($c['profile_version'] ?? 1),
-        ];
+        $supplier = $this->supplier($c, $states);
         $customer = [
             'contact_id'   => (int) $doc['contact_id'],
             'name'         => $doc['bill_to_name'],
@@ -139,6 +117,43 @@ class SnapshotBuilder
                 'reference_no', 'po_number', 'place_of_supply_state_code', 'gst_type', 'reverse_charge', 'export_type', 'is_sez_recipient',
                 'price_mode', 'notes', 'terms', 'einvoice_irn', 'einvoice_ack_no', 'einvoice_ack_date', 'original_document_id',
             ])) + ['place_of_supply_name' => $states[$doc['place_of_supply_state_code'] ?? ''] ?? null, 'signed' => $signed],
+        ];
+    }
+
+    /**
+     * Supplier identity as printed (shared by billing documents and vouchers).
+     *
+     * @param array<string, mixed>  $c      company_settings row
+     * @param array<string, string> $states code => name
+     *
+     * @return array<string, mixed>
+     */
+    public function supplier(?array $c = null, ?array $states = null): array
+    {
+        $c ??= $this->db->table('company_settings')->where('id', 1)->get()->getRowArray() ?? [];
+        $states ??= array_column($this->db->table('states')->get()->getResultArray(), 'name', 'code');
+
+        return [
+            'legal_name'   => $c['legal_name'] ?? null,
+            'trade_name'   => $c['trade_name'] ?? null,
+            'tagline'      => $c['tagline'] ?? null,
+            'gstin'        => $c['gstin'] ?? null,
+            'pan'          => $c['pan'] ?? null,
+            'registration' => $c['gst_registration_type'] ?? 'regular',
+            'state_code'   => $c['state_code'] ?? null,
+            'state_name'   => $states[$c['state_code'] ?? ''] ?? null,
+            'address'      => array_values(array_filter([
+                $c['bill_address_line1'] ?? $c['reg_address_line1'] ?? null,
+                $c['bill_address_line2'] ?? $c['reg_address_line2'] ?? null,
+                trim(($c['bill_city'] ?? $c['reg_city'] ?? '') . ' ' . ($c['bill_pincode'] ?? $c['reg_pincode'] ?? '')),
+            ])),
+            'phone'        => $c['phone'] ?? null,
+            'email'        => $c['email'] ?? null,
+            'website'      => $c['website'] ?? null,
+            'footer'       => $c['invoice_footer'] ?? null,
+            'disclaimer'   => $c['legal_disclaimer'] ?? null,
+            'lut_number'   => $c['lut_number'] ?? null,
+            'profile_version' => (int) ($c['profile_version'] ?? 1),
         ];
     }
 

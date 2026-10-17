@@ -30,7 +30,7 @@ class Database extends Config
         'username'     => '',
         'password'     => '',
         'database'     => '',
-        'DBDriver'     => 'MySQLi',
+        'DBDriver'     => 'App\Database\MySQLi',
         'DBPrefix'     => '',
         'pConnect'     => false,
         'DBDebug'      => true,
@@ -168,7 +168,7 @@ class Database extends Config
         'username'    => '',
         'password'    => '',
         'database'    => 'dgr_office_test', // disposable MySQL 8 test database (override in .env)
-        'DBDriver'    => 'MySQLi',
+        'DBDriver'    => 'App\Database\MySQLi',
         'DBPrefix'    => '',
         'pConnect'    => false,
         'DBDebug'     => true,
