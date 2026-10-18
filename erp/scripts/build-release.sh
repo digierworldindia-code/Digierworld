@@ -28,17 +28,21 @@ PREFIX="$(git rev-parse --show-prefix)"
 TREE="HEAD"
 [[ -n "$PREFIX" ]] && TREE="HEAD:${PREFIX%/}"
 mkdir -p "$STAGE"
-git archive --format=tar "$TREE" | tar -x -C "$STAGE"
+# run from the top level: inside a subdirectory git archive filters paths by that prefix
+git -C "$(git rev-parse --show-toplevel)" archive --format=tar "$TREE" | tar -x -C "$STAGE"
+[[ -f "$STAGE/composer.json" ]] || { echo "git archive produced no files" >&2; exit 1; }
 rm -rf "$STAGE/tests" "$STAGE/dist" "$STAGE/phpunit.dist.xml"
 
 # 2. production dependencies exactly as locked
 composer install --working-dir="$STAGE" --no-dev --prefer-dist --optimize-autoloader \
-    --no-interaction --no-progress --quiet
+    --no-interaction --no-progress
 
 # 3. drop what is never needed at runtime
 find "$STAGE/vendor" -depth -type d \( -name .git -o -name .github \) -exec rm -rf {} +
+# (packages may be installed from source, where their export-ignore rules do not apply)
 for pkg in "$STAGE"/vendor/*/*/; do
-    rm -rf "${pkg}tests" "${pkg}Tests" "${pkg}test" "${pkg}docs" "${pkg}doc" "${pkg}examples"
+    rm -rf "${pkg}tests" "${pkg}Tests" "${pkg}test" "${pkg}docs" "${pkg}doc" "${pkg}examples" \
+           "${pkg}samples" "${pkg}fixtures" "${pkg}dev-tools" "${pkg}infra" "${pkg}benchmarks"
 done
 
 # 4. smoke-check the autoloader with the classes the app depends on
