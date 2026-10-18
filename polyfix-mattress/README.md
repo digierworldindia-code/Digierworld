@@ -130,10 +130,15 @@ run.
 
 ## How to use it
 
-**`docs/USER-GUIDE.md` is the manual** — every screen, both panels, the whole
-mattress lifecycle, the claim process, the reports and the settings, written
-for the people who will use it rather than for developers. Hand it to staff and
-to dealers.
+**`docs/USER-USE-CASES.md` is what you hand to the people doing the job** —
+19 modules and 56 use cases in plain English, organised by panel, each with
+the steps to follow, what happens after, and a real example. Written for
+somebody who has never seen the software and does not want to learn anything
+technical. Start here for warehouse staff, field agents and dealers.
+
+**`docs/USER-GUIDE.md` is the reference manual** — every screen, every panel,
+the whole mattress lifecycle, the claim process, the reports and the settings.
+More detail than the use case document, same audience.
 
 **`docs/USE-CASES.md` is the specification** — 92 use cases with actors,
 preconditions, main and alternate flows, postconditions, 45 business rules, the
