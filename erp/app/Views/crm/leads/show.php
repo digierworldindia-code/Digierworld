@@ -33,7 +33,7 @@ $wa     = strlen($wa) === 10 ? '91' . $wa : $wa;
     <span class="text-muted mono"><?= esc($l['lead_code']) ?></span> · <span>Assigned to <strong><?= esc((string) $l['assignee']) ?></strong></span>
     · <span><?= (int) $l['call_attempts'] ?> calls, <?= (int) $l['connected_calls'] ?> connected</span>
     <?php if ($l['lost_reason']): ?>· <span class="text-danger">Lost: <?= esc($l['lost_reason']) ?></span><?php endif ?>
-    <?php if ($l['client_name']): ?>· <a href="<?= site_url('contacts/' . $l['contact_id']) ?>">Client: <?= esc($l['client_name']) ?></a><?php endif ?>
+    <?php if ($l['client_name']): ?>· <?php if (can('contacts.view_all')): ?><a href="<?= site_url('contacts/' . $l['contact_id']) ?>">Client: <?= esc($l['client_name']) ?></a><?php else: ?>Client: <?= esc($l['client_name']) ?><?php endif ?><?php endif ?>
 </div>
 <div class="row g-3">
 <div class="col-xl-8">

@@ -33,6 +33,13 @@ git -C "$(git rev-parse --show-toplevel)" archive --format=tar "$TREE" | tar -x 
 [[ -f "$STAGE/composer.json" ]] || { echo "git archive produced no files" >&2; exit 1; }
 rm -rf "$STAGE/tests" "$STAGE/dist" "$STAGE/phpunit.dist.xml"
 
+# every static asset the views reference must be in the committed tree
+missing=0
+while read -r asset; do
+    [[ -f "$STAGE/public/$asset" ]] || { echo "Missing committed asset: public/$asset" >&2; missing=1; }
+done < <(grep -rhoE "assets/[A-Za-z0-9_./-]+\.(css|js|png|svg|ico|woff2?)" "$STAGE/app/Views" | sort -u)
+[[ $missing == 0 ]] || exit 1
+
 # 2. production dependencies exactly as locked
 composer install --working-dir="$STAGE" --no-dev --prefer-dist --optimize-autoloader \
     --no-interaction --no-progress

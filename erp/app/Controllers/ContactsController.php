@@ -116,7 +116,7 @@ class ContactsController extends BaseController
 
         return $this->render('contacts/form', [
             'pageTitle'   => $c ? 'Edit ' . $c['name'] : 'New client / vendor',
-            'breadcrumbs' => [['Clients & vendors', 'contacts'], [$c ? $c['name'] : 'New']],
+            'breadcrumbs' => [$this->can('contacts.view_all') ? ['Clients & vendors', 'contacts'] : ['Clients & vendors'], [$c ? $c['name'] : 'New']],
             'c'           => $c,
             'billing'     => $billing,
             'service'     => $service,
@@ -133,7 +133,9 @@ class ContactsController extends BaseController
         } catch (BusinessRuleException $e) {
             return $this->backWithRuleError($e);
         }
-        $redirect = redirect()->to(site_url('contacts/' . $r['id']))->with('success', 'Contact saved.');
+        // users who may create but not browse contacts (e.g. CRM managers) stay on the form
+        $code     = (string) ($this->db->table('contacts')->select('contact_code')->where('id', $r['id'])->get()->getRow()->contact_code ?? '');
+        $redirect = redirect()->to(site_url($this->can('contacts.view_all') ? 'contacts/' . $r['id'] : 'contacts/new'))->with('success', 'Contact ' . $code . ' saved.');
 
         return $r['warnings'] ? $redirect->with('warning', implode(' ', $r['warnings'])) : $redirect;
     }
@@ -148,7 +150,7 @@ class ContactsController extends BaseController
         } catch (BusinessRuleException $e) {
             return $this->backWithRuleError($e);
         }
-        $redirect = redirect()->to(site_url('contacts/' . $id))->with('success', 'Contact updated. Finalized documents keep the details printed at issue.');
+        $redirect = redirect()->to(site_url($this->can('contacts.view_all') ? 'contacts/' . $id : 'contacts/' . $id . '/edit'))->with('success', 'Contact updated. Finalized documents keep the details printed at issue.');
 
         return $warnings ? $redirect->with('warning', implode(' ', $warnings)) : $redirect;
     }

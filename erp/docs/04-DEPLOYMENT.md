@@ -51,6 +51,11 @@ the release archive is built from that lock file by
    | `database.default.*` | Host, database, user, password from step 1 |
    | `encryption.key` | Generate with `php spark key:generate` (writes it into `.env`) |
 
+   **PHP settings** (php.ini / host panel): `upload_max_filesize = 20M`,
+   `post_max_size = 25M`, `memory_limit = 256M`. The defaults (often 2M)
+   are smaller than the app's own limits (CV 5 MB, documents 8 MB,
+   spreadsheets 10 MB), and Admin → Diagnostics warns about them.
+
 3. **Create tables and base data**: `php spark dgr:install` (idempotent;
    migrations are tracked, seeders use `INSERT IGNORE`).
 4. **Create the owner login**:
@@ -76,7 +81,7 @@ the release archive is built from that lock file by
    lines are **not** commented out: `extension=intl`, `extension=gd`,
    `extension=zip`, `extension=sodium`, `extension=mysqli`,
    `extension=fileinfo`, `extension=curl`, `extension=openssl`,
-   `extension=mbstring`. Restart Apache.
+   `extension=mbstring`, and set the PHP limits from §2. Restart Apache.
 2. **Database:** XAMPP bundles **MariaDB**, which is *not tested* with this
    app. Install **MySQL 8 Community Server** (Windows installer) and use
    it instead, or stop XAMPP's MySQL module and run MySQL 8 on port 3306.
@@ -134,7 +139,7 @@ For quick local trials without Apache: `php spark serve --port 8080` and
 1. **PHP:** *MultiPHP Manager* → set the domain/subdomain to **PHP 8.3**;
    *Select PHP Version → Extensions* → enable `intl`, `gd`, `zip`,
    `sodium`, `mysqli`, `fileinfo`, `curl`, `mbstring`, `xml`, `dom`,
-   `xmlwriter`, `iconv`.
+   `xmlwriter`, `iconv`; *MultiPHP INI Editor* → set the PHP limits from §2.
 2. **Database:** *MySQL® Databases* → create the database and user, add
    the user with **ALL PRIVILEGES**. cPanel prefixes names
    (`cpuser_dgroffice`); use the full prefixed names in `.env`. Confirm the
@@ -179,6 +184,7 @@ sudo mkdir -p /var/www/dgr-office && sudo unzip dgr-office-<version>.zip -d /var
 sudo chown -R root:www-data /var/www/dgr-office
 sudo chown -R www-data:www-data /var/www/dgr-office/writable
 sudo -u www-data cp /var/www/dgr-office/.env.example /var/www/dgr-office/.env   # then edit
+# PHP limits from §2 in /etc/php/8.3/fpm/php.ini, then: sudo systemctl restart php8.3-fpm
 ```
 
 `/etc/nginx/sites-available/dgr-office`:

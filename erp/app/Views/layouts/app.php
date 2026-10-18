@@ -21,7 +21,7 @@ if (can(['finance.transfer.create'])) { $quick[] = ['Cash → Bank Deposit', 'fi
 if (can(['finance.expense.create'])) { $quick[] = ['Expense', 'finance/expenses/new', 'bag']; }
 if (can(['contacts.create'])) { $quick[] = ['Client / Vendor', 'contacts/new', 'person-plus']; }
 if (can(['crm.lead.create'])) { $quick[] = ['Lead', 'crm/leads/new', 'person-lines-fill']; }
-if (can(['crm.task.create'])) { $quick[] = ['Task', 'crm/tasks/new', 'list-check']; }
+if (can(['crm.task.create'])) { $quick[] = ['Task', 'crm/tasks#new', 'list-check']; }
 if (can(['hr.candidate.create'])) { $quick[] = ['Applicant', 'hr/candidates/new', 'person-badge']; }
 ?>
 <!doctype html>

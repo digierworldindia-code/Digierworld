@@ -228,20 +228,23 @@ if (! function_exists('journal_source')) {
      */
     function journal_source(string $type, ?int $id, ?int $entryId = null): array
     {
-        return match ($type) {
-            'billing_document'   => ['Billing document', $id ? site_url('billing/documents/' . $id) : null],
-            'payment_receipt', 'refund', 'payment_allocation' => [$type === 'refund' ? 'Refund' : ($type === 'payment_allocation' ? 'Advance applied' : 'Receipt'), $id ? site_url('finance/receipts/' . $id) : null],
-            'money_transfer'     => ['Transfer', $id ? site_url('finance/transfers/' . $id) : null],
-            'expense'            => ['Expense', $id ? site_url('finance/expenses/' . $id) : null],
-            'expense_payment'    => ['Expense payment', $id ? site_url('finance/expenses/' . (int) (db_connect()->table('expense_payments')->select('expense_id')->where('id', $id)->get()->getRow()->expense_id ?? 0)) : null],
-            'opening_balance'    => ['Opening balance', $id ? site_url('finance/accounts/' . $id) : null],
-            'payroll_run'        => ['Payroll', $id ? site_url('hr/payroll/' . $id) : null],
-            'payroll_payment', 'payroll_adjustment' => [$type === 'payroll_payment' ? 'Salary payment' : 'Payroll correction', $id ? site_url('hr/payroll/items/' . $id) : null],
-            'employee_advance'   => ['Salary advance', site_url('hr/payroll')],
-            'manual'             => ['Manual journal', $entryId ? site_url('finance/ledger/entries/' . $entryId) : null],
-            'bank_statement'     => ['Booked from bank statement', $entryId ? site_url('finance/ledger/entries/' . $entryId) : null],
-            default              => [ucwords(str_replace('_', ' ', $type)), null],
+        [$label, $url, $perms] = match ($type) {
+            'billing_document'   => ['Billing document', $id ? site_url('billing/documents/' . $id) : null, ['billing.invoice.view_own', 'billing.invoice.view_all', 'billing.cash_memo.view_own', 'billing.cash_memo.view_all', 'billing.estimate.view_own', 'billing.estimate.view_all', 'billing.note.view_all']],
+            'payment_receipt', 'refund', 'payment_allocation' => [$type === 'refund' ? 'Refund' : ($type === 'payment_allocation' ? 'Advance applied' : 'Receipt'), $id ? site_url('finance/receipts/' . $id) : null, ['finance.receipt.view']],
+            'money_transfer'     => ['Transfer', $id ? site_url('finance/transfers/' . $id) : null, ['finance.transfer.view']],
+            'expense'            => ['Expense', $id ? site_url('finance/expenses/' . $id) : null, ['finance.expense.view_own', 'finance.expense.view_all']],
+            'expense_payment'    => ['Expense payment', $id ? site_url('finance/expenses/' . (int) (db_connect()->table('expense_payments')->select('expense_id')->where('id', $id)->get()->getRow()->expense_id ?? 0)) : null, ['finance.expense.view_own', 'finance.expense.view_all']],
+            'opening_balance'    => ['Opening balance', $id ? site_url('finance/accounts/' . $id) : null, ['finance.bank.view']],
+            'payroll_run'        => ['Payroll', $id ? site_url('hr/payroll/' . $id) : null, ['hr.payroll.view']],
+            'payroll_payment', 'payroll_adjustment' => [$type === 'payroll_payment' ? 'Salary payment' : 'Payroll correction', $id ? site_url('hr/payroll/items/' . $id) : null, ['hr.payroll.view']],
+            'employee_advance'   => ['Salary advance', site_url('hr/payroll'), ['hr.payroll.view']],
+            'manual'             => ['Manual journal', $entryId ? site_url('finance/ledger/entries/' . $entryId) : null, ['finance.ledger.view']],
+            'bank_statement'     => ['Booked from bank statement', $entryId ? site_url('finance/ledger/entries/' . $entryId) : null, ['finance.ledger.view']],
+            default              => [ucwords(str_replace('_', ' ', $type)), null, []],
         };
+
+        // only link to a source the viewer may open (e.g. an accountant sees "Payroll" as text)
+        return [$label, $url !== null && can($perms) ? $url : null];
     }
 }
 

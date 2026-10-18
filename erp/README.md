@@ -33,6 +33,7 @@ PhpSpreadsheet · Dompdf · google/apiclient (Sheets only) · smalot/pdfparser
 * **PHP 8.3 or newer** with extensions: `intl`, `mbstring`, `json`,
   `mysqli`, `curl`, `openssl`, `gd`, `zip`, `xml`, `dom`, `xmlwriter`,
   `fileinfo`, `iconv`, `ctype`, `sodium`.
+* PHP limits: `upload_max_filesize = 20M`, `post_max_size = 25M`, `memory_limit = 256M`.
 * **MySQL 8.0+** (InnoDB, `utf8mb4`). MariaDB is not tested.
 * **Apache 2.4 with `mod_rewrite`** (XAMPP, cPanel) or **Nginx + PHP-FPM**.
 * A **cron** entry that can run `php` every minute (cPanel “Cron Jobs” is fine).

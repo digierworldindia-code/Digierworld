@@ -24,6 +24,7 @@ $routes->get('profile', 'ProfileController::index');
 $routes->get('profile/password', 'ProfileController::password');
 $routes->post('profile/password', 'ProfileController::updatePassword');
 $routes->post('profile/sessions/(:num)/revoke', 'ProfileController::revokeSession/$1');
+$routes->get('calendar', 'CalendarController::index', ['filter' => 'perm:calendar.view']);
 $routes->get('notifications', 'NotificationsController::index');
 $routes->get('notifications/feed', 'NotificationsController::feed');
 $routes->post('notifications/read-all', 'NotificationsController::readAll');
