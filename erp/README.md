@@ -120,6 +120,13 @@ shown is `DEMO COMPANY (NOT REAL)` and the demo GSTIN/bank are
 placeholders. Run `php spark dgr:demo --purge` (or start with a fresh
 database) before entering real data.
 
+### Release files
+
+`dist/dgr-office-1.0.0.zip` (application + production `vendor/`, with a
+`.sha256` checksum) and `dist/dgr-office-1.0.0-demo.sql.gz` (evaluation
+database, see [docs/04-DEPLOYMENT.md §11](docs/04-DEPLOYMENT.md)).
+Rebuild the archive any time with `scripts/build-release.sh <version>`.
+
 ## 5. Folder layout
 
 ```

@@ -229,10 +229,10 @@ KPI definitions (tooltips in UI): **Invoiced** = Σ grand total of finalised tax
 ---
 
 ## 7. Build order & completion checklist
-- [ ] **P0** Blueprint, generated permission & schema docs
-- [ ] **P1** CI4 + Shield auth, DB RBAC, audit log, layout, company settings + setup wizard, users & roles, diagnostics
-- [ ] **P2** Contacts (GSTIN validation, dedupe, merge, import/export), services, tax rates
-- [ ] **P3** GST engine, sequences (row lock), documents, snapshots, PDFs (3 templates), receipts, allocations, journal, transfers, bank import + reconciliation, expenses/ITC, registers & GST workbooks (XLSX/CSV/PDF)
-- [ ] **P4** CRM leads/calls/follow-ups/visits/meetings/tasks/reminders, My Day, pipeline, conversion, import, performance, Sheets sync queue
-- [ ] **P5** Vacancies/JD versions, candidates, CV parsing, AI gateway + rules fallback, timeline, interviews, convert → employee, attendance, leaves, salary, incentives, payroll, payslips, AI permissions admin
-- [ ] **P6** Owner dashboard, automated tests (sections 18/19/25/27), acceptance evidence (real requests, PDFs/XLSX), backup, SQL dump, deployment docs, security checklist, packaging
+- [x] **P0** Blueprint, generated permission & schema docs
+- [x] **P1** CI4 + Shield auth, DB RBAC, audit log, layout, company settings + setup wizard, users & roles, diagnostics
+- [x] **P2** Contacts (GSTIN validation, dedupe, merge, import/export), services, tax rates
+- [x] **P3** GST engine, sequences (row lock), documents, snapshots, PDFs (3 templates), receipts, allocations, journal, transfers, bank import + reconciliation, expenses/ITC, registers & GST workbooks (XLSX/CSV/PDF)
+- [x] **P4** CRM leads/calls/follow-ups/visits/meetings/tasks/reminders, My Day, pipeline, conversion, import, performance, Sheets sync queue
+- [x] **P5** Vacancies/JD versions, candidates, CV parsing, AI gateway + rules fallback, timeline, interviews, convert → employee, attendance, leaves, salary, incentives, payroll, payslips, AI permissions admin
+- [x] **P6** Owner dashboard, automated tests (sections 18/19/25/27), acceptance evidence (real requests, PDFs/XLSX), backup, SQL dump, deployment docs, security checklist, packaging — results in `07-TEST-REPORT.md`

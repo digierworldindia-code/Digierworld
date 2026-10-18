@@ -7,12 +7,12 @@ $cells  = array_merge(array_fill(0, $lead, null), array_keys($days));
 $cells  = array_merge($cells, array_fill(0, (7 - count($cells) % 7) % 7, null));
 $today  = date('Y-m-d');
 $total  = array_sum(array_map(static fn ($d) => count($d['events']), $days));
-$chip   = static function (array $e) use ($kinds): string {
+$chip   = static function (array $e, bool $wrap = false) use ($kinds): string {
     [$icon, $tone] = $kinds[$e['kind']] ?? ['dot', 'secondary'];
     $label = '<i class="bi bi-' . $icon . ' me-1"></i>' . ($e['time'] !== '' ? '<span class="fw-semibold">' . esc($e['time']) . '</span> ' : '') . esc($e['title'])
         . (in_array($e['status'], ['completed', 'done', 'approved'], true) ? ' <i class="bi bi-check2" aria-label="done"></i>' : '')
         . ($e['status'] === 'pending' && $e['kind'] === 'leave' ? ' <span class="text-muted">(pending)</span>' : '');
-    $cls = 'cal-chip d-block text-truncate small border-start border-3 border-' . $tone . ' ps-1 mb-1 text-body text-decoration-none';
+    $cls = 'cal-chip d-block small border-start border-3 border-' . $tone . ' ps-1 mb-1 text-body text-decoration-none' . ($wrap ? '' : ' text-truncate');
 
     return $e['url'] !== null ? '<a class="' . $cls . '" href="' . esc($e['url'], 'attr') . '" title="' . esc($e['title'], 'attr') . '">' . $label . '</a>' : '<span class="' . $cls . '" title="' . esc($e['title'], 'attr') . '">' . $label . '</span>';
 };
@@ -63,7 +63,7 @@ $chip   = static function (array $e) use ($kinds): string {
             <?php if ($info['events'] === [] && $info['holiday'] === null) { continue; } ?>
             <div class="list-group-item px-0<?= $d === $today ? ' bg-gold-soft' : '' ?>">
                 <div class="small fw-semibold mb-1"><?= dmy($d) ?> · <?= date('l', strtotime($d)) ?><?= $info['holiday'] !== null ? ' · <span class="text-danger">' . esc($info['holiday']) . '</span>' : '' ?></div>
-                <?php foreach ($info['events'] as $e): ?><?= $chip($e) ?><?php endforeach ?>
+                <?php foreach ($info['events'] as $e): ?><?= $chip($e, true) ?><?php endforeach ?>
             </div>
         <?php endforeach ?>
         </div>

@@ -301,3 +301,29 @@ leaves `writable/` empty (only the protective `index.html`/`.htaccess`
 files) and never includes `.env`. Verify a build by unzipping it into an
 empty folder, pointing a fresh `.env` at an empty database and running
 `dgr:install`, `dgr:create-owner` and `dgr:diagnostics`.
+
+## 11. Demo SQL dump (evaluation only)
+
+`dgr-office-<version>-demo.sql.gz` is a complete database (schema,
+migrations table, base data and the clearly-marked demo data) for hosts
+where you can import SQL (phpMyAdmin → Import) but want to look around
+before running any commands. **Never use it for real data or on a
+public server.**
+
+```bash
+gunzip -c dgr-office-1.0.0-demo.sql.gz | mysql -u dgr_office_user -p dgr_office_demo
+```
+
+Point `.env` at that database, then `php spark dgr:install` (reports
+nothing pending). Sign-ins, all with the password `Copper-Lantern-Field-31`:
+`owner@demo.dgr.local` (Super Admin — must choose a new password at
+first sign-in), `accountant@`, `billing@`, `crm.manager@`, `telecaller1@`,
+`telecaller2@`, `hr@`, `recruiter@`, `payroll@`, `employee@demo.dgr.local`.
+
+The demo bank and employee account numbers were encrypted with the key of
+the install that produced the dump, so on your install only the masked
+last four digits show (reveal says the value is unavailable) — that is
+expected. Admin → Diagnostics flags the demo accounts (and fails in
+production). For real use start from an **empty** database with
+`dgr:install` and `dgr:create-owner`; alternatively `php spark dgr:demo`
+creates the same demo data with your own key.
