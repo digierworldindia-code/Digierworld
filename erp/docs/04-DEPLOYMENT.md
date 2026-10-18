@@ -327,3 +327,20 @@ expected. Admin → Diagnostics flags the demo accounts (and fails in
 production). For real use start from an **empty** database with
 `dgr:install` and `dgr:create-owner`; alternatively `php spark dgr:demo`
 creates the same demo data with your own key.
+
+## 12. Clean database SQL (alternative to `dgr:install`)
+
+`dgr-office-<version>-clean.sql` contains every table and the base master
+data (states, permissions, starter roles, chart of accounts, tax-rate
+suggestions, lead sources) and **no users, company identity, bank details
+or demo data**. Use it when it is easier to import SQL (phpMyAdmin →
+Import) than to run migrations:
+
+1. Create an **empty** MySQL 8 database (utf8mb4) and import the file. It
+   drops and recreates the DGR Office tables it contains.
+2. Point `.env` at the database and run `php spark key:generate`,
+   `php spark dgr:install` (reports nothing pending — it is safe to run)
+   and `php spark dgr:create-owner --email … --name "…"`.
+
+Verified: imported into an empty database, then install, owner creation,
+diagnostics (no blocking problems) and a 332-page crawl as the owner.

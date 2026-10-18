@@ -122,9 +122,11 @@ database) before entering real data.
 
 ### Release files
 
-`dist/dgr-office-1.0.0.zip` (application + production `vendor/`, with a
-`.sha256` checksum) and `dist/dgr-office-1.0.0-demo.sql.gz` (evaluation
-database, see [docs/04-DEPLOYMENT.md §11](docs/04-DEPLOYMENT.md)).
+`dist/dgr-office-1.0.0.zip` (application + production `vendor/`),
+`dist/dgr-office-1.0.0-clean.sql` (empty database with base data for real
+use, [§12](docs/04-DEPLOYMENT.md)) and `dist/dgr-office-1.0.0-demo.sql`
+/ `.sql.gz` (evaluation-only demo database, [§11](docs/04-DEPLOYMENT.md)),
+each with a `.sha256` checksum.
 Rebuild the archive any time with `scripts/build-release.sh <version>`.
 
 ## 5. Folder layout
