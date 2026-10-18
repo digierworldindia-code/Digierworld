@@ -1,0 +1,5 @@
+company_name,contact_person,mobile,alt_mobile,email,address,area,city,pincode,industry,services,source,campaign,priority,assigned,remarks
+SAMPLE Green Leaf Salon,Kavita Rao,9000000201,,salon@example.com,Shop 2 Sample Plaza,Sector 5,Bhiwadi,301019,Beauty & Wellness,Social Media Marketing,Facebook / Instagram,Sample Diwali Campaign,high,,SAMPLE ROW - fictional lead
+SAMPLE Apex Coaching Centre,Vikram Singh,9000000202,9000000212,info@example.org,First Floor Sample Complex,Main Road,Alwar,301001,Education,"Website Development, SEO",Google Ads,,medium,,SAMPLE ROW - wants a quote next week
+SAMPLE Royal Sweets,Deepak Agarwal,9000000203,,,Sample Bazaar,Old City,Jaipur,302002,Food & Beverage,Google Business Profile,JustDial,,low,,SAMPLE ROW - call after 4 pm
+SAMPLE Shree Hardware,Pooja Sharma,9000000204,,shree@example.net,Sample Market,Industrial Area,Rewari,123401,Retail,Social Media Marketing,Cold Call / Data,,hot,,SAMPLE ROW - assign at import or put a user's email/full name in 'assigned'

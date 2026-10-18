@@ -137,3 +137,6 @@ _modules/*
 /writable/tmp/*
 !/writable/tmp/index.html
 *.service-account.json
+
+# scheduler lock (created at runtime)
+/writable/cron.lock
