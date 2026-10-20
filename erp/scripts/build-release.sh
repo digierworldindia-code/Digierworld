@@ -37,7 +37,7 @@ rm -rf "$STAGE/tests" "$STAGE/dist" "$STAGE/phpunit.dist.xml"
 missing=0
 while read -r asset; do
     [[ -f "$STAGE/public/$asset" ]] || { echo "Missing committed asset: public/$asset" >&2; missing=1; }
-done < <( { grep -rhoE "assets/[A-Za-z0-9_./-]+\.(css|js|png|svg|ico|woff2?)" "$STAGE/app/Views" || true
+done < <( { grep -rhoE "assets/[A-Za-z0-9_./-]+\.(css|js|png|svg|ico|woff2?)\b" "$STAGE/app/Views" || true
             grep -rhoE "asset\('[A-Za-z0-9_./-]+'\)" "$STAGE/app/Views" | sed -E "s/^asset\('(.*)'\)$/assets\/\1/" || true; } | sort -u)
 [[ $missing == 0 ]] || exit 1
 
