@@ -7,7 +7,6 @@ $input = static function (string $field, array $f, $value, string $form): string
 
     return match ($type) {
         'bool'   => '<input type="checkbox" class="form-check-input" value="1" ' . $common . ($value ? ' checked' : '') . '>',
-        'color'  => '<input type="color" class="form-control form-control-sm form-control-color" ' . $common . ' value="' . esc((string) ($value ?: '#6c757d')) . '">',
         'select' => (static function () use ($f, $value, $common) {
             $h = '<select class="form-select form-select-sm" ' . $common . '><option value="">—</option>';
             foreach ($f[3] as $k => $l) {
@@ -16,7 +15,7 @@ $input = static function (string $field, array $f, $value, string $form): string
 
             return $h . '</select>';
         })(),
-        'int', 'decimal' => '<input class="form-control form-control-sm text-end" inputmode="decimal" ' . $common . ' value="' . esc((string) $value) . '" style="max-width:110px">',
+        'int', 'decimal' => '<input class="u-mxw-110px form-control form-control-sm text-end" inputmode="decimal" ' . $common . ' value="' . esc((string) $value) . '">',
         default  => '<input class="form-control form-control-sm" ' . $common . ' value="' . esc((string) $value) . '">',
     };
 };
@@ -28,10 +27,10 @@ $input = static function (string $field, array $f, $value, string $form): string
     <tbody>
     <?php foreach ($rows as $r): $form = 'f' . $r['id']; ?>
         <tr><?php foreach ($def['fields'] as $field => $f): ?><td><?= $input($field, $f, $r[$field] ?? null, $form) ?></td><?php endforeach ?>
-            <td><form id="<?= $form ?>" method="post" action="<?= site_url('settings/masters/' . $table . '/' . $r['id']) ?>"><?= csrf_field() ?><button class="btn btn-sm btn-dark">Save</button></form></td></tr>
+            <td><form id="<?= $form ?>" method="post" action="<?= site_url('settings/masters/' . $table . '/' . $r['id']) ?>"><?= csrf_field() ?><button class="btn btn-sm btn-primary">Save</button></form></td></tr>
     <?php endforeach ?>
-    <tr class="table-light"><?php foreach ($def['fields'] as $field => $f): ?><td><?= $input($field, $f, $f[1] === 'bool' && $field === 'is_active' ? 1 : null, 'fnew') ?></td><?php endforeach ?>
-        <td><form id="fnew" method="post" action="<?= site_url('settings/masters/' . $table) ?>"><?= csrf_field() ?><button class="btn btn-sm btn-gold">Add</button></form></td></tr>
+    <tr><?php foreach ($def['fields'] as $field => $f): ?><td><?= $input($field, $f, $f[1] === 'bool' && $field === 'is_active' ? 1 : null, 'fnew') ?></td><?php endforeach ?>
+        <td><form id="fnew" method="post" action="<?= site_url('settings/masters/' . $table) ?>"><?= csrf_field() ?><button class="btn btn-sm btn-primary">Add</button></form></td></tr>
     </tbody>
 </table>
 </div></div>

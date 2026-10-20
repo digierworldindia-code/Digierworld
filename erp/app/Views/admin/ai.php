@@ -1,12 +1,12 @@
 <?= $this->extend('layouts/app') ?>
 <?= $this->section('content') ?>
-<div class="alert alert-light border small">
+<div class="alert alert-secondary border small">
     <i class="bi bi-shield-lock"></i> The AI is a <strong>service identity</strong>, not a user. It can only use the capabilities below, one record at a time, with the listed fields. It has no access to SQL, generic search or export, files, backups, <code>.env</code>, billing, CRM, bank data or Google Sheets credentials. Every capability is <strong>off by default</strong>; every request is logged here with field names and record ids only (never CV or payroll contents). AI output is decision support — hiring and payroll decisions stay with people.
 </div>
 <div class="row g-3">
 <div class="col-xl-4">
     <div class="card mb-3"><div class="card-body small">
-        <div class="d-flex justify-content-between"><div class="card-section-title">Provider</div><?= $provider['configured'] ? '<span class="badge text-bg-success">Configured</span>' : '<span class="badge text-bg-secondary">Not configured</span>' ?></div>
+        <div class="d-flex justify-content-between"><div class="card-section-title">Provider</div><?= $provider['configured'] ? '<span class="badge badge-success">Configured</span>' : '<span class="badge badge-neutral">Not configured</span>' ?></div>
         <dl class="row mb-2">
             <dt class="col-5">Provider</dt><dd class="col-7"><?= esc($provider['name']) ?></dd>
             <dt class="col-5">Model</dt><dd class="col-7 mono"><?= esc($provider['model']) ?></dd>
@@ -22,7 +22,7 @@
             <div class="row g-2 mb-2"><div class="col-4"><label class="form-label" for="ai_to">Timeout (s)</label><input class="form-control form-control-sm" id="ai_to" name="timeout" value="<?= (int) $provider['timeout'] ?>"></div>
                 <div class="col-4"><label class="form-label" for="ai_rt">Retries</label><input class="form-control form-control-sm" id="ai_rt" name="max_retries" value="<?= (int) $provider['retries'] ?>"></div>
                 <div class="col-4"><label class="form-label" for="ai_ef">Effort</label><select class="form-select form-select-sm" id="ai_ef" name="effort"><?php foreach (['low', 'medium', 'high'] as $e): ?><option <?= $provider['effort'] === $e ? 'selected' : '' ?>><?= $e ?></option><?php endforeach ?></select></div></div>
-            <button class="btn btn-dark btn-sm">Save</button>
+            <button class="btn btn-primary btn-sm">Save</button>
             <div class="form-text">The API key is never entered in the browser. Put it in the server's <code>.env</code> as <code>ai.apiKey</code>. Without it, recruitment works fully with manual HR assessment.</div>
         </form></details>
         <?php endif ?>
@@ -47,7 +47,7 @@
             <input class="form-control form-control-sm mb-2" name="periods" placeholder="Payroll periods, e.g. 2026-09" aria-label="Periods">
             <input class="form-control form-control-sm mb-2" name="purpose" placeholder="Purpose (required)" required aria-label="Purpose">
             <div class="row g-2 mb-2"><div class="col-6"><input class="form-control form-control-sm" name="ttl_hours" value="4" aria-label="Valid hours"><div class="form-text">hours (max 72)</div></div><div class="col-6"><input class="form-control form-control-sm" name="max_uses" placeholder="max uses" aria-label="Max uses"></div></div>
-            <button class="btn btn-dark btn-sm">Issue token</button>
+            <button class="btn btn-primary btn-sm">Issue token</button>
             <div class="form-text">Tokens work only on <code>/api/ai/…</code> endpoints for the capabilities, records and periods above; the capability must also be enabled here.</div>
         </form></details>
         <?php endif ?>
@@ -58,7 +58,7 @@
     <?php foreach ($caps as $c): $fields = json_decode((string) $c['allowed_fields'], true) ?: []; $u = $usage[$c['code']] ?? null; $known = $meta[$c['code']]['fields'] ?? []; $scope = json_decode((string) $c['scope_config'], true) ?: []; ?>
     <form method="post" action="<?= site_url('admin/ai/capabilities/' . rawurlencode($c['code'])) ?>" class="card mb-2"><div class="card-body small"><?= csrf_field() ?>
         <div class="d-flex flex-wrap justify-content-between gap-2">
-            <div><span class="mono fw-semibold"><?= esc($c['code']) ?></span> <?= $c['enabled'] ? '<span class="badge text-bg-success">ON</span>' : '<span class="badge text-bg-secondary">OFF</span>' ?><div class="text-muted"><?= esc($c['label']) ?></div></div>
+            <div><span class="mono fw-semibold"><?= esc($c['code']) ?></span> <?= $c['enabled'] ? '<span class="badge badge-success">ON</span>' : '<span class="badge badge-neutral">OFF</span>' ?><div class="text-muted"><?= esc($c['label']) ?></div></div>
             <div class="text-end text-muted">This month: <?= (int) ($u['requests'] ?? 0) ?> requests · <?= (int) ($u['denied'] ?? 0) ?> denied · <?= number_format((int) ($u['tin'] ?? 0) + (int) ($u['tout'] ?? 0)) ?> tokens · est. $<?= number_format((float) ($u['cost'] ?? 0), 2) ?> of $<?= number_format((float) $c['monthly_cost_ceiling'], 2) ?></div>
         </div>
         <fieldset <?= $canManage ? '' : 'disabled' ?>>
@@ -74,12 +74,12 @@
                 <?php if (str_starts_with($c['code'], 'ai.payroll.')): ?><div class="col-12"><label class="form-label" for="se<?= md5($c['code']) ?>">Only these employee ids (blank = per token)</label><input class="form-control form-control-sm" id="se<?= md5($c['code']) ?>" name="scope_employee_ids" value="<?= esc(implode(', ', (array) ($scope['employee_ids'] ?? []))) ?>"><div class="form-text">Read-only aggregates of finalized payroll. The AI can never edit salary, run or finalize payroll, pay anyone or see bank accounts.</div></div><?php endif ?>
             </div></div>
         </div>
-        <?php if ($canManage): ?><button class="btn btn-sm btn-dark mt-2">Save <?= esc($c['code']) ?></button><?php endif ?>
+        <?php if ($canManage): ?><button class="btn btn-sm btn-primary mt-2">Save <?= esc($c['code']) ?></button><?php endif ?>
         </fieldset>
     </div></form>
     <?php endforeach ?>
 
-    <div class="table-card mt-3"><div class="card-header bg-white d-flex flex-wrap justify-content-between gap-2"><strong>Action log</strong>
+    <div class="table-card mt-3"><div class="card-header d-flex flex-wrap justify-content-between gap-2"><strong>Action log</strong>
         <form method="get" class="d-flex gap-1"><select name="outcome" class="form-select form-select-sm" data-autosubmit aria-label="Outcome"><option value="">All outcomes</option><?php foreach (['allowed', 'completed', 'denied', 'error'] as $o): ?><option <?= $f['outcome'] === $o ? 'selected' : '' ?>><?= $o ?></option><?php endforeach ?></select>
             <select name="capability" class="form-select form-select-sm" data-autosubmit aria-label="Capability"><option value="">All capabilities</option><?php foreach ($caps as $c): ?><option <?= $f['capability'] === $c['code'] ? 'selected' : '' ?>><?= esc($c['code']) ?></option><?php endforeach ?></select></form></div>
     <div class="table-responsive"><table class="table table-sm small mb-0">

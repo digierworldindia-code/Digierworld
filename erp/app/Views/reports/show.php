@@ -17,9 +17,9 @@ $q = ['period' => $preset, 'from' => $from, 'to' => $to];
 ?>
 <?= $this->section('pageActions') ?>
 <?php if (can('reports.export')): ?>
-<div class="btn-group btn-group-sm"><a class="btn btn-outline-dark" href="<?= site_url('reports/' . $code . '?' . http_build_query($q + ['format' => 'xlsx'])) ?>"><i class="bi bi-file-earmark-excel"></i> Excel</a><a class="btn btn-outline-dark" href="<?= site_url('reports/' . $code . '?' . http_build_query($q + ['format' => 'csv'])) ?>">CSV</a></div>
+<div class="btn-group btn-group-sm"><a class="btn btn-outline-secondary" href="<?= site_url('reports/' . $code . '?' . http_build_query($q + ['format' => 'xlsx'])) ?>"><i class="bi bi-file-earmark-excel"></i> Excel</a><a class="btn btn-outline-secondary" href="<?= site_url('reports/' . $code . '?' . http_build_query($q + ['format' => 'csv'])) ?>">CSV</a></div>
 <?php endif ?>
-<button class="btn btn-outline-dark btn-sm" type="button" data-print><i class="bi bi-printer"></i> Print</button>
+<button class="btn btn-outline-secondary btn-sm" type="button" data-print><i class="bi bi-printer"></i> Print</button>
 <?= $this->endSection() ?>
 <?= $this->section('content') ?>
 <p class="small text-muted"><?= esc($def['desc']) ?></p>
@@ -41,7 +41,7 @@ $q = ['period' => $preset, 'from' => $from, 'to' => $to];
     <?php if ($data['rows'] === []): ?><tr><td colspan="<?= count($data['columns']) ?>"><div class="empty-state"><i class="bi bi-inbox"></i>Nothing in this period.</div></td></tr><?php endif ?>
     </tbody>
     <?php if (! empty($data['totals']) && $data['rows'] !== []): ?>
-    <tfoot><tr class="table-light fw-semibold"><?php foreach ($data['columns'] as $i => $c): ?><td class="<?= in_array($c['type'] ?? 'text', ['money', 'int', 'number', 'percent'], true) ? 'num' : '' ?>"><?php
+    <tfoot><tr class="fw-semibold"><?php foreach ($data['columns'] as $i => $c): ?><td class="<?= in_array($c['type'] ?? 'text', ['money', 'int', 'number', 'percent'], true) ? 'num' : '' ?>"><?php
         if (in_array($c['key'], $data['totals'], true)) {
             $sum = \App\Libraries\Dec::add('0', ...array_map(static fn ($r) => (string) ($r[$c['key']] ?? '0') ?: '0', $data['rows']));
             echo ($c['type'] ?? '') === 'money' ? inr($sum) : esc((string) (int) (float) $sum);

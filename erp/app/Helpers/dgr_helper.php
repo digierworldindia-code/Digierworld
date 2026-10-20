@@ -7,6 +7,25 @@
 
 use App\Libraries\Dec;
 
+if (! function_exists('asset')) {
+    /**
+     * URL of a file under public/assets with a content-hash version, so a
+     * deployment that changes a stylesheet or script is picked up at once.
+     * Only local, self-hosted files exist under public/assets (no CDNs).
+     */
+    function asset(string $path): string
+    {
+        static $versions = [];
+        $path = ltrim($path, '/');
+        if (! isset($versions[$path])) {
+            $file              = FCPATH . 'assets/' . $path;
+            $versions[$path]   = is_file($file) ? substr(hash_file('sha256', $file), 0, 10) : '0';
+        }
+
+        return base_url('assets/' . $path) . '?v=' . $versions[$path];
+    }
+}
+
 if (! function_exists('can')) {
     /**
      * True if the logged-in user holds ANY of the given permissions.
@@ -149,10 +168,29 @@ if (! function_exists('status_badge')) {
             'revoked' => 'dark', 'denied' => 'danger', 'allowed' => 'success', 'error' => 'danger', 'fallback' => 'warning',
         ];
         $status = (string) $status;
-        $cls    = $map[$status] ?? 'secondary';
-        $text   = $cls === 'light' || $cls === 'warning' ? ' text-dark' : '';
+        // design-system tones (dgr-theme.css): success, warning, danger, info, gold, neutral
+        $base   = $map[$status] ?? 'secondary';
+        $tone   = ['primary' => 'gold', 'secondary' => 'neutral', 'light' => 'neutral', 'dark' => 'neutral'][$base] ?? $base;
 
-        return '<span class="badge bg-' . $cls . $text . '">' . esc(ucwords(str_replace('_', ' ', $status))) . '</span>';
+        return '<span class="badge badge-' . $tone . '">' . esc(ucwords(str_replace('_', ' ', $status))) . '</span>';
+    }
+}
+
+if (! function_exists('stage_tone')) {
+    /**
+     * Design-system tone for a CRM stage, from what the stage means (won,
+     * lost, do-not-call, late or engaged) rather than a stored colour.
+     */
+    function stage_tone(?string $code, int|string|null $won = 0, int|string|null $lost = 0, int|string|null $dnd = 0): string
+    {
+        return match (true) {
+            (int) $won === 1 || $code === 'won'                                  => 'success',
+            (int) $dnd === 1 || $code === 'dnc'                                  => 'neutral',
+            (int) $lost === 1                                                    => 'danger',
+            in_array($code, ['proposal_sent', 'negotiation'], true)             => 'gold',
+            in_array($code, ['connected', 'interested', 'followup', 'meeting_scheduled', 'visit_scheduled'], true) => 'info',
+            default                                                              => 'neutral',
+        };
     }
 }
 

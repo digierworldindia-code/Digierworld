@@ -1,19 +1,19 @@
 <?= $this->extend('layouts/app') ?>
 <?php $list = static fn ($json) => json_decode((string) $json, true) ?: []; ?>
 <?= $this->section('pageActions') ?>
-<a class="btn btn-outline-dark btn-sm" href="<?= site_url('hr/candidates?job=' . $job['id']) ?>"><i class="bi bi-people"></i> Applicants</a>
-<a class="btn btn-outline-dark btn-sm" href="<?= site_url('hr/candidates/board?job=' . $job['id']) ?>"><i class="bi bi-kanban"></i> Board</a>
-<?php if (can('hr.candidate.create') && $job['status'] !== 'closed'): ?><a class="btn btn-gold btn-sm" href="<?= site_url('hr/candidates/new?job=' . $job['id']) ?>"><i class="bi bi-person-plus"></i> Add applicant</a><?php endif ?>
-<?php if (can('hr.vacancy.manage')): ?><a class="btn btn-outline-dark btn-sm" href="<?= site_url('hr/vacancies/' . $job['id'] . '/edit') ?>"><i class="bi bi-pencil"></i> Edit</a><?php endif ?>
+<a class="btn btn-outline-secondary btn-sm" href="<?= site_url('hr/candidates?job=' . $job['id']) ?>"><i class="bi bi-people"></i> Applicants</a>
+<a class="btn btn-outline-secondary btn-sm" href="<?= site_url('hr/candidates/board?job=' . $job['id']) ?>"><i class="bi bi-kanban"></i> Board</a>
+<?php if (can('hr.candidate.create') && $job['status'] !== 'closed'): ?><a class="btn btn-primary btn-sm" href="<?= site_url('hr/candidates/new?job=' . $job['id']) ?>"><i class="bi bi-person-plus"></i> Add applicant</a><?php endif ?>
+<?php if (can('hr.vacancy.manage')): ?><a class="btn btn-outline-secondary btn-sm" href="<?= site_url('hr/vacancies/' . $job['id'] . '/edit') ?>"><i class="bi bi-pencil"></i> Edit</a><?php endif ?>
 <?= $this->endSection() ?>
 <?= $this->section('content') ?>
 <div class="row g-3">
 <div class="col-xl-8">
     <?php if ($jd): ?>
     <div class="card mb-3"><div class="card-body small">
-        <div class="d-flex justify-content-between"><div class="card-section-title mb-1">Job description v<?= (int) $jd['version_no'] ?><?= (int) $jd['id'] === (int) $job['current_jd_version_id'] ? ' <span class="badge text-bg-success">current</span>' : ' <span class="badge text-bg-secondary">older version</span>' ?></div><span class="text-muted"><?= dmy($jd['created_at'], true) ?> · <?= esc((string) $jd['author']) ?></span></div>
-        <p style="white-space:pre-line"><?= esc($jd['summary']) ?></p>
-        <?php if ($jd['responsibilities']): ?><h6>Responsibilities</h6><p style="white-space:pre-line"><?= esc($jd['responsibilities']) ?></p><?php endif ?>
+        <div class="d-flex justify-content-between"><div class="card-section-title mb-1">Job description v<?= (int) $jd['version_no'] ?><?= (int) $jd['id'] === (int) $job['current_jd_version_id'] ? ' <span class="badge badge-success">current</span>' : ' <span class="badge badge-neutral">older version</span>' ?></div><span class="text-muted"><?= dmy($jd['created_at'], true) ?> · <?= esc((string) $jd['author']) ?></span></div>
+        <p class="u-ws-pre-line"><?= esc($jd['summary']) ?></p>
+        <?php if ($jd['responsibilities']): ?><h6>Responsibilities</h6><p class="u-ws-pre-line"><?= esc($jd['responsibilities']) ?></p><?php endif ?>
         <div class="row">
             <div class="col-md-6"><h6>Must-have</h6><ul><?php foreach ($list($jd['must_have']) as $m): ?><li><?= esc($m) ?></li><?php endforeach ?></ul></div>
             <div class="col-md-6"><h6>Nice-to-have</h6><ul><?php foreach ($list($jd['nice_to_have']) as $m): ?><li><?= esc($m) ?></li><?php endforeach ?></ul></div>
@@ -28,7 +28,7 @@
     <details class="card mb-3"><summary class="card-body py-2 small fw-semibold">Add a new JD version</summary>
     <form method="post" action="<?= site_url('hr/vacancies/' . $job['id'] . '/versions') ?>" enctype="multipart/form-data" class="card-body pt-0 small"><?= csrf_field() ?>
         <?= view('hr/vacancies/_jd_fields', ['jd' => $jd, 'rubricDefaults' => \App\Services\Hr\RecruitmentService::DEFAULT_RUBRIC]) ?>
-        <div class="row g-2 mt-1"><div class="col-md-6"><input class="form-control form-control-sm" name="change_note" placeholder="What changed?" aria-label="Change note"></div><div class="col-md-4"><input type="file" class="form-control form-control-sm" name="attachment" accept=".pdf,.docx" aria-label="JD attachment"></div><div class="col-md-2"><button class="btn btn-dark btn-sm w-100">Save version</button></div></div>
+        <div class="row g-2 mt-1"><div class="col-md-6"><input class="form-control form-control-sm" name="change_note" placeholder="What changed?" aria-label="Change note"></div><div class="col-md-4"><input type="file" class="form-control form-control-sm" name="attachment" accept=".pdf,.docx" aria-label="JD attachment"></div><div class="col-md-2"><button class="btn btn-primary btn-sm w-100">Save version</button></div></div>
     </form></details>
     <?php endif ?>
 </div>

@@ -5,7 +5,7 @@
     <div class="col-lg-4"><div class="card"><div class="card-body small">
         <dl class="row mb-0">
             <dt class="col-5">When</dt><dd class="col-7"><?= dmy($row['occurred_at'], true) ?></dd>
-            <dt class="col-5">Actor</dt><dd class="col-7"><?= esc($row['full_name'] ?? '—') ?> <span class="badge bg-light text-dark"><?= esc($row['actor_type']) ?></span></dd>
+            <dt class="col-5">Actor</dt><dd class="col-7"><?= esc($row['full_name'] ?? '—') ?> <span class="badge badge-neutral"><?= esc($row['actor_type']) ?></span></dd>
             <dt class="col-5">Action</dt><dd class="col-7"><code><?= esc($row['action']) ?></code></dd>
             <dt class="col-5">Record</dt><dd class="col-7"><?= esc((string) $row['entity_type']) ?> #<?= (int) $row['entity_id'] ?></dd>
             <dt class="col-5">Summary</dt><dd class="col-7"><?= esc($row['summary']) ?></dd>
@@ -13,7 +13,7 @@
             <dt class="col-5">Row hash</dt><dd class="col-7 mono text-break"><?= esc($row['row_hash']) ?></dd>
             <dt class="col-5">Prev hash</dt><dd class="col-7 mono text-break"><?= esc((string) $row['prev_hash']) ?></dd>
         </dl>
-        <?php if ($meta): ?><div class="mt-2"><strong>Meta</strong><pre class="small bg-light p-2 rounded"><?= esc($fmt($meta)) ?></pre></div><?php endif ?>
+        <?php if ($meta): ?><div class="mt-2"><strong>Meta</strong><pre class="small bg-body-tertiary p-2 rounded"><?= esc($fmt($meta)) ?></pre></div><?php endif ?>
     </div></div></div>
     <div class="col-lg-8"><div class="table-card">
         <table class="table table-sm small mb-0"><thead><tr><th>Field</th><th>Before</th><th>After</th></tr></thead><tbody>

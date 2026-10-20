@@ -11,8 +11,8 @@
             <td><?= esc($x['name']) ?></td><td><?= esc($x['category_name']) ?></td><td><?= esc((string) $x['vendor_name']) ?></td><td class="num"><?= inr($x['amount']) ?></td>
             <td><?= esc(ucwords(str_replace('_', ' ', $x['frequency']))) ?></td>
             <td class="<?= $dueSoon ? 'text-danger fw-semibold' : '' ?>"><?= dmy($x['next_due_date']) ?></td>
-            <td class="text-end text-nowrap"><?php if ((int) $x['is_active'] === 1 && can('finance.expense.create')): ?><a class="btn btn-sm btn-dark" href="<?= site_url('finance/expenses/new?recurring=' . $x['id']) ?>">Record bill</a><?php endif ?>
-                <a class="btn btn-sm btn-outline-dark" href="<?= site_url('finance/expenses/recurring?edit=' . $x['id']) ?>">Edit</a></td>
+            <td class="text-end text-nowrap"><?php if ((int) $x['is_active'] === 1 && can('finance.expense.create')): ?><a class="btn btn-sm btn-primary" href="<?= site_url('finance/expenses/new?recurring=' . $x['id']) ?>">Record bill</a><?php endif ?>
+                <a class="btn btn-sm btn-outline-secondary" href="<?= site_url('finance/expenses/recurring?edit=' . $x['id']) ?>">Edit</a></td>
         </tr>
         <?php endforeach ?>
         <?php if ($rows === []): ?><tr><td colspan="7" class="text-muted">No recurring expenses yet.</td></tr><?php endif ?>
@@ -31,7 +31,7 @@
             <div class="col-6"><label class="form-label" for="rc_rem">Remind days before</label><input type="number" min="0" max="60" class="form-control" id="rc_rem" name="reminder_days_before" value="<?= $v('reminder_days_before', '5') ?>"></div></div>
         <label class="form-label" for="rc_notes">Notes</label><input class="form-control mb-2" id="rc_notes" name="notes" value="<?= $v('notes') ?>" maxlength="500">
         <?php if ($r): ?><div class="form-check mb-2"><input class="form-check-input" type="checkbox" name="is_active" value="1" id="rc_active" <?= (int) $r['is_active'] === 1 ? 'checked' : '' ?>><label class="form-check-label" for="rc_active">Active</label></div><?php endif ?>
-        <button class="btn btn-dark w-100" type="submit">Save</button>
+        <button class="btn btn-primary w-100" type="submit">Save</button>
     </div></form>
 </div>
 </div>

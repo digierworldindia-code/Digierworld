@@ -35,7 +35,7 @@ $v = static fn ($k) => esc((string) (old($k) ?? ($p[$k] ?? ''))); ?>
     <?php foreach (['requires_approval' => 'HR approval required before payroll', 'clawback_on_refund' => 'Claw back on cancellation / credit note / voided receipt', 'carry_forward' => 'Carry approved-but-unpaid entries to later payrolls', 'is_active' => 'Active'] as $k => $l): ?>
     <div class="form-check"><input class="form-check-input" type="checkbox" name="<?= $k ?>" value="1" id="ip_<?= $k ?>" <?= ! empty($p[$k]) ? 'checked' : '' ?>><label class="form-check-label" for="ip_<?= $k ?>"><?= $l ?></label></div>
     <?php endforeach ?>
-    <button class="btn btn-dark mt-2">Save policy</button> <?php if ($edit): ?><a class="btn btn-link" href="<?= site_url('hr/incentives/policies') ?>">Cancel</a><?php endif ?>
+    <button class="btn btn-primary mt-2">Save policy</button> <?php if ($edit): ?><a class="btn btn-link" href="<?= site_url('hr/incentives/policies') ?>">Cancel</a><?php endif ?>
     <div class="form-text">Only employees marked “eligible for sales incentives” receive entries. Credit goes to the user attributed on the CRM conversion (split shares are honoured).</div>
 </div></form>
 </div>

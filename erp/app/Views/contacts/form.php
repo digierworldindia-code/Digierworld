@@ -103,7 +103,7 @@ $errs = flash_errors();
     <div class="card"><div class="card-body"><label class="form-label" for="notes">Notes</label><textarea class="form-control" id="notes" name="notes" rows="4"><?= $v('notes') ?></textarea></div></div>
 </div>
 </div>
-<div class="sticky-actions"><a href="<?= site_url(! can('contacts.view_all') ? '/' : ($c ? 'contacts/' . $c['id'] : 'contacts')) ?>" class="btn btn-outline-secondary">Cancel</a><button class="btn btn-dark">Save contact</button></div>
+<div class="sticky-actions"><a href="<?= site_url(! can('contacts.view_all') ? '/' : ($c ? 'contacts/' . $c['id'] : 'contacts')) ?>" class="btn btn-outline-secondary">Cancel</a><button class="btn btn-primary">Save contact</button></div>
 </form>
 <?= $this->endSection() ?>
-<?= $this->section('scripts') ?><script src="<?= base_url('assets/js/contacts.js') ?>"></script><?= $this->endSection() ?>
+<?= $this->section('scripts') ?><script src="<?= asset('js/contacts.js') ?>"></script><?= $this->endSection() ?>

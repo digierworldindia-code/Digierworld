@@ -28,7 +28,7 @@
                 <select class="form-select" id="manager_user_id" name="manager_user_id" <?= $canManage ? '' : 'disabled' ?>><option value="">— none —</option>
                     <?php foreach ($managers as $m): ?><option value="<?= $m['id'] ?>" <?= (int) ($user['manager_user_id'] ?? 0) === $m['id'] ? 'selected' : '' ?>><?= esc($m['name']) ?></option><?php endforeach ?>
                 </select></div>
-            <?php if ($canManage): ?><button class="btn btn-dark btn-sm">Save profile</button><?php endif ?>
+            <?php if ($canManage): ?><button class="btn btn-primary btn-sm">Save profile</button><?php endif ?>
         </form>
     </div></div>
 
@@ -42,12 +42,12 @@
                         <input class="form-check-input" type="checkbox" name="roles[]" value="<?= $r['id'] ?>" id="ur<?= $r['id'] ?>" <?= $has ? 'checked' : '' ?> <?= $canManage ? '' : 'disabled' ?>>
                         <label class="form-check-label small" for="ur<?= $r['id'] ?>"><strong><?= esc($r['name']) ?></strong></label>
                     </div>
-                    <input type="date" class="form-control form-control-sm" style="max-width:150px" name="expires_<?= $r['id'] ?>" value="<?= $has && $userRoles[$r['id']]['expires_at'] ? esc(substr($userRoles[$r['id']]['expires_at'], 0, 10)) : '' ?>" aria-label="Expiry for <?= esc($r['name']) ?>" title="Optional expiry" <?= $canManage ? '' : 'disabled' ?>>
+                    <input type="date" class="u-mxw-150px form-control form-control-sm" name="expires_<?= $r['id'] ?>" value="<?= $has && $userRoles[$r['id']]['expires_at'] ? esc(substr($userRoles[$r['id']]['expires_at'], 0, 10)) : '' ?>" aria-label="Expiry for <?= esc($r['name']) ?>" title="Optional expiry" <?= $canManage ? '' : 'disabled' ?>>
                 </div>
             <?php endforeach ?>
             <?php if ($canManage): ?>
             <input type="password" class="form-control form-control-sm mt-2<?= is_invalid('admin_password') ?>" name="admin_password" placeholder="Your password (required when adding sensitive roles)" autocomplete="current-password" aria-label="Your password"><?= field_error('admin_password') ?>
-            <button class="btn btn-dark btn-sm mt-2">Save roles</button>
+            <button class="btn btn-primary btn-sm mt-2">Save roles</button>
             <?php endif ?>
         </form>
         <?php if ($lastChange): ?><div class="small text-muted mt-2">Last permission change: <?= dmy($lastChange['occurred_at'], true) ?> (<?= esc($lastChange['summary']) ?>)</div><?php endif ?>
@@ -58,7 +58,7 @@
         <div class="card-section-title">Per-user overrides <span class="text-muted text-lowercase fw-normal">(deny always wins)</span></div>
         <?php foreach ($overrides as $o): ?>
             <div class="d-flex justify-content-between align-items-start border-bottom py-2 small">
-                <div><span class="badge <?= $o['effect'] === 'deny' ? 'bg-danger' : 'bg-success' ?>"><?= esc($o['effect']) ?></span> <code><?= esc($o['perm_key']) ?></code><div class="text-muted"><?= esc($o['reason']) ?><?= $o['expires_at'] ? ' · until ' . dmy($o['expires_at']) : '' ?></div></div>
+                <div><span class="badge <?= $o['effect'] === 'deny' ? 'badge-danger' : 'badge-success' ?>"><?= esc($o['effect']) ?></span> <code><?= esc($o['perm_key']) ?></code><div class="text-muted"><?= esc($o['reason']) ?><?= $o['expires_at'] ? ' · until ' . dmy($o['expires_at']) : '' ?></div></div>
                 <form method="post" action="<?= site_url('admin/users/' . $user['user_id'] . '/overrides/' . $o['id'] . '/delete') ?>" data-confirm="Remove this override?"><?= csrf_field() ?><button class="btn btn-sm btn-link text-danger p-0">Remove</button></form>
             </div>
         <?php endforeach ?>
@@ -75,7 +75,7 @@
                 <div class="col-8"><input class="form-control form-control-sm" name="reason" placeholder="Reason (required)" required aria-label="Reason"></div>
                 <div class="col-4"><input type="date" class="form-control form-control-sm" name="expires_at" aria-label="Expires" title="Optional expiry"></div>
                 <div class="col-8"><input type="password" class="form-control form-control-sm" name="admin_password" placeholder="Your password (for sensitive grants)" autocomplete="current-password" aria-label="Your password"></div>
-                <div class="col-4"><button class="btn btn-sm btn-dark w-100">Add</button></div>
+                <div class="col-4"><button class="btn btn-sm btn-primary w-100">Add</button></div>
             </div>
         </form>
     </div></div>
@@ -88,7 +88,7 @@
             <select class="form-select form-select-sm" name="employee_ids[]" multiple size="6" aria-label="Employees">
                 <?php foreach ($employees as $e): ?><option value="<?= $e['id'] ?>" <?= in_array((int) $e['id'], $scopes, true) ? 'selected' : '' ?>><?= esc($e['employee_code'] . ' — ' . $e['full_name']) ?></option><?php endforeach ?>
             </select>
-            <button class="btn btn-sm btn-dark mt-2">Save allowlist</button>
+            <button class="btn btn-sm btn-primary mt-2">Save allowlist</button>
         </form>
     </div></div>
     <?php endif ?>
@@ -99,7 +99,7 @@
         <form method="post" action="<?= site_url('admin/users/' . $user['user_id'] . '/password') ?>" data-confirm="Reset this user's password and sign them out everywhere?" class="d-flex gap-2">
             <?= csrf_field() ?>
             <input type="text" class="form-control form-control-sm" name="password" placeholder="New temporary password (blank = generate)" autocomplete="new-password" aria-label="New password">
-            <button class="btn btn-sm btn-outline-dark text-nowrap">Reset</button>
+            <button class="btn btn-sm btn-outline-secondary text-nowrap">Reset</button>
         </form>
     </div></div>
     <?php endif ?>
@@ -107,19 +107,19 @@
 
 <div class="col-xl-7">
     <div class="card mb-3"><div class="card-body">
-        <div class="d-flex justify-content-between align-items-center"><div class="card-section-title mb-0">Effective permissions (<?= $grantedCount ?>)</div><input type="search" class="form-control form-control-sm" style="max-width:220px" placeholder="Filter…" data-perm-filter aria-label="Filter permissions"></div>
+        <div class="d-flex justify-content-between align-items-center"><div class="card-section-title mb-0">Effective permissions (<?= $grantedCount ?>)</div><input type="search" class="u-mxw-220px form-control form-control-sm" placeholder="Filter…" data-perm-filter aria-label="Filter permissions"></div>
         <p class="small text-muted mt-1">What this person can actually do right now, and why. ⚠ = sensitive.</p>
-        <div class="table-responsive" style="max-height:640px">
+        <div class="u-mxh-640px table-responsive">
         <table class="table table-sm small align-middle" data-perm-table>
             <thead><tr><th>Permission</th><th class="text-center">Allowed</th><th>Source</th></tr></thead>
             <tbody>
             <?php foreach ($modules as $mod => $def): ?>
-                <tr class="table-light"><th colspan="3"><?= esc($def['label']) ?></th></tr>
+                <tr><th colspan="3"><?= esc($def['label']) ?></th></tr>
                 <?php foreach ($def['perms'] as $k => $m): $s = $summary[$k]; ?>
                     <tr data-perm-row="<?= esc($k . ' ' . $m[0], 'attr') ?>">
                         <td><code><?= esc($k) ?></code><?= $flat[$k]['danger'] ? ' <span class="perm-danger" title="Sensitive">⚠</span>' : '' ?><div class="text-muted"><?= esc($m[0]) ?></div></td>
                         <td class="text-center"><?= $s['granted'] ? '<i class="bi bi-check-circle-fill text-success" aria-label="allowed"></i>' : '<i class="bi bi-dash-circle text-muted" aria-label="not allowed"></i>' ?></td>
-                        <td class="text-muted"><?= esc(implode(', ', $s['sources'])) ?><?= $s['denied_by_override'] ? ' <span class="badge bg-danger">denied by override</span>' : '' ?></td>
+                        <td class="text-muted"><?= esc(implode(', ', $s['sources'])) ?><?= $s['denied_by_override'] ? ' <span class="badge badge-danger">denied by override</span>' : '' ?></td>
                     </tr>
                 <?php endforeach ?>
             <?php endforeach ?>
@@ -136,7 +136,7 @@
         </div>
         <table class="table table-sm small mb-0"><thead><tr><th>Device</th><th>IP</th><th>Last activity</th><th>Status</th></tr></thead><tbody>
         <?php foreach ($sessions as $s): ?>
-            <tr><td><?= esc(mb_strimwidth((string) $s['user_agent'], 0, 50, '…')) ?></td><td class="mono"><?= esc($s['ip_address']) ?></td><td><?= dmy($s['last_activity_at'], true) ?></td><td><?= $s['revoked_at'] ? '<span class="badge bg-secondary">revoked</span>' : '<span class="badge bg-success">active</span>' ?></td></tr>
+            <tr><td><?= esc(mb_strimwidth((string) $s['user_agent'], 0, 50, '…')) ?></td><td class="mono"><?= esc($s['ip_address']) ?></td><td><?= dmy($s['last_activity_at'], true) ?></td><td><?= $s['revoked_at'] ? '<span class="badge badge-neutral">revoked</span>' : '<span class="badge badge-success">active</span>' ?></td></tr>
         <?php endforeach ?>
         <?php if ($sessions === []): ?><tr><td colspan="4" class="text-muted">No sessions recorded.</td></tr><?php endif ?>
         </tbody></table>
@@ -144,4 +144,4 @@
 </div>
 </div>
 <?= $this->endSection() ?>
-<?= $this->section('scripts') ?><script src="<?= base_url('assets/js/admin.js') ?>"></script><?= $this->endSection() ?>
+<?= $this->section('scripts') ?><script src="<?= asset('js/admin.js') ?>"></script><?= $this->endSection() ?>

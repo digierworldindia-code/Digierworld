@@ -8,12 +8,12 @@
 <table class="table table-sm align-middle small mb-0">
     <thead><tr><th>Role / user</th><?php foreach ($docTypes as $dt): ?><th class="text-center"><?= esc($dt['label']) ?></th><?php endforeach ?></tr></thead>
     <tbody>
-    <tr class="table-light"><th colspan="<?= count($docTypes) + 1 ?>">Roles</th></tr>
+    <tr><th colspan="<?= count($docTypes) + 1 ?>">Roles</th></tr>
     <?php foreach ($roles as $r): $key = 'r' . $r['id']; ?>
         <tr><td><?= esc($r['name']) ?></td>
         <?php foreach ($docTypes as $dk => $dt): ?><td class="text-center"><input type="checkbox" class="form-check-input" name="allow[<?= $key ?>][<?= $dk ?>]" value="1" <?= isset($policies[$key][$dk]) ? 'checked' : '' ?> <?= $canApprove ? '' : 'disabled' ?> aria-label="<?= esc($r['name'] . ' ' . $dt['label'], 'attr') ?>"></td><?php endforeach ?></tr>
     <?php endforeach ?>
-    <tr class="table-light"><th colspan="<?= count($docTypes) + 1 ?>">Individual users (optional, in addition to roles)</th></tr>
+    <tr><th colspan="<?= count($docTypes) + 1 ?>">Individual users (optional, in addition to roles)</th></tr>
     <?php foreach ($users as $u): $key = 'u' . $u['id']; ?>
         <tr><td><?= esc($u['full_name']) ?></td>
         <?php foreach ($docTypes as $dk => $dt): ?><td class="text-center"><input type="checkbox" class="form-check-input" name="allow[<?= $key ?>][<?= $dk ?>]" value="1" <?= isset($policies[$key][$dk]) ? 'checked' : '' ?> <?= $canApprove ? '' : 'disabled' ?> aria-label="<?= esc($u['full_name'] . ' ' . $dt['label'], 'attr') ?>"></td><?php endforeach ?></tr>
@@ -21,7 +21,7 @@
     </tbody>
 </table>
 </div></div>
-<?php if ($canApprove): ?><button class="btn btn-dark" data-confirm="Approve this signature policy as Owner?">Approve & save policy</button><?php else: ?><p class="small text-muted">Read-only: only an Owner / Super Admin can approve signature policy changes.</p><?php endif ?>
+<?php if ($canApprove): ?><button class="btn btn-primary" data-confirm="Approve this signature policy as Owner?">Approve & save policy</button><?php else: ?><p class="small text-muted">Read-only: only an Owner / Super Admin can approve signature policy changes.</p><?php endif ?>
 </form>
 <div class="row g-3 mt-1">
     <div class="col-lg-4"><div class="card"><div class="card-body small">
@@ -37,5 +37,5 @@
         </tbody></table>
     </div></div>
 </div>
-<?php if ($wizard): ?><div class="sticky-actions"><a href="<?= site_url('settings/setup') ?>" class="btn btn-dark">Back to setup overview</a></div><?php endif ?>
+<?php if ($wizard): ?><div class="sticky-actions"><a href="<?= site_url('settings/setup') ?>" class="btn btn-primary">Back to setup overview</a></div><?php endif ?>
 <?= $this->endSection() ?>

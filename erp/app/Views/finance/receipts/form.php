@@ -30,7 +30,7 @@ $errs = flash_errors();
         </div>
         <div class="d-flex justify-content-between align-items-start <?= $contact ? '' : 'd-none' ?>" data-customer-card>
             <div><div class="fw-semibold fs-5" data-c-name><?= esc($contact['name'] ?? '') ?></div><div class="small text-muted mono" data-c-meta><?= esc(($contact['contact_code'] ?? '') . ' · ' . ($contact['gstin'] ?? 'Unregistered')) ?></div></div>
-            <button type="button" class="btn btn-outline-dark btn-sm" data-change-customer>Change</button>
+            <button type="button" class="btn btn-outline-secondary btn-sm" data-change-customer>Change</button>
         </div>
     </div></div>
 
@@ -56,18 +56,18 @@ $errs = flash_errors();
     <div class="card mb-3"><div class="card-body">
         <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
             <div class="card-section-title mb-0">3. Apply to invoices</div>
-            <?php if ($canAllocate): ?><div class="btn-group btn-group-sm"><button type="button" class="btn btn-outline-dark" data-auto-allocate>Auto-apply oldest first</button><button type="button" class="btn btn-outline-secondary" data-clear-allocate>Clear</button></div><?php endif ?>
+            <?php if ($canAllocate): ?><div class="btn-group btn-group-sm"><button type="button" class="btn btn-outline-secondary" data-auto-allocate>Auto-apply oldest first</button><button type="button" class="btn btn-outline-secondary" data-clear-allocate>Clear</button></div><?php endif ?>
         </div>
         <?php if (! $canAllocate): ?><div class="small text-muted">You can record the payment; an accountant applies it to invoices. The full amount is kept as an advance until then.</div><?php endif ?>
         <div class="table-responsive"><table class="table table-sm align-middle small mb-0">
-            <thead><tr><th>Document</th><th>Date</th><th>Due</th><th class="num">Total</th><th class="num">Balance due</th><th class="num" style="width:150px">Apply now</th></tr></thead>
+            <thead><tr><th>Document</th><th>Date</th><th>Due</th><th class="num">Total</th><th class="num">Balance due</th><th class="u-w-150px num">Apply now</th></tr></thead>
             <tbody data-open-docs><tr><td colspan="6" class="text-muted">Choose a customer to see unpaid invoices.</td></tr></tbody>
         </table></div>
         <div class="small text-muted mt-2" data-advances></div>
     </div></div>
 </div>
 <div class="col-xl-4">
-    <div class="card totals-box mb-3" style="position:sticky;top:76px"><div class="card-body">
+    <div class="u-pos-sticky u-top-76px card totals-box mb-3"><div class="card-body">
         <div class="card-section-title">Summary</div>
         <div class="d-flex justify-content-between"><span>Amount received</span><strong data-s-amount>₹0.00</strong></div>
         <div class="d-flex justify-content-between"><span>Applied to invoices</span><span data-s-applied>₹0.00</span></div>
@@ -80,8 +80,8 @@ $errs = flash_errors();
 </div>
 <div class="sticky-actions">
     <a href="<?= site_url('finance/receipts') ?>" class="btn btn-outline-secondary">Cancel</a>
-    <button type="submit" class="btn btn-dark" data-submit>Record receipt</button>
+    <button type="submit" class="btn btn-primary" data-submit>Record receipt</button>
 </div>
 </form>
 <?= $this->endSection() ?>
-<?= $this->section('scripts') ?><script src="<?= base_url('assets/js/receipt-form.js') ?>"></script><?= $this->endSection() ?>
+<?= $this->section('scripts') ?><script src="<?= asset('js/receipt-form.js') ?>"></script><?= $this->endSection() ?>

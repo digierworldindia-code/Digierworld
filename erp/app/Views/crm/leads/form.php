@@ -5,7 +5,7 @@ $svc = old('services_interested') ?? (json_decode((string) ($lead['services_inte
 $errs = flash_errors();
 ?>
 <?= $this->section('content') ?>
-<form method="post" action="<?= site_url($lead ? 'crm/leads/' . $lead['id'] : 'crm/leads') ?>" class="card" style="max-width:980px"><div class="card-body">
+<form method="post" action="<?= site_url($lead ? 'crm/leads/' . $lead['id'] : 'crm/leads') ?>" class="u-mxw-980px card"><div class="card-body">
     <?= csrf_field() ?>
     <?php if (isset($errs['duplicate'])): ?><div class="alert alert-warning small">A lead with this mobile already exists (<?= esc($errs['duplicate']) ?>). <div class="form-check mt-1"><input class="form-check-input" type="checkbox" name="allow_duplicate" value="1" id="allow_duplicate"><label class="form-check-label" for="allow_duplicate">It is a different business — save anyway</label></div></div><?php endif ?>
     <div class="row g-3">
@@ -34,6 +34,6 @@ $errs = flash_errors();
         <div class="col-12"><label class="form-label" for="remarks">Remarks</label><textarea class="form-control" id="remarks" name="remarks" rows="2"><?= $v('remarks') ?></textarea></div>
     </div>
 </div>
-<div class="card-footer bg-white text-end"><a class="btn btn-outline-secondary" href="<?= site_url($lead ? 'crm/leads/' . $lead['id'] : 'crm/leads') ?>">Cancel</a> <button class="btn btn-dark" type="submit">Save lead</button></div>
+<div class="card-footer text-end"><a class="btn btn-outline-secondary" href="<?= site_url($lead ? 'crm/leads/' . $lead['id'] : 'crm/leads') ?>">Cancel</a> <button class="btn btn-primary" type="submit">Save lead</button></div>
 </form>
 <?= $this->endSection() ?>

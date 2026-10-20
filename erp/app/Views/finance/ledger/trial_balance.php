@@ -1,6 +1,6 @@
 <?= $this->extend('layouts/app') ?>
 <?= $this->section('pageActions') ?>
-<?php if (can('reports.export')): ?><a class="btn btn-outline-dark btn-sm" href="<?= site_url('finance/ledger/trial-balance?' . http_build_query(['from' => $from, 'to' => $to, 'format' => 'xlsx'])) ?>"><i class="bi bi-file-earmark-excel"></i> Excel</a><?php endif ?>
+<?php if (can('reports.export')): ?><a class="btn btn-outline-secondary btn-sm" href="<?= site_url('finance/ledger/trial-balance?' . http_build_query(['from' => $from, 'to' => $to, 'format' => 'xlsx'])) ?>"><i class="bi bi-file-earmark-excel"></i> Excel</a><?php endif ?>
 <?= $this->endSection() ?>
 <?= $this->section('content') ?>
 <?= view('finance/ledger/_tabs', ['active' => 'finance/ledger/trial-balance']) ?>
@@ -16,7 +16,7 @@
         <td class="num"><?= (float) $r['debit'] ? inr($r['debit']) : '' ?></td><td class="num"><?= (float) $r['credit'] ? inr($r['credit']) : '' ?></td>
         <td class="num"><?= $c > 0 ? inr($r['closing']) : '' ?></td><td class="num"><?= $c < 0 ? inr(\App\Libraries\Dec::abs($r['closing'])) : '' ?></td></tr>
     <?php endforeach ?>
-    <tr class="table-light fw-semibold"><td colspan="3">Total</td><td class="num"><?= inr($tot['pd']) ?></td><td class="num"><?= inr($tot['pc']) ?></td><td class="num"><?= inr($tot['dr']) ?></td><td class="num"><?= inr($tot['cr']) ?></td></tr>
+    <tr class="fw-semibold"><td colspan="3">Total</td><td class="num"><?= inr($tot['pd']) ?></td><td class="num"><?= inr($tot['pc']) ?></td><td class="num"><?= inr($tot['dr']) ?></td><td class="num"><?= inr($tot['cr']) ?></td></tr>
     </tbody>
 </table>
 </div></div>

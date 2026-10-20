@@ -2,8 +2,8 @@
 <?php
 $stepCard = static function (int $n, string $key, string $title, string $url, bool $done, string $body) {
     return '<div class="col-md-6 col-xxl-4"><div class="card h-100 ' . ($done ? 'border-success' : '') . '"><div class="card-body">'
-        . '<div class="d-flex justify-content-between align-items-start mb-2"><div class="fw-semibold"><span class="badge ' . ($done ? 'bg-success' : 'bg-secondary') . ' me-2">' . ($done ? '✓' : $n) . '</span>' . esc($title) . '</div>'
-        . '<a href="' . site_url($url . '?wizard=1') . '" class="btn btn-sm ' . ($done ? 'btn-outline-dark' : 'btn-gold') . '">' . ($done ? 'Review' : 'Set up') . '</a></div>'
+        . '<div class="d-flex justify-content-between align-items-start mb-2"><div class="fw-semibold"><span class="badge ' . ($done ? 'badge-success' : 'badge-neutral') . ' me-2">' . ($done ? '✓' : $n) . '</span>' . esc($title) . '</div>'
+        . '<a href="' . site_url($url . '?wizard=1') . '" class="btn btn-sm ' . ($done ? 'btn-outline-secondary' : 'btn-primary') . '">' . ($done ? 'Review' : 'Set up') . '</a></div>'
         . '<div class="small">' . $body . '</div></div></div></div>';
 };
 $addr = trim(implode(', ', array_filter([$c['reg_address_line1'] ?? '', $c['reg_address_line2'] ?? '', $c['reg_city'] ?? '', $c['reg_pincode'] ?? ''])));
@@ -17,7 +17,7 @@ $addr = trim(implode(', ', array_filter([$c['reg_address_line1'] ?? '', $c['reg_
         ? '<strong>' . esc($c['legal_name']) . '</strong>' . ($c['trade_name'] ? ' (' . esc($c['trade_name']) . ')' : '') . '<br>GSTIN <span class="mono">' . esc($c['gstin'] ?? '—') . '</span> · PAN <span class="mono">' . esc($c['pan'] ?? '—') . '</span><br>' . esc($state['name'] ?? '') . ' (' . esc($c['state_code'] ?? '') . ')<br><span class="text-muted">' . esc($addr) . '</span>'
         : '<span class="text-danger">Not entered.</span> Tax documents cannot be finalized until the legal name and state are saved.') ?>
 <?= $stepCard(2, 'branding', 'Brand assets', 'settings/branding', ! empty($steps['branding']),
-    ($logo ? '<div class="asset-preview mb-2" style="min-height:60px"><img src="' . site_url('settings/branding/' . $logo['id'] . '/preview') . '" alt="Logo" style="max-height:50px"></div>' : '<span class="text-danger">No logo uploaded.</span><br>')
+    ($logo ? '<div class="u-mnh-60px asset-preview mb-2"><img class="u-mxh-50px" src="' . site_url('settings/branding/' . $logo['id'] . '/preview') . '" alt="Logo"></div>' : '<span class="text-danger">No logo uploaded.</span><br>')
     . 'Signature: ' . ($signature ? 'v' . (int) $signature['version'] : '—') . ' · Stamp: ' . ($stamp ? 'v' . (int) $stamp['version'] : '—')) ?>
 <?php
 $bankBody = '';

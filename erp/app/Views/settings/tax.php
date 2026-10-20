@@ -21,7 +21,7 @@
                     <div class="col-md-2"><input type="date" class="form-control form-control-sm" name="effective_to" value="<?= esc((string) $r['effective_to']) ?>" aria-label="To"></div>
                     <div class="col-md-2"><select class="form-select form-select-sm" name="review_status" aria-label="Review"><option value="suggested" <?= $r['review_status'] === 'suggested' ? 'selected' : '' ?>>Suggested</option><option value="accountant_reviewed" <?= $r['review_status'] === 'accountant_reviewed' ? 'selected' : '' ?>>Accountant reviewed</option></select></div>
                     <div class="col-md-1 form-check text-center"><input type="checkbox" class="form-check-input" name="is_active" value="1" <?= $r['is_active'] ? 'checked' : '' ?> title="Active" aria-label="Active"></div>
-                    <div class="col-md-1"><button class="btn btn-sm btn-dark w-100">Save</button></div>
+                    <div class="col-md-1"><button class="btn btn-sm btn-primary w-100">Save</button></div>
                     <?php if ($r['reviewer']): ?><div class="col-12 text-muted">Reviewed by <?= esc($r['reviewer']) ?> on <?= dmy($r['reviewed_at']) ?></div><?php endif ?>
                 </form>
                 </td>
@@ -36,7 +36,7 @@
             <div class="col-md-2"><label class="form-label small" for="nr_cess">Cess %</label><input class="form-control form-control-sm" id="nr_cess" name="cess_rate" value="0"></div>
             <div class="col-md-3"><label class="form-label small" for="nr_from">Effective from</label><input type="date" class="form-control form-control-sm" id="nr_from" name="effective_from" required></div>
             <input type="hidden" name="is_active" value="1">
-            <div class="col-md-2"><button class="btn btn-sm btn-gold w-100">Add rate</button></div>
+            <div class="col-md-2"><button class="btn btn-sm btn-primary w-100">Add rate</button></div>
         </form>
     </div>
 </div>
@@ -49,7 +49,7 @@
                 <?= csrf_field() ?>
                 <div class="d-flex justify-content-between align-items-center">
                     <div class="form-check form-switch mb-0"><input class="form-check-input" type="checkbox" name="is_enabled" value="1" id="tt_<?= esc($t['code']) ?>" <?= $t['is_enabled'] ? 'checked' : '' ?>><label class="form-check-label small fw-semibold" for="tt_<?= esc($t['code']) ?>"><?= esc($t['label']) ?></label></div>
-                    <button class="btn btn-sm btn-outline-dark">Save</button>
+                    <button class="btn btn-sm btn-outline-secondary">Save</button>
                 </div>
                 <div class="small text-muted">GSTR-1: <?= esc((string) $t['gstr1_section']) ?> · <?= $t['charges_tax'] ? 'GST charged' : 'no GST charged' ?></div>
                 <input class="form-control form-control-sm mt-1" name="notes" value="<?= esc((string) $t['notes']) ?>" aria-label="Notes">
@@ -63,5 +63,5 @@
     </div></div>
 </div>
 </div>
-<?php if ($wizard): ?><div class="sticky-actions"><a href="<?= site_url('settings/sequences?wizard=1') ?>" class="btn btn-dark">Continue to document series →</a></div><?php endif ?>
+<?php if ($wizard): ?><div class="sticky-actions"><a href="<?= site_url('settings/sequences?wizard=1') ?>" class="btn btn-primary">Continue to document series →</a></div><?php endif ?>
 <?= $this->endSection() ?>

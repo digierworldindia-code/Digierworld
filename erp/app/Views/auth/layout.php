@@ -7,15 +7,16 @@ try {
 }
 ?>
 <!doctype html>
-<html lang="en-IN">
+<html lang="en-IN" data-bs-theme="dark">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex, nofollow">
     <title><?= $this->renderSection('title') ?> · DGR Office</title>
-    <link rel="stylesheet" href="<?= base_url('assets/vendor/bootstrap/bootstrap.min.css') ?>">
-    <link rel="stylesheet" href="<?= base_url('assets/vendor/bootstrap-icons/bootstrap-icons.min.css') ?>">
-    <link rel="stylesheet" href="<?= base_url('assets/css/app.css') ?>">
+    <meta name="color-scheme" content="dark">
+    <meta name="theme-color" content="#0B0B0D">
+    <link rel="icon" href="<?= asset('img/favicon.png') ?>">
+<?= view('partials/theme_head') ?>
 </head>
 <body>
 <main class="auth-wrap">
@@ -24,13 +25,13 @@ try {
             <?php if ($hasLogo): ?>
                 <img src="<?= site_url('brand/logo') ?>" alt="Company logo" class="auth-logo">
             <?php else: ?>
-                <div class="fw-bold mb-3" style="letter-spacing:.12em">DIGIE R WORLD</div>
+                <div class="auth-brand mb-3">DIGIE R WORLD</div>
             <?php endif ?>
             <div class="small text-muted mb-3">DGR Office — Business ERP</div>
         </div>
         <?= $this->renderSection('main') ?>
     </div>
 </main>
-<script src="<?= base_url('assets/vendor/bootstrap/bootstrap.bundle.min.js') ?>"></script>
+<script src="<?= asset('vendor/bootstrap/bootstrap.bundle.min.js') ?>"></script>
 </body>
 </html>

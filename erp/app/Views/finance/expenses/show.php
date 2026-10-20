@@ -1,12 +1,12 @@
 <?= $this->extend('layouts/app') ?>
 <?php $D = \App\Libraries\Dec::class; $tax = $D::add($e['cgst_amount'], $e['sgst_amount'], $e['utgst_amount'], $e['igst_amount']); $due = $D::sub($e['total_amount'], $e['paid_amount']); ?>
 <?= $this->section('pageActions') ?>
-<?php if ($canEdit): ?><a class="btn btn-outline-dark btn-sm" href="<?= site_url('finance/expenses/' . $e['id'] . '/edit') ?>"><i class="bi bi-pencil"></i> Edit</a><?php endif ?>
+<?php if ($canEdit): ?><a class="btn btn-outline-secondary btn-sm" href="<?= site_url('finance/expenses/' . $e['id'] . '/edit') ?>"><i class="bi bi-pencil"></i> Edit</a><?php endif ?>
 <?= $this->endSection() ?>
 <?= $this->section('content') ?>
 <div class="d-flex flex-wrap gap-2 mb-3 small">
     <?= status_badge($e['approval_status']) ?> <?= $e['approval_status'] === 'approved' ? status_badge($e['payment_status']) : '' ?>
-    <?php if ($e['paid_through'] === 'employee_reimbursable'): ?><span class="badge text-bg-light border">Reimburse <?= esc((string) $e['employee_name']) ?> · <?= esc($e['reimbursement_status']) ?></span><?php endif ?>
+    <?php if ($e['paid_through'] === 'employee_reimbursable'): ?><span class="badge badge-neutral">Reimburse <?= esc((string) $e['employee_name']) ?> · <?= esc($e['reimbursement_status']) ?></span><?php endif ?>
 </div>
 <?php if ($e['approval_status'] === 'rejected'): ?><div class="alert alert-secondary small"><strong>Rejected</strong> by <?= esc((string) $e['approver']) ?>: <?= esc((string) $e['rejection_reason']) ?></div><?php endif ?>
 <div class="row g-3">
@@ -35,7 +35,7 @@
                 <?php foreach ($itcRules as $r): ?><option value="<?= $r['id'] ?>" <?= (int) $r['id'] === (int) $e['itc_rule_id'] ? 'selected' : '' ?>><?= esc($r['name']) ?></option><?php endforeach ?>
             </select></div>
             <?php endif ?>
-            <div class="col-md-4"><button class="btn btn-dark btn-sm w-100" type="submit"><i class="bi bi-check2"></i> Approve &amp; post</button></div>
+            <div class="col-md-4"><button class="btn btn-primary btn-sm w-100" type="submit"><i class="bi bi-check2"></i> Approve &amp; post</button></div>
         </form>
         <form method="post" action="<?= site_url('finance/expenses/' . $e['id'] . '/reject') ?>" class="d-flex gap-2">
             <?= csrf_field() ?><input class="form-control form-control-sm" name="reason" placeholder="Reason for rejecting" aria-label="Reason for rejecting" minlength="5" required><button class="btn btn-outline-danger btn-sm" type="submit">Reject</button>
@@ -45,7 +45,7 @@
     <div class="alert alert-info small"><i class="bi bi-people"></i> Separation of duties: you recorded this expense, so another approver must approve it.</div>
     <?php endif ?>
 
-    <div class="table-card mb-3"><div class="card-header bg-white"><strong>Payments</strong></div><div class="table-responsive"><table class="table small align-middle mb-0">
+    <div class="table-card mb-3"><div class="card-header"><strong>Payments</strong></div><div class="table-responsive"><table class="table small align-middle mb-0">
         <thead><tr><th>Date</th><th>Mode</th><th>Account</th><th>Reference</th><th class="num">Amount</th><th>Bank</th></tr></thead><tbody>
         <?php foreach ($payments as $p): ?><tr><td><?= dmy($p['payment_date']) ?></td><td><?= esc($p['mode']) ?></td><td><?= esc($p['account_name']) ?></td><td class="mono"><?= esc((string) $p['reference_no']) ?></td><td class="num"><?= inr($p['amount']) ?></td><td><?= esc($p['reconciliation_status']) ?></td></tr><?php endforeach ?>
         <?php if ($payments === []): ?><tr><td colspan="6" class="text-muted">No payments yet.</td></tr><?php endif ?>
@@ -61,7 +61,7 @@
             <div class="col-md-3"><select class="form-select form-select-sm" name="mode" aria-label="Mode"><?php foreach ($modes as $m): ?><option value="<?= $m ?>" <?= $m === 'bank_transfer' ? 'selected' : '' ?>><?= esc(ucwords(str_replace('_', ' ', $m))) ?></option><?php endforeach ?></select></div>
             <div class="col-md-3"><select class="form-select form-select-sm" name="bank_cash_account_id" aria-label="Paid from" required><?php foreach ($accounts as $a): ?><option value="<?= $a['id'] ?>"><?= esc($a['display_name']) ?></option><?php endforeach ?></select></div>
             <div class="col-md-9"><input class="form-control form-control-sm" name="reference_no" placeholder="UTR / cheque no." aria-label="Reference"></div>
-            <div class="col-md-3"><button class="btn btn-dark btn-sm w-100" type="submit">Record payment</button></div>
+            <div class="col-md-3"><button class="btn btn-primary btn-sm w-100" type="submit">Record payment</button></div>
         </div>
     </div></form>
     <?php endif ?>
@@ -71,7 +71,7 @@
         <?php foreach ($files as $f): ?><div class="small"><i class="bi bi-paperclip"></i> <a href="<?= site_url('files/' . $f['id']) ?>" target="_blank" rel="noopener"><?= esc($f['original_name']) ?></a> <span class="text-muted"><?= number_format($f['size_bytes'] / 1024, 0) ?> KB</span></div><?php endforeach ?>
         <?php if ($files === []): ?><div class="small text-muted mb-2">No bill attached. Attach the vendor's tax invoice to support the ITC claim.</div><?php endif ?>
         <form method="post" action="<?= site_url('finance/expenses/' . $e['id'] . '/files') ?>" enctype="multipart/form-data" class="d-flex gap-2 mt-2">
-            <?= csrf_field() ?><input type="file" class="form-control form-control-sm" name="bills[]" accept=".pdf,.png,.jpg,.jpeg" multiple required aria-label="Bill file"><button class="btn btn-outline-dark btn-sm" type="submit">Attach</button>
+            <?= csrf_field() ?><input type="file" class="form-control form-control-sm" name="bills[]" accept=".pdf,.png,.jpg,.jpeg" multiple required aria-label="Bill file"><button class="btn btn-outline-secondary btn-sm" type="submit">Attach</button>
         </form>
     </div></div>
 </div>
@@ -86,7 +86,7 @@
         <hr>
         <div class="d-flex justify-content-between"><span>ITC eligible</span><strong><?= inr($e['itc_eligible_amount']) ?></strong></div>
         <div class="d-flex justify-content-between"><span>ITC not eligible (cost)</span><span><?= inr($e['itc_ineligible_amount']) ?></span></div>
-        <div class="text-muted mt-1">Rule: <?= esc((string) $e['itc_rule_name']) ?: 'none' ?><?= $e['itc_review'] === 'suggested' ? ' <span class="badge text-bg-warning">not yet reviewed by accountant</span>' : '' ?></div>
+        <div class="text-muted mt-1">Rule: <?= esc((string) $e['itc_rule_name']) ?: 'none' ?><?= $e['itc_review'] === 'suggested' ? ' <span class="badge badge-warning">not yet reviewed by accountant</span>' : '' ?></div>
         <?php if ($e['journal_entry_id'] && can('finance.ledger.view')): ?><div class="mt-2"><a href="<?= site_url('finance/ledger/entries/' . $e['journal_entry_id']) ?>">View journal entry</a></div><?php endif ?>
     </div></div>
     <div class="card"><div class="card-body">

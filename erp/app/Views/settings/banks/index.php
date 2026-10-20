@@ -1,6 +1,6 @@
 <?= $this->extend('layouts/app') ?>
 <?= $this->section('pageActions') ?>
-<?php if ($canEdit): ?><a href="<?= site_url('settings/banks/new' . ($wizard ? '?wizard=1' : '')) ?>" class="btn btn-gold btn-sm"><i class="bi bi-plus-lg"></i> Add account</a><?php endif ?>
+<?php if ($canEdit): ?><a href="<?= site_url('settings/banks/new' . ($wizard ? '?wizard=1' : '')) ?>" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg"></i> Add account</a><?php endif ?>
 <?= $this->endSection() ?>
 <?= $this->section('content') ?>
 <?php if ($wizard): ?><?= view('settings/_wizard', ['current' => 'banks']) ?><?php endif ?>
@@ -12,8 +12,8 @@
             <div><div class="fw-semibold"><?= $a['is_default_on_invoice'] ? '<i class="bi bi-star-fill text-gold" title="Default on invoices"></i> ' : '' ?><?= esc($a['display_name']) ?></div>
                 <div class="small text-muted"><?= esc(ucwords(str_replace('_', ' ', $a['account_kind']))) ?> · ledger <?= esc($a['ledger_code']) ?></div></div>
             <div class="text-end">
-                <?php if ($a['ownership'] === 'owner_personal'): ?><span class="badge bg-warning text-dark">Owner personal</span><?php elseif ($a['ownership'] === 'company'): ?><span class="badge bg-light text-dark border">Company</span><?php else: ?><span class="badge bg-light text-dark border">Other</span><?php endif ?>
-                <?php if (! $a['is_active']): ?><span class="badge bg-secondary">Inactive</span><?php endif ?>
+                <?php if ($a['ownership'] === 'owner_personal'): ?><span class="badge badge-warning">Owner personal</span><?php elseif ($a['ownership'] === 'company'): ?><span class="badge badge-neutral">Company</span><?php else: ?><span class="badge badge-neutral">Other</span><?php endif ?>
+                <?php if (! $a['is_active']): ?><span class="badge badge-neutral">Inactive</span><?php endif ?>
             </div>
         </div>
         <?php if ($a['account_kind'] !== 'cash'): ?>
@@ -29,15 +29,15 @@
         </dl>
         <?php endif ?>
         <div class="small mt-2">
-            <?= $a['show_on_invoice'] ? '<span class="badge bg-success">Printed on invoices</span>' : '<span class="badge bg-light text-dark border">Not printed</span>' ?>
-            <?php if ($a['ownership'] === 'owner_personal'): ?><?= $a['print_approved_by'] ? '<span class="badge bg-info text-dark">Print approved by owner</span>' : '<span class="badge bg-secondary">Print not approved</span>' ?><?php endif ?>
-            <?php if ($a['requires_review']): ?><span class="badge bg-warning text-dark">Receipts flagged for review</span><?php endif ?>
+            <?= $a['show_on_invoice'] ? '<span class="badge badge-success">Printed on invoices</span>' : '<span class="badge badge-neutral">Not printed</span>' ?>
+            <?php if ($a['ownership'] === 'owner_personal'): ?><?= $a['print_approved_by'] ? '<span class="badge badge-info">Print approved by owner</span>' : '<span class="badge badge-neutral">Print not approved</span>' ?><?php endif ?>
+            <?php if ($a['requires_review']): ?><span class="badge badge-warning">Receipts flagged for review</span><?php endif ?>
         </div>
         <?php if ($a['classification_note']): ?><div class="small text-muted mt-1">Classification: <?= esc($a['classification_note']) ?></div><?php endif ?>
-        <?php if ($canEdit): ?><a href="<?= site_url('settings/banks/' . $a['id']) ?>" class="btn btn-sm btn-outline-dark mt-2">Edit</a><?php endif ?>
+        <?php if ($canEdit): ?><a href="<?= site_url('settings/banks/' . $a['id']) ?>" class="btn btn-sm btn-outline-secondary mt-2">Edit</a><?php endif ?>
     </div></div></div>
 <?php endforeach ?>
 </div>
-<?php if ($wizard): ?><div class="sticky-actions"><a href="<?= site_url('settings/tax?wizard=1') ?>" class="btn btn-dark">Continue to tax & finance →</a></div><?php endif ?>
+<?php if ($wizard): ?><div class="sticky-actions"><a href="<?= site_url('settings/tax?wizard=1') ?>" class="btn btn-primary">Continue to tax & finance →</a></div><?php endif ?>
 <?= $this->endSection() ?>
-<?= $this->section('scripts') ?><script src="<?= base_url('assets/js/banks.js') ?>"></script><?= $this->endSection() ?>
+<?= $this->section('scripts') ?><script src="<?= asset('js/banks.js') ?>"></script><?= $this->endSection() ?>

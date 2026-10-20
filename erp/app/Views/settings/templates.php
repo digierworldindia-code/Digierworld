@@ -6,13 +6,13 @@
 <div class="row g-3">
 <?php foreach ($rows as $t): $s = $t['settings']; $chk = static fn (string $k, bool $d = true) => ($s[$k] ?? $d) ? 'checked' : ''; ?>
 <div class="col-xl-6">
-<form method="post" action="<?= site_url('settings/templates/' . $t['id'] . ($wizard ? '?wizard=1' : '')) ?>" class="card h-100 <?= (int) $t['id'] === $default ? 'border-dark' : '' ?>">
+<form method="post" action="<?= site_url('settings/templates/' . $t['id'] . ($wizard ? '?wizard=1' : '')) ?>" class="card h-100 <?= (int) $t['id'] === $default ? 'border-primary' : '' ?>">
     <?= csrf_field() ?>
     <div class="card-body">
         <div class="d-flex justify-content-between align-items-start mb-2">
-            <div><div class="fw-semibold"><?= esc($t['name']) ?> <?php if ((int) $t['id'] === $default): ?><span class="badge text-bg-dark">Default</span><?php endif ?></div>
+            <div><div class="fw-semibold"><?= esc($t['name']) ?> <?php if ((int) $t['id'] === $default): ?><span class="badge badge-neutral">Default</span><?php endif ?></div>
                 <div class="small text-muted"><?= esc(ucfirst($t['layout'])) ?> layout · version <?= (int) $t['version'] ?> · used on <?= (int) $t['used'] ?> issued document(s)</div></div>
-            <div class="btn-group btn-group-sm"><a class="btn btn-outline-dark" href="<?= site_url('settings/templates/' . $t['id'] . '/preview') ?>" target="_blank" rel="noopener"><i class="bi bi-eye"></i> Preview</a><a class="btn btn-outline-dark" href="<?= site_url('settings/templates/' . $t['id'] . '/preview?gst=igst&signed=1') ?>" target="_blank" rel="noopener" title="Inter-state sample with signature">IGST</a></div>
+            <div class="btn-group btn-group-sm"><a class="btn btn-outline-secondary" href="<?= site_url('settings/templates/' . $t['id'] . '/preview') ?>" target="_blank" rel="noopener"><i class="bi bi-eye"></i> Preview</a><a class="btn btn-outline-secondary" href="<?= site_url('settings/templates/' . $t['id'] . '/preview?gst=igst&signed=1') ?>" target="_blank" rel="noopener" title="Inter-state sample with signature">IGST</a></div>
         </div>
         <div class="row g-2 small">
             <div class="col-4"><label class="form-label" for="ac<?= $t['id'] ?>">Accent</label><input type="color" class="form-control form-control-color w-100" id="ac<?= $t['id'] ?>" name="accent" value="<?= esc($s['accent'] ?? '#222222') ?>"></div>
@@ -33,10 +33,10 @@
         </div>
         <div class="small text-muted mt-2">Signature and stamp appear only when the signature policy allows the person finalizing, and they choose to apply it.</div>
     </div>
-    <div class="card-footer bg-white text-end"><button class="btn btn-dark btn-sm" type="submit">Save as new version</button></div>
+    <div class="card-footer text-end"><button class="btn btn-primary btn-sm" type="submit">Save as new version</button></div>
 </form>
 </div>
 <?php endforeach ?>
 </div>
-<?php if ($wizard): ?><div class="sticky-actions"><a href="<?= site_url('settings/signature-policy?wizard=1') ?>" class="btn btn-dark">Continue to signature policy →</a></div><?php endif ?>
+<?php if ($wizard): ?><div class="sticky-actions"><a href="<?= site_url('settings/signature-policy?wizard=1') ?>" class="btn btn-primary">Continue to signature policy →</a></div><?php endif ?>
 <?= $this->endSection() ?>

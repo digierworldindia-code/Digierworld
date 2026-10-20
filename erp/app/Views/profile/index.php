@@ -10,10 +10,10 @@
                     <dt class="col-5">Email (login)</dt><dd class="col-7"><?= esc($email) ?></dd>
                     <dt class="col-5">Phone</dt><dd class="col-7"><?= esc($profile['phone'] ?? '—') ?></dd>
                     <dt class="col-5">Roles</dt>
-                    <dd class="col-7"><?php foreach ($roles as $r): ?><span class="badge bg-dark me-1"><?= esc($r['name']) ?></span><?php if ($r['expires_at']): ?><span class="small text-muted">until <?= dmy($r['expires_at'], true) ?></span><?php endif ?><?php endforeach ?></dd>
+                    <dd class="col-7"><?php foreach ($roles as $r): ?><span class="badge badge-neutral me-1"><?= esc($r['name']) ?></span><?php if ($r['expires_at']): ?><span class="small text-muted">until <?= dmy($r['expires_at'], true) ?></span><?php endif ?><?php endforeach ?></dd>
                     <dt class="col-5">Permissions</dt><dd class="col-7"><?= count($perms) ?> effective permissions</dd>
                 </dl>
-                <a href="<?= site_url('profile/password') ?>" class="btn btn-outline-dark btn-sm mt-3"><i class="bi bi-key"></i> Change password</a>
+                <a href="<?= site_url('profile/password') ?>" class="btn btn-outline-secondary btn-sm mt-3"><i class="bi bi-key"></i> Change password</a>
             </div>
         </div>
         <div class="card mt-3">
@@ -40,10 +40,10 @@
                     <tbody>
                     <?php foreach ($sessions as $s): ?>
                         <tr>
-                            <td class="small"><?= esc(mb_strimwidth((string) $s['user_agent'], 0, 60, '…')) ?><?= $s['session_id'] === $currentSid ? ' <span class="badge bg-gold-soft text-dark">this device</span>' : '' ?></td>
+                            <td class="small"><?= esc(mb_strimwidth((string) $s['user_agent'], 0, 60, '…')) ?><?= $s['session_id'] === $currentSid ? ' <span class="badge badge-gold">this device</span>' : '' ?></td>
                             <td class="small mono"><?= esc($s['ip_address']) ?></td>
                             <td class="small"><?= dmy($s['last_activity_at'], true) ?></td>
-                            <td><?= $s['revoked_at'] ? '<span class="badge bg-secondary">Signed out</span>' : '<span class="badge bg-success">Active</span>' ?></td>
+                            <td><?= $s['revoked_at'] ? '<span class="badge badge-neutral">Signed out</span>' : '<span class="badge badge-success">Active</span>' ?></td>
                             <td class="text-end">
                                 <?php if (! $s['revoked_at'] && $s['session_id'] !== $currentSid): ?>
                                     <form method="post" action="<?= site_url('profile/sessions/' . $s['id'] . '/revoke') ?>" data-confirm="Sign out this session?"><?= csrf_field() ?><button class="btn btn-sm btn-outline-danger">Sign out</button></form>

@@ -20,9 +20,9 @@ $chip   = static function (array $e, bool $wrap = false) use ($kinds): string {
 <?= $this->extend('layouts/app') ?>
 <?= $this->section('pageActions') ?>
 <div class="btn-group btn-group-sm" role="group" aria-label="Change month">
-    <a class="btn btn-outline-dark" href="<?= site_url('calendar?month=' . $prev) ?>"><i class="bi bi-chevron-left"></i><span class="visually-hidden">Previous month</span></a>
-    <a class="btn btn-outline-dark" href="<?= site_url('calendar') ?>">This month</a>
-    <a class="btn btn-outline-dark" href="<?= site_url('calendar?month=' . $next) ?>"><i class="bi bi-chevron-right"></i><span class="visually-hidden">Next month</span></a>
+    <a class="btn btn-outline-secondary" href="<?= site_url('calendar?month=' . $prev) ?>"><i class="bi bi-chevron-left"></i><span class="visually-hidden">Previous month</span></a>
+    <a class="btn btn-outline-secondary" href="<?= site_url('calendar') ?>">This month</a>
+    <a class="btn btn-outline-secondary" href="<?= site_url('calendar?month=' . $next) ?>"><i class="bi bi-chevron-right"></i><span class="visually-hidden">Next month</span></a>
 </div>
 <?= $this->endSection() ?>
 <?= $this->section('content') ?>
@@ -36,7 +36,7 @@ $chip   = static function (array $e, bool $wrap = false) use ($kinds): string {
         </div>
     </div>
     <?php if ($total === 0): ?>
-        <div class="alert alert-light border small mb-2">Nothing scheduled for you this month. Tasks, follow-ups, visits, meetings and interviews assigned to you, and your leave, appear here automatically.</div>
+        <div class="alert alert-secondary border small mb-2">Nothing scheduled for you this month. Tasks, follow-ups, visits, meetings and interviews assigned to you, and your leave, appear here automatically.</div>
     <?php endif ?>
 
     <div class="d-none d-md-block">

@@ -98,14 +98,6 @@ $stateSelect = static function (string $name, ?string $selected) use ($states, $
             <div class="col-5"><label class="form-label" for="lut_valid_till">Valid till</label><input type="date" class="form-control<?= is_invalid('lut_valid_till') ?>" id="lut_valid_till" name="lut_valid_till" value="<?= $v('lut_valid_till') ?>" <?= $dis ?>><?= field_error('lut_valid_till') ?></div>
         </div>
     </div></div>
-    <div class="card mb-3"><div class="card-body">
-        <div class="card-section-title">Brand colours (UI)</div>
-        <div class="row g-2">
-            <div class="col-6"><label class="form-label" for="brand_primary">Primary</label><input type="color" class="form-control form-control-color w-100" id="brand_primary" name="brand_primary" value="<?= $v('brand_primary', '#111111') ?>" <?= $dis ?>></div>
-            <div class="col-6"><label class="form-label" for="brand_accent">Accent</label><input type="color" class="form-control form-control-color w-100" id="brand_accent" name="brand_accent" value="<?= $v('brand_accent', '#B08D57') ?>" <?= $dis ?>></div>
-        </div>
-        <div class="form-text">Your official logo is never recoloured — these only theme the app.</div>
-    </div></div>
     <div class="card"><div class="card-body small">
         <div class="card-section-title">Profile history</div>
         <?php foreach ($versions as $ver): ?><div class="d-flex justify-content-between border-bottom py-1"><span>v<?= (int) $ver['profile_version'] ?> · <?= esc($ver['full_name'] ?? 'system') ?></span><span class="text-muted"><?= dmy($ver['created_at'], true) ?></span></div><?php endforeach ?>
@@ -113,7 +105,7 @@ $stateSelect = static function (string $name, ?string $selected) use ($states, $
     </div></div>
 </div>
 </div>
-<?php if ($canEdit): ?><div class="sticky-actions"><button class="btn btn-dark"><?= $wizard ? 'Save & continue →' : 'Save company profile' ?></button></div><?php endif ?>
+<?php if ($canEdit): ?><div class="sticky-actions"><button class="btn btn-primary"><?= $wizard ? 'Save & continue →' : 'Save company profile' ?></button></div><?php endif ?>
 </form>
 <?= $this->endSection() ?>
-<?= $this->section('scripts') ?><script src="<?= base_url('assets/js/settings.js') ?>"></script><?= $this->endSection() ?>
+<?= $this->section('scripts') ?><script src="<?= asset('js/settings.js') ?>"></script><?= $this->endSection() ?>

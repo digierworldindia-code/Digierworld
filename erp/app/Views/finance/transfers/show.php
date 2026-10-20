@@ -4,7 +4,7 @@
 <?= $this->endSection() ?>
 <?= $this->section('content') ?>
 <?php if ($t['status'] === 'void'): ?><div class="alert alert-secondary"><strong>Void</strong> on <?= dmy($t['voided_at'], true) ?>: <?= esc((string) $t['void_reason']) ?></div><?php endif ?>
-<div class="card" style="max-width:820px"><div class="card-body">
+<div class="u-mxw-820px card"><div class="card-body">
     <div class="row g-3 small">
         <div class="col-sm-4"><div class="text-muted">Kind</div><?= esc($kinds[$t['transfer_kind']] ?? $t['transfer_kind']) ?></div>
         <div class="col-sm-4"><div class="text-muted">Date</div><?= dmy($t['transfer_date']) ?></div>

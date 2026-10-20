@@ -1,6 +1,6 @@
 <?= $this->extend('layouts/app') ?>
 <?= $this->section('pageActions') ?>
-<?php if (can('finance.bank.import')): ?><a href="<?= site_url('finance/reconciliation/import' . ($accId ? '?account=' . $accId : '')) ?>" class="btn btn-gold btn-sm"><i class="bi bi-upload"></i> Import statement</a><?php endif ?>
+<?php if (can('finance.bank.import')): ?><a href="<?= site_url('finance/reconciliation/import' . ($accId ? '?account=' . $accId : '')) ?>" class="btn btn-primary btn-sm"><i class="bi bi-upload"></i> Import statement</a><?php endif ?>
 <?= $this->endSection() ?>
 <?= $this->section('content') ?>
 <?php if ($accounts === []): ?>
@@ -43,10 +43,10 @@
                 <?php foreach ($l['suggestions'] as $i => $sg): ?>
                 <div class="form-check small">
                     <input class="form-check-input" type="checkbox" name="targets[]" value="<?= esc($sg['type'] . ':' . $sg['id']) ?>" id="sg<?= $l['id'] . '_' . $i ?>" <?= $i === 0 && $sg['score'] >= 85 ? 'checked' : '' ?>>
-                    <label class="form-check-label" for="sg<?= $l['id'] . '_' . $i ?>"><?= esc($sg['label']) ?> <span class="mono"><?= esc($sg['number']) ?></span> · <?= dmy($sg['date']) ?> · <?= inr($sg['amount']) ?> <?= $sg['party'] !== '' ? '· ' . esc($sg['party']) : '' ?> <span class="badge <?= $sg['score'] >= 85 ? 'text-bg-success' : ($sg['score'] >= 60 ? 'text-bg-warning' : 'text-bg-light border') ?>"><?= (int) $sg['score'] ?>%</span></label>
+                    <label class="form-check-label" for="sg<?= $l['id'] . '_' . $i ?>"><?= esc($sg['label']) ?> <span class="mono"><?= esc($sg['number']) ?></span> · <?= dmy($sg['date']) ?> · <?= inr($sg['amount']) ?> <?= $sg['party'] !== '' ? '· ' . esc($sg['party']) : '' ?> <span class="badge <?= $sg['score'] >= 85 ? 'badge-success' : ($sg['score'] >= 60 ? 'badge-warning' : 'badge-neutral') ?>"><?= (int) $sg['score'] ?>%</span></label>
                 </div>
                 <?php endforeach ?>
-                <button class="btn btn-dark btn-sm mt-1" type="submit">Confirm match</button>
+                <button class="btn btn-primary btn-sm mt-1" type="submit">Confirm match</button>
             <?php endif ?>
         </form>
         <div class="d-flex flex-wrap gap-2 mt-2">
@@ -57,7 +57,7 @@
                     <option value=""><?= $in ? 'Book as income (e.g. interest)…' : 'Book as expense (e.g. bank charges)…' ?></option>
                     <?php foreach ($ledgers as $lg): if ($lg['account_group'] !== ($in ? 'income' : 'expense')) { continue; } ?><option value="<?= $lg['id'] ?>"><?= esc($lg['code'] . ' ' . $lg['name']) ?></option><?php endforeach ?>
                 </select>
-                <button class="btn btn-outline-dark btn-sm text-nowrap" type="submit">Book &amp; match</button>
+                <button class="btn btn-outline-secondary btn-sm text-nowrap" type="submit">Book &amp; match</button>
             </form>
             <?php endif ?>
             <form method="post" action="<?= site_url('finance/reconciliation/lines/' . $l['id'] . '/ignore') ?>" class="d-flex gap-1 align-items-center">
@@ -85,7 +85,7 @@
         <thead><tr><th>Date</th><th>Description</th><th class="num">In</th><th class="num">Out</th><th><?= $view === 'matched' ? 'Matched to' : '' ?></th><th></th></tr></thead><tbody>
         <?php foreach ($lines as $l): ?>
         <tr><td><?= dmy($l['txn_date']) ?></td><td><?= esc($l['description']) ?></td><td class="num"><?= (float) $l['credit'] ? inr($l['credit']) : '' ?></td><td class="num"><?= (float) $l['debit'] ? inr($l['debit']) : '' ?></td>
-            <td><?php foreach ($l['matches'] ?? [] as $m): ?><span class="badge text-bg-light border"><?= esc(str_replace('_', ' ', $m['match_type'])) ?> #<?= (int) $m['match_id'] ?> · <?= inr($m['amount']) ?></span> <?php endforeach ?></td>
+            <td><?php foreach ($l['matches'] ?? [] as $m): ?><span class="badge badge-neutral"><?= esc(str_replace('_', ' ', $m['match_type'])) ?> #<?= (int) $m['match_id'] ?> · <?= inr($m['amount']) ?></span> <?php endforeach ?></td>
             <td class="text-end"><?php if ($canReconcile && $view === 'matched' && ! array_filter($l['matches'] ?? [], static fn ($m) => $m['match_type'] === 'journal')): ?>
                 <form method="post" action="<?= site_url('finance/reconciliation/lines/' . $l['id'] . '/unmatch') ?>"><?= csrf_field() ?><button class="btn btn-outline-secondary btn-sm">Unmatch</button></form><?php endif ?></td></tr>
         <?php endforeach ?>

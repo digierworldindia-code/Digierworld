@@ -31,7 +31,7 @@
             <?php foreach ($roles as $r): if ($r['is_super'] && ! $canAssignSuper) { continue; } ?>
                 <div class="form-check border-bottom py-2">
                     <input class="form-check-input" type="checkbox" name="roles[]" value="<?= $r['id'] ?>" id="role<?= $r['id'] ?>" <?= in_array((string) $r['id'], (array) old('roles'), true) ? 'checked' : '' ?>>
-                    <label class="form-check-label" for="role<?= $r['id'] ?>"><strong><?= esc($r['name']) ?></strong><?= $r['is_super'] ? ' <span class="badge bg-dark">full access</span>' : '' ?><br><span class="small text-muted"><?= esc($r['description']) ?></span></label>
+                    <label class="form-check-label" for="role<?= $r['id'] ?>"><strong><?= esc($r['name']) ?></strong><?= $r['is_super'] ? ' <span class="badge badge-neutral">full access</span>' : '' ?><br><span class="small text-muted"><?= esc($r['description']) ?></span></label>
                 </div>
             <?php endforeach ?>
             <div class="mt-3"><label class="form-label" for="role_expires_at">Role access expires on (optional)</label>
@@ -44,6 +44,6 @@
         </div></div>
     </div>
 </div>
-<div class="sticky-actions"><a href="<?= site_url('admin/users') ?>" class="btn btn-outline-secondary">Cancel</a><button class="btn btn-dark">Create user</button></div>
+<div class="sticky-actions"><a href="<?= site_url('admin/users') ?>" class="btn btn-outline-secondary">Cancel</a><button class="btn btn-primary">Create user</button></div>
 </form>
 <?= $this->endSection() ?>

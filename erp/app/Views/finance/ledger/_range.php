@@ -3,5 +3,5 @@
     <div class="col-6 col-md-2"><input type="date" name="from" value="<?= esc($from) ?>" class="form-control form-control-sm" aria-label="From"></div>
     <div class="col-6 col-md-2"><input type="date" name="to" value="<?= esc($to) ?>" class="form-control form-control-sm" aria-label="To"></div>
     <?= $extra ?? '' ?>
-    <div class="col-md-2"><button class="btn btn-dark btn-sm w-100">Show</button></div>
+    <div class="col-md-2"><button class="btn btn-primary btn-sm w-100">Show</button></div>
 </form>

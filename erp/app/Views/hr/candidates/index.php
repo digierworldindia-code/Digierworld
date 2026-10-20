@@ -1,9 +1,9 @@
 <?= $this->extend('layouts/app') ?>
 <?php $statuses = \App\Services\Hr\RecruitmentService::STATUSES; ?>
 <?= $this->section('pageActions') ?>
-<a class="btn btn-outline-dark btn-sm" href="<?= site_url('hr/candidates/board?' . http_build_query(array_filter(['job' => $f['job'] ?: null]))) ?>"><i class="bi bi-kanban"></i> Board</a>
-<?php if (can('hr.candidate.export')): ?><a class="btn btn-outline-dark btn-sm" href="<?= site_url('hr/candidates/export?' . http_build_query(array_filter($f, static fn ($v) => $v !== null && $v !== ''))) ?>"><i class="bi bi-file-earmark-excel"></i> Excel</a><?php endif ?>
-<?php if (can('hr.candidate.create')): ?><a href="<?= site_url('hr/candidates/new' . ($f['job'] ? '?job=' . $f['job'] : '')) ?>" class="btn btn-gold btn-sm"><i class="bi bi-person-plus"></i> Add applicant</a><?php endif ?>
+<a class="btn btn-outline-secondary btn-sm" href="<?= site_url('hr/candidates/board?' . http_build_query(array_filter(['job' => $f['job'] ?: null]))) ?>"><i class="bi bi-kanban"></i> Board</a>
+<?php if (can('hr.candidate.export')): ?><a class="btn btn-outline-secondary btn-sm" href="<?= site_url('hr/candidates/export?' . http_build_query(array_filter($f, static fn ($v) => $v !== null && $v !== ''))) ?>"><i class="bi bi-file-earmark-excel"></i> Excel</a><?php endif ?>
+<?php if (can('hr.candidate.create')): ?><a href="<?= site_url('hr/candidates/new' . ($f['job'] ? '?job=' . $f['job'] : '')) ?>" class="btn btn-primary btn-sm"><i class="bi bi-person-plus"></i> Add applicant</a><?php endif ?>
 <?= $this->endSection() ?>
 <?= $this->section('content') ?>
 <form class="filter-bar row g-2" method="get">
@@ -14,7 +14,7 @@
     <div class="col-6 col-md-2"><select name="sort" class="form-select form-select-sm" data-autosubmit aria-label="Sort"><option value="date">Newest first</option><option value="score" <?= $f['sort'] === 'score' ? 'selected' : '' ?>>Highest score</option><option value="name" <?= $f['sort'] === 'name' ? 'selected' : '' ?>>Name</option></select></div>
     <div class="col-6 col-md-2"><input type="date" name="from" value="<?= esc((string) $f['from']) ?>" class="form-control form-control-sm" aria-label="Applied from"></div>
     <div class="col-6 col-md-2"><input type="date" name="to" value="<?= esc((string) $f['to']) ?>" class="form-control form-control-sm" aria-label="Applied to"></div>
-    <div class="col-md-2"><button class="btn btn-dark btn-sm w-100">Filter</button></div>
+    <div class="col-md-2"><button class="btn btn-primary btn-sm w-100">Filter</button></div>
     <div class="col-12 form-text mt-0">Score = HR score if recorded, otherwise the latest AI fit score (decision support). Applicants without any score are listed last.</div>
 </form>
 <div class="table-card"><div class="table-responsive"><table class="table table-hover align-middle small mb-0">

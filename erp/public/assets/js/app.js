@@ -29,14 +29,34 @@
             return data;
         },
 
+        /** Chart.js defaults and series colours from the design-system tokens (dgr-theme.css). */
+        chartTheme() {
+            const cs = getComputedStyle(document.documentElement);
+            const v = (n) => cs.getPropertyValue(n).trim();
+            const t = {
+                gold: v('--dgr-gold'), text: v('--dgr-text'), text2: v('--dgr-text-2'), border: v('--dgr-border'), card: v('--dgr-card'),
+                series: [1, 2, 3, 4, 5, 6, 7, 8].map((i) => v('--dgr-chart-' + i)),
+            };
+            if (window.Chart) {
+                const d = window.Chart.defaults;
+                d.font.family = getComputedStyle(document.body).fontFamily;
+                d.color = t.text2;
+                d.borderColor = t.border;
+                d.elements.arc.borderColor = t.card;
+                d.plugins.legend.labels.color = t.text2;
+                Object.assign(d.plugins.tooltip, { backgroundColor: v('--dgr-bg'), borderColor: v('--dgr-border-strong'), borderWidth: 1, titleColor: t.text, bodyColor: t.text });
+            }
+            return t;
+        },
+
         toast(message, type = 'success') {
             const wrap = document.querySelector('[data-toasts]');
             if (!wrap) { return; }
             const el = document.createElement('div');
-            const bg = { success: 'text-bg-success', danger: 'text-bg-danger', warning: 'text-bg-warning', info: 'text-bg-dark' }[type] || 'text-bg-dark';
-            el.className = `toast align-items-center ${bg} border-0`;
+            const tone = ['success', 'danger', 'warning', 'info'].includes(type) ? type : 'info';
+            el.className = `toast align-items-center toast-${tone}`;
             el.setAttribute('role', type === 'danger' ? 'alert' : 'status');
-            el.innerHTML = '<div class="d-flex"><div class="toast-body"></div><button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button></div>';
+            el.innerHTML = '<div class="d-flex"><div class="toast-body"></div><button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button></div>';
             el.querySelector('.toast-body').textContent = message;
             wrap.appendChild(el);
             const t = new bootstrap.Toast(el, { delay: 4500 }); t.show();
@@ -51,7 +71,7 @@
                 modalEl.querySelector('[data-confirm-body]').textContent = message;
                 const ok = modalEl.querySelector('[data-confirm-ok]');
                 ok.textContent = okLabel;
-                ok.className = 'btn ' + (danger ? 'btn-danger' : 'btn-dark');
+                ok.className = 'btn ' + (danger ? 'btn-danger' : 'btn-primary');
                 const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
                 let decided = false;
                 const onOk = () => { decided = true; modal.hide(); resolve(true); };
@@ -158,7 +178,7 @@
                 const data = await DGR.api('search/suggest?q=' + encodeURIComponent(q));
                 if (!data.items.length) { sugg.innerHTML = '<span class="dropdown-item-text small text-muted">No matches you can access.</span>'; }
                 else {
-                    sugg.innerHTML = data.items.map((i) => `<a class="dropdown-item" href="${DGR.escape(i.url)}"><span class="badge bg-light text-dark me-2">${DGR.escape(i.type)}</span>${DGR.escape(i.label)} <span class="small text-muted">${DGR.escape(i.sub || '')}</span></a>`).join('');
+                    sugg.innerHTML = data.items.map((i) => `<a class="dropdown-item" href="${DGR.escape(i.url)}"><span class="badge badge-neutral me-2">${DGR.escape(i.type)}</span>${DGR.escape(i.label)} <span class="small text-muted">${DGR.escape(i.sub || '')}</span></a>`).join('');
                 }
                 sugg.classList.add('show');
             } catch (e) { sugg.classList.remove('show'); }

@@ -7,16 +7,16 @@ $msgs = $advice['messages'] ?? [];
 $gstCols = match ($d['gst_type']) { 'cgst_sgst' => ['cgst' => 'CGST', 'sgst' => 'SGST'], 'cgst_utgst' => ['cgst' => 'CGST', 'utgst' => 'UTGST'], 'igst' => ['igst' => 'IGST'], default => [] };
 ?>
 <?= $this->section('pageActions') ?>
-<?php if ($canEdit): ?><a href="<?= site_url('billing/documents/' . $d['id'] . '/edit') ?>" class="btn btn-outline-dark btn-sm"><i class="bi bi-pencil"></i> Edit draft</a><?php endif ?>
+<?php if ($canEdit): ?><a href="<?= site_url('billing/documents/' . $d['id'] . '/edit') ?>" class="btn btn-outline-secondary btn-sm"><i class="bi bi-pencil"></i> Edit draft</a><?php endif ?>
 <?php if ($canPdf): ?>
 <div class="btn-group btn-group-sm">
-    <a class="btn btn-outline-dark" href="<?= site_url('billing/documents/' . $d['id'] . '/pdf') ?>" target="_blank" rel="noopener"><i class="bi bi-file-earmark-pdf"></i> <?= $d['status'] === 'draft' ? 'Preview PDF' : 'View PDF' ?></a>
-    <a class="btn btn-outline-dark" href="<?= site_url('billing/documents/' . $d['id'] . '/pdf?download=1') ?>"><i class="bi bi-download"></i></a>
-    <?php if ($d['status'] !== 'draft'): ?><a class="btn btn-outline-dark" href="<?= site_url('billing/documents/' . $d['id'] . '/pdf?copy=duplicate') ?>" target="_blank" rel="noopener">Duplicate copy</a><?php endif ?>
+    <a class="btn btn-outline-secondary" href="<?= site_url('billing/documents/' . $d['id'] . '/pdf') ?>" target="_blank" rel="noopener"><i class="bi bi-file-earmark-pdf"></i> <?= $d['status'] === 'draft' ? 'Preview PDF' : 'View PDF' ?></a>
+    <a class="btn btn-outline-secondary" href="<?= site_url('billing/documents/' . $d['id'] . '/pdf?download=1') ?>"><i class="bi bi-download"></i></a>
+    <?php if ($d['status'] !== 'draft'): ?><a class="btn btn-outline-secondary" href="<?= site_url('billing/documents/' . $d['id'] . '/pdf?copy=duplicate') ?>" target="_blank" rel="noopener">Duplicate copy</a><?php endif ?>
 </div>
 <?php endif ?>
-<?php if ($d['status'] === 'finalized' && $isSale && can('finance.receipt.create') && (float) $d['balance_due'] > 0): ?><a href="<?= site_url('finance/receipts/new?contact=' . $d['contact_id'] . '&document=' . $d['id']) ?>" class="btn btn-gold btn-sm"><i class="bi bi-cash"></i> Record payment</a><?php endif ?>
-<div class="dropdown"><button class="btn btn-outline-dark btn-sm dropdown-toggle" data-bs-toggle="dropdown">More</button>
+<?php if ($d['status'] === 'finalized' && $isSale && can('finance.receipt.create') && (float) $d['balance_due'] > 0): ?><a href="<?= site_url('finance/receipts/new?contact=' . $d['contact_id'] . '&document=' . $d['id']) ?>" class="btn btn-primary btn-sm"><i class="bi bi-cash"></i> Record payment</a><?php endif ?>
+<div class="dropdown"><button class="btn btn-outline-secondary btn-sm dropdown-toggle" data-bs-toggle="dropdown">More</button>
     <ul class="dropdown-menu dropdown-menu-end">
         <?php if (can(['billing.invoice.create_draft', 'billing.cash_memo.create_draft', 'billing.estimate.create_draft'])): ?><li><a class="dropdown-item" href="#" data-post="<?= site_url('billing/documents/' . $d['id'] . '/duplicate') ?>">Duplicate as new draft</a></li><?php endif ?>
         <?php if (in_array($d['doc_type'], ['estimate', 'quotation', 'proforma'], true) && $d['status'] !== 'converted' && can('billing.estimate.convert')): ?>
@@ -37,10 +37,10 @@ $gstCols = match ($d['gst_type']) { 'cgst_sgst' => ['cgst' => 'CGST', 'sgst' => 
 <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
     <?= status_badge($d['status']) ?>
     <?php if ($d['status'] === 'finalized' && $d['payment_status'] !== 'na'): ?><?= status_badge($d['payment_status']) ?><?php endif ?>
-    <span class="badge bg-light text-dark border"><?= esc(gst_type_label($d['gst_type'])) ?></span>
-    <span class="badge bg-light text-dark border">PoS <?= esc(($state['name'] ?? '—') . ' (' . ($d['place_of_supply_state_code'] ?? '—') . ')') ?></span>
-    <?php if ($d['reverse_charge']): ?><span class="badge bg-warning text-dark">Reverse charge</span><?php endif ?>
-    <?php if ($d['apply_signature']): ?><span class="badge bg-info text-dark"><i class="bi bi-pen"></i> Signed</span><?php endif ?>
+    <span class="badge badge-neutral"><?= esc(gst_type_label($d['gst_type'])) ?></span>
+    <span class="badge badge-neutral">PoS <?= esc(($state['name'] ?? '—') . ' (' . ($d['place_of_supply_state_code'] ?? '—') . ')') ?></span>
+    <?php if ($d['reverse_charge']): ?><span class="badge badge-warning">Reverse charge</span><?php endif ?>
+    <?php if ($d['apply_signature']): ?><span class="badge badge-info"><i class="bi bi-pen"></i> Signed</span><?php endif ?>
     <?php if ($snapshot): ?><span class="small text-muted">Snapshot <?= dmy($snapshot['created_at'], true) ?> · <span class="mono"><?= esc(substr($snapshot['content_hash'], 0, 12)) ?>…</span></span><?php endif ?>
 </div>
 <?php if ($d['status'] === 'cancelled'): ?><div class="alert alert-secondary"><strong>Cancelled</strong> on <?= dmy($d['cancelled_at'], true) ?>: <?= esc($d['cancel_reason']) ?>. The number remains in the register and will never be reused.</div><?php endif ?>
@@ -54,13 +54,13 @@ $gstCols = match ($d['gst_type']) { 'cgst_sgst' => ['cgst' => 'CGST', 'sgst' => 
                 <?php if ($msgs === []): ?><div class="small text-success"><i class="bi bi-check-circle"></i> Tax type and place of supply check out.</div><?php endif ?>
             </div>
             <?php if ($canFinalize): ?>
-            <div><button class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#finalizeModal" <?= $d['tax_review_status'] === 'blocked' ? 'disabled' : '' ?>><i class="bi bi-lock"></i> Finalize &amp; assign number</button></div>
+            <div><button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#finalizeModal" <?= $d['tax_review_status'] === 'blocked' ? 'disabled' : '' ?>><i class="bi bi-lock"></i> Finalize &amp; assign number</button></div>
             <?php else: ?><div class="small text-muted">You can save and preview drafts; a user with finalize permission must issue it.</div><?php endif ?>
         </div>
     </div>
 </div>
 <?php elseif ($d['tax_review_status'] === 'resolved'): ?>
-<div class="alert alert-light border small"><i class="bi bi-person-check"></i> Tax review resolved: <?= esc($d['tax_review_reason']) ?> (<?= dmy($d['tax_reviewed_at'], true) ?>)</div>
+<div class="alert alert-secondary border small"><i class="bi bi-person-check"></i> Tax review resolved: <?= esc($d['tax_review_reason']) ?> (<?= dmy($d['tax_reviewed_at'], true) ?>)</div>
 <?php endif ?>
 
 <div class="row g-3">
@@ -69,7 +69,7 @@ $gstCols = match ($d['gst_type']) { 'cgst_sgst' => ['cgst' => 'CGST', 'sgst' => 
         <div class="row small">
             <div class="col-md-6"><div class="card-section-title mb-1">Bill to</div>
                 <div class="fw-semibold"><a href="<?= can('contacts.view_all') ? site_url('contacts/' . $d['contact_id']) : '#' ?>"><?= esc($d['bill_to_name']) ?></a></div>
-                <div style="white-space:pre-line"><?= esc((string) $d['bill_to_address']) ?></div>
+                <div class="u-ws-pre-line"><?= esc((string) $d['bill_to_address']) ?></div>
                 <div>GSTIN: <span class="mono"><?= esc($d['bill_to_gstin'] ?? 'Unregistered') ?></span> · State <?= esc((string) $d['bill_to_state_code']) ?></div></div>
             <div class="col-md-6"><dl class="row mb-0">
                 <dt class="col-5 fw-normal text-muted">Number</dt><dd class="col-7 mono fw-semibold"><?= esc($num) ?></dd>
@@ -89,7 +89,7 @@ $gstCols = match ($d['gst_type']) { 'cgst_sgst' => ['cgst' => 'CGST', 'sgst' => 
             <tbody>
             <?php foreach ($lines as $l): ?>
                 <tr><td><?= (int) $l['line_no'] ?></td>
-                    <td><strong><?= esc($l['item_name']) ?></strong><?php if ($l['description']): ?><div class="text-muted"><?= esc(mb_strimwidth($l['description'], 0, 140, '…')) ?></div><?php endif ?><?php if ($l['tax_treatment'] !== 'regular'): ?><span class="badge bg-warning text-dark"><?= esc($l['tax_treatment']) ?></span><?php endif ?></td>
+                    <td><strong><?= esc($l['item_name']) ?></strong><?php if ($l['description']): ?><div class="text-muted"><?= esc(mb_strimwidth($l['description'], 0, 140, '…')) ?></div><?php endif ?><?php if ($l['tax_treatment'] !== 'regular'): ?><span class="badge badge-warning"><?= esc($l['tax_treatment']) ?></span><?php endif ?></td>
                     <td class="mono"><?= esc((string) $l['sac_code']) ?></td>
                     <td class="num"><?= esc(rtrim(rtrim($l['qty'], '0'), '.')) ?> <?= esc((string) $l['unit']) ?></td>
                     <td class="num"><?= inr($l['unit_rate']) ?></td>
@@ -108,7 +108,7 @@ $gstCols = match ($d['gst_type']) { 'cgst_sgst' => ['cgst' => 'CGST', 'sgst' => 
             <div class="col-md-6"><input name="irn" class="form-control form-control-sm mono" placeholder="64-character IRN" maxlength="64" aria-label="IRN"></div>
             <div class="col-md-3"><input name="ack_no" class="form-control form-control-sm" placeholder="Ack no." aria-label="Ack number"></div>
             <div class="col-md-2"><input type="date" name="ack_date" class="form-control form-control-sm" aria-label="Ack date"></div>
-            <div class="col-md-1"><button class="btn btn-sm btn-dark">Save</button></div></form>
+            <div class="col-md-1"><button class="btn btn-sm btn-primary">Save</button></div></form>
     </div></div>
     <?php endif ?>
 
@@ -178,7 +178,7 @@ $gstCols = match ($d['gst_type']) { 'cgst_sgst' => ['cgst' => 'CGST', 'sgst' => 
                 <div class="col-6"><select class="form-select form-select-sm" name="paid_account_id" aria-label="Received into"><?php foreach ($cashAccounts as $a): ?><option value="<?= $a['id'] ?>"><?= esc($a['display_name']) ?></option><?php endforeach ?></select></div></div>
         <?php endif ?>
     </div>
-    <div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button><button type="submit" class="btn btn-dark">Finalize now</button></div>
+    <div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button><button type="submit" class="btn btn-primary">Finalize now</button></div>
 </form></div></div></div>
 <?php endif ?>
 
@@ -193,4 +193,4 @@ $gstCols = match ($d['gst_type']) { 'cgst_sgst' => ['cgst' => 'CGST', 'sgst' => 
 </form></div></div></div>
 <?php endif ?>
 <?= $this->endSection() ?>
-<?= $this->section('scripts') ?><script src="<?= base_url('assets/js/billing-show.js') ?>"></script><?= $this->endSection() ?>
+<?= $this->section('scripts') ?><script src="<?= asset('js/billing-show.js') ?>"></script><?= $this->endSection() ?>

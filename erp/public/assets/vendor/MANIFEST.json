@@ -1,0 +1,50 @@
+{
+  "_policy": "Self-hosted, unmodified files from the official npm registry. Verified by tests/unit/VendorAssetsTest. Update only via a reviewed upgrade: download the official tarball, check its integrity against the registry, copy the dist files, and regenerate the hashes here.",
+  "packages": {
+    "bootstrap": {
+      "version": "5.3.8",
+      "tarball": "https://registry.npmjs.org/bootstrap/-/bootstrap-5.3.8.tgz",
+      "tarballIntegrity": "sha512-HP1SZDqaLDPwsNiqRqi5NcP0SSXciX2s9E+RyqJIIqGo+vJeN5AJVM98CXmW/Wux0nQ5L7jeWUdplCEf0Ee+tg==",
+      "files": {
+        "bootstrap/bootstrap.min.css": {
+          "source": "dist/css/bootstrap.min.css",
+          "sha384": "sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
+        },
+        "bootstrap/bootstrap.bundle.min.js": {
+          "source": "dist/js/bootstrap.bundle.min.js",
+          "sha384": "sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
+        }
+      }
+    },
+    "bootstrap-icons": {
+      "version": "1.13.2",
+      "tarball": "https://registry.npmjs.org/bootstrap-icons/-/bootstrap-icons-1.13.2.tgz",
+      "tarballIntegrity": "sha512-fAU1Ly3dH7hwRg+CB8EZ0Vl0fF80zgXHeUVJyfUOKzoURr+TbwISbCW5tKUoQLERaWYG2emTCybcPbD96hdD1A==",
+      "files": {
+        "bootstrap-icons/bootstrap-icons.min.css": {
+          "source": "font/bootstrap-icons.min.css",
+          "sha384": "sha384-nWN3KqaaVcbEsCjLSV+2jMjh62Iny/+mN3srM8TZeM8N6aj7eDl5wwYggjAJ4/sJ"
+        },
+        "bootstrap-icons/fonts/bootstrap-icons.woff2": {
+          "source": "font/fonts/bootstrap-icons.woff2",
+          "sha384": "sha384-3244+MXg/RYJtpyex6rHizzzKnMvpfOn/NclFlkM8AIgKtYHT8CLQEJx6xyDFEpr"
+        },
+        "bootstrap-icons/fonts/bootstrap-icons.woff": {
+          "source": "font/fonts/bootstrap-icons.woff",
+          "sha384": "sha384-djaUP7PFk2XOEMATfi4TSaFL2X2190OquAlsbym0RbgKyPKjHvXKFm72Jfno/5VC"
+        }
+      }
+    },
+    "chart.js": {
+      "version": "4.5.1",
+      "tarball": "https://registry.npmjs.org/chart.js/-/chart.js-4.5.1.tgz",
+      "tarballIntegrity": "sha512-GIjfiT9dbmHRiYi6Nl2yFCq7kkwdkp1W/lp2J99rX0yo9tgJGn3lKQATztIjb5tVtevcBtIdICNWqlq5+E8/Pw==",
+      "files": {
+        "chartjs/chart.umd.min.js": {
+          "source": "dist/chart.umd.min.js",
+          "sha384": "sha384-jb8JQMbMoBUzgWatfe6COACi2ljcDdZQ2OxczGA3bGNeWe+6DChMTBJemed7ZnvJ"
+        }
+      }
+    }
+  }
+}

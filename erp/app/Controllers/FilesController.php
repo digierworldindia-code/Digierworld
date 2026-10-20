@@ -18,6 +18,7 @@ class FilesController extends BaseController
             service('audit')->log('file.download_denied', 'stored_file', (int) $file['id'], null, null, 'File download denied');
             $this->deny();
         }
+        $path = service('files')->existingPath($file) ?? $this->notFound();
         if ($file['category'] === 'report_export') {
             $this->db->table('report_exports')->where('stored_file_id', $file['id'])->update(['downloaded_at' => date('Y-m-d H:i:s')]);
         }
@@ -31,6 +32,6 @@ class FilesController extends BaseController
             ->setHeader('Content-Type', $file['mime_type'])
             ->setHeader('Content-Disposition', ($inline ? 'inline' : 'attachment') . '; filename="' . $name . '"')
             ->setHeader('X-Content-Type-Options', 'nosniff')
-            ->setBody((string) file_get_contents(service('files')->path($file)));
+            ->setBody((string) file_get_contents($path));
     }
 }

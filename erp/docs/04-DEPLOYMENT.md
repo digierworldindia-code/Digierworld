@@ -291,12 +291,16 @@ migrations only), `php spark cache:clear`, then `dgr:diagnostics`.
 
 ```bash
 cd erp
-scripts/build-release.sh 1.0.0        # → dist/dgr-office-1.0.0.zip + .sha256
+scripts/build-release.sh 1.1.0        # → dist/dgr-office-1.1.0.zip + .sha256
 ```
 
 The script exports the committed tree (`git archive`), runs
-`composer install --no-dev --optimize-autoloader --classmap-authoritative`
-against `composer.lock`, strips tests/docs/VCS folders from `vendor/`,
+`composer install --no-dev --optimize-autoloader` against
+`composer.lock`, strips tests/docs/VCS folders from `vendor/`, refuses to
+package if an asset a view references is missing or if a self-hosted
+frontend library differs from its verified hash in
+`public/assets/vendor/MANIFEST.json`
+([09-UI-THEME.md](09-UI-THEME.md) §3),
 leaves `writable/` empty (only the protective `index.html`/`.htaccess`
 files) and never includes `.env`. Verify a build by unzipping it into an
 empty folder, pointing a fresh `.env` at an empty database and running
@@ -323,10 +327,13 @@ first sign-in), `accountant@`, `billing@`, `crm.manager@`, `telecaller1@`,
 The demo bank and employee account numbers were encrypted with the key of
 the install that produced the dump, so on your install only the masked
 last four digits show (reveal says the value is unavailable) — that is
-expected. Admin → Diagnostics flags the demo accounts (and fails in
-production). For real use start from an **empty** database with
+expected. The three demo CVs and nine September payslip PDFs are files,
+not database rows: the dump lists them but cannot carry their contents, so
+opening one on your install shows "Page or record not found" (from release
+1.1.0; 1.0.0 showed an error page). Admin → Diagnostics flags the demo
+accounts (and fails in production). For real use start from an **empty** database with
 `dgr:install` and `dgr:create-owner`; alternatively `php spark dgr:demo`
-creates the same demo data with your own key.
+creates the same demo data, including those files, with your own key.
 
 ## 12. Clean database SQL (alternative to `dgr:install`)
 

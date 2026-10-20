@@ -4,7 +4,7 @@ $v   = static fn (string $k, $d = '') => esc((string) (old($k) ?? ($emp[$k] ?? $
 $sel = static fn (string $k, $val) => (string) (old($k) ?? ($emp[$k] ?? '')) === (string) $val ? 'selected' : '';
 ?>
 <?= $this->section('content') ?>
-<form method="post" action="<?= site_url(isset($emp['id']) ? 'hr/employees/' . $emp['id'] : 'hr/employees') ?>" class="card" style="max-width:1040px"><div class="card-body">
+<form method="post" action="<?= site_url(isset($emp['id']) ? 'hr/employees/' . $emp['id'] : 'hr/employees') ?>" class="u-mxw-1040px card"><div class="card-body">
     <?= csrf_field() ?>
     <div class="card-section-title">Identity & role <?= $nextCode ? '<span class="text-muted small fw-normal">— code will be ' . esc($nextCode) . '</span>' : '<span class="mono small">' . esc($emp['employee_code']) . '</span>' ?></div>
     <div class="row g-3">
@@ -37,7 +37,7 @@ $sel = static fn (string $k, $val) => (string) (old($k) ?? ($emp[$k] ?? '')) ===
         <div class="col-md-9"><label class="form-label" for="exit_reason">Exit reason</label><input class="form-control" id="exit_reason" name="exit_reason" value="<?= $v('exit_reason') ?>" maxlength="500"></div>
     </div>
     <?php endif ?>
-    <div class="mt-4 d-flex gap-2"><button class="btn btn-dark" type="submit">Save employee</button><a class="btn btn-outline-secondary" href="<?= site_url(isset($emp['id']) ? 'hr/employees/' . $emp['id'] : 'hr/employees') ?>">Cancel</a></div>
+    <div class="mt-4 d-flex gap-2"><button class="btn btn-primary" type="submit">Save employee</button><a class="btn btn-outline-secondary" href="<?= site_url(isset($emp['id']) ? 'hr/employees/' . $emp['id'] : 'hr/employees') ?>">Cancel</a></div>
     <p class="form-text mt-2 mb-0">Salary, bank details and private documents are added from the employee profile and need separate permissions.</p>
 </div></form>
 <?= $this->endSection() ?>

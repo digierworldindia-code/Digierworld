@@ -32,7 +32,7 @@
             <label class="form-check-label small" for="remember">Keep me signed in on this device</label>
         </div>
     <?php endif ?>
-    <button type="submit" class="btn btn-dark w-100">Sign in</button>
+    <button type="submit" class="btn btn-primary w-100">Sign in</button>
 
     <?php if (setting('Auth.allowMagicLinkLogins')) : ?>
         <p class="text-center small mt-3 mb-0">Forgot password? <a href="<?= url_to('magic-link') ?>">Email me a sign-in link</a></p>

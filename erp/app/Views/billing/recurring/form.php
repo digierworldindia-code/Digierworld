@@ -5,7 +5,7 @@ $rows = old('lines') ?? ($lines ?: [['qty' => '1', 'gst_rate' => '18', 'tax_trea
 ?>
 <?= $this->section('pageActions') ?>
 <?php if ($p && (int) $p['is_active'] === 1): ?>
-<form method="post" action="<?= site_url('billing/recurring/' . $p['id'] . '/generate') ?>" class="d-inline"><?= csrf_field() ?><button class="btn btn-gold btn-sm" type="submit"><i class="bi bi-lightning"></i> Generate draft for <?= dmy($p['next_run_date']) ?> period now</button></form>
+<form method="post" action="<?= site_url('billing/recurring/' . $p['id'] . '/generate') ?>" class="d-inline"><?= csrf_field() ?><button class="btn btn-primary btn-sm" type="submit"><i class="bi bi-lightning"></i> Generate draft for <?= dmy($p['next_run_date']) ?> period now</button></form>
 <?php endif ?>
 <?= $this->endSection() ?>
 <?= $this->section('content') ?>
@@ -32,7 +32,7 @@ $rows = old('lines') ?? ($lines ?: [['qty' => '1', 'gst_rate' => '18', 'tax_trea
     <div class="card mb-3"><div class="card-body">
         <div class="card-section-title">Lines on each draft</div><?= field_error('lines') ?>
         <div class="table-responsive"><table class="table table-sm align-middle">
-            <thead><tr><th style="min-width:220px">Service / description</th><th>SAC</th><th style="width:80px">Qty</th><th style="width:90px">Unit</th><th style="width:130px">Rate (₹)</th><th style="width:90px">GST %</th></tr></thead>
+            <thead><tr><th class="u-mnw-220px">Service / description</th><th>SAC</th><th class="u-w-80px">Qty</th><th class="u-w-90px">Unit</th><th class="u-w-130px">Rate (₹)</th><th class="u-w-90px">GST %</th></tr></thead>
             <tbody data-rlines>
             <?php foreach ($rows as $i => $l): ?>
             <tr><td><select class="form-select form-select-sm mb-1" name="lines[<?= $i ?>][service_id]" data-svc aria-label="Service"><option value="">— catalogue —</option><?php foreach ($services as $s): ?><option value="<?= $s['id'] ?>" <?= (string) ($l['service_id'] ?? '') === (string) $s['id'] ? 'selected' : '' ?>><?= esc($s['name']) ?></option><?php endforeach ?></select>
@@ -45,19 +45,19 @@ $rows = old('lines') ?? ($lines ?: [['qty' => '1', 'gst_rate' => '18', 'tax_trea
             <?php endforeach ?>
             </tbody>
         </table></div>
-        <button type="button" class="btn btn-outline-dark btn-sm" data-radd><i class="bi bi-plus"></i> Line</button>
+        <button type="button" class="btn btn-outline-secondary btn-sm" data-radd><i class="bi bi-plus"></i> Line</button>
     </div></div>
 </div>
 <div class="col-xl-4">
     <?php if ($p): ?>
-    <div class="table-card"><div class="card-header bg-white"><strong>Generated documents</strong></div><table class="table small mb-0"><tbody>
+    <div class="table-card"><div class="card-header"><strong>Generated documents</strong></div><table class="table small mb-0"><tbody>
         <?php foreach ($documents as $d): ?><tr><td><a class="mono" href="<?= site_url('billing/documents/' . $d['id']) ?>"><?= esc($d['document_number'] ?? $d['draft_ref']) ?></a><div class="text-muted"><?= dmy($d['service_period_from']) ?> – <?= dmy($d['service_period_to']) ?></div></td><td><?= status_badge($d['status']) ?></td><td class="num"><?= inr($d['grand_total']) ?></td></tr><?php endforeach ?>
         <?php if ($documents === []): ?><tr><td class="text-muted">None yet.</td></tr><?php endif ?>
     </tbody></table></div>
     <?php endif ?>
 </div>
 </div>
-<div class="sticky-actions"><a href="<?= site_url('billing/recurring') ?>" class="btn btn-outline-secondary">Cancel</a><button class="btn btn-dark" type="submit">Save retainer</button></div>
+<div class="sticky-actions"><a href="<?= site_url('billing/recurring') ?>" class="btn btn-outline-secondary">Cancel</a><button class="btn btn-primary" type="submit">Save retainer</button></div>
 </form>
 <?= $this->endSection() ?>
-<?= $this->section('scripts') ?><script src="<?= base_url('assets/js/recurring-form.js') ?>"></script><?= $this->endSection() ?>
+<?= $this->section('scripts') ?><script src="<?= asset('js/recurring-form.js') ?>"></script><?= $this->endSection() ?>

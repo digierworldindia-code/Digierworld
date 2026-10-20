@@ -105,6 +105,18 @@ class FileStorage
         return $full;
     }
 
+    /** Like path(), but null when the recorded file is not on disk (e.g. uploads not restored, demo SQL from another install). */
+    public function existingPath(array $file): ?string
+    {
+        try {
+            return $this->path($file);
+        } catch (BusinessRuleException) {
+            log_message('warning', 'Stored file {id} ({path}) is missing on disk; restore writable/uploads from the files backup.', ['id' => $file['id'], 'path' => $file['disk_path']]);
+
+            return null;
+        }
+    }
+
     public function contents(int $id): ?string
     {
         $file = $this->find($id);

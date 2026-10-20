@@ -1,8 +1,8 @@
 <?= $this->extend('layouts/app') ?>
 <?= $this->section('pageActions') ?>
-<?php if (can('crm.export')): ?><a class="btn btn-outline-dark btn-sm" href="<?= site_url('crm/export?' . http_build_query(array_filter($f))) ?>"><i class="bi bi-file-earmark-excel"></i> Export</a><?php endif ?>
-<?php if (can('crm.lead.import')): ?><a class="btn btn-outline-dark btn-sm" href="<?= site_url('crm/leads/import') ?>"><i class="bi bi-upload"></i> Import</a><?php endif ?>
-<?php if (can('crm.lead.create')): ?><a class="btn btn-gold btn-sm" href="<?= site_url('crm/leads/new') ?>"><i class="bi bi-plus-lg"></i> New lead</a><?php endif ?>
+<?php if (can('crm.export')): ?><a class="btn btn-outline-secondary btn-sm" href="<?= site_url('crm/export?' . http_build_query(array_filter($f))) ?>"><i class="bi bi-file-earmark-excel"></i> Export</a><?php endif ?>
+<?php if (can('crm.lead.import')): ?><a class="btn btn-outline-secondary btn-sm" href="<?= site_url('crm/leads/import') ?>"><i class="bi bi-upload"></i> Import</a><?php endif ?>
+<?php if (can('crm.lead.create')): ?><a class="btn btn-primary btn-sm" href="<?= site_url('crm/leads/new') ?>"><i class="bi bi-plus-lg"></i> New lead</a><?php endif ?>
 <?= $this->endSection() ?>
 <?= $this->section('content') ?>
 <form class="filter-bar row g-2" method="get">
@@ -17,7 +17,7 @@
     <div class="col-6 col-md-2"><input name="city" value="<?= esc($f['city']) ?>" class="form-control form-control-sm" placeholder="City" aria-label="City"></div>
     <div class="col-6 col-md-2"><input name="industry" value="<?= esc($f['industry']) ?>" class="form-control form-control-sm" placeholder="Industry" aria-label="Industry"></div>
     <div class="col-6 col-md-2"><input name="campaign" value="<?= esc($f['campaign']) ?>" class="form-control form-control-sm" placeholder="Campaign" aria-label="Campaign"></div>
-    <div class="col-md-2"><button class="btn btn-dark btn-sm w-100">Filter</button></div>
+    <div class="col-md-2"><button class="btn btn-primary btn-sm w-100">Filter</button></div>
 </form>
 <div class="table-card"><div class="table-responsive">
 <table class="table table-hover align-middle small">
@@ -25,11 +25,11 @@
     <tbody>
     <?php foreach ($rows as $r): $over = $r['next_followup_at'] && $r['next_followup_at'] < date('Y-m-d H:i:s'); ?>
     <tr>
-        <td><a class="fw-semibold" href="<?= site_url('crm/leads/' . $r['id']) ?>"><?= esc($r['company_name']) ?></a><?= $r['priority'] === 'hot' ? ' <span class="badge text-bg-danger">Hot</span>' : ($r['priority'] === 'high' ? ' <span class="badge text-bg-warning">High</span>' : '') ?>
+        <td><a class="fw-semibold" href="<?= site_url('crm/leads/' . $r['id']) ?>"><?= esc($r['company_name']) ?></a><?= $r['priority'] === 'hot' ? ' <span class="badge badge-danger">Hot</span>' : ($r['priority'] === 'high' ? ' <span class="badge badge-warning">High</span>' : '') ?>
             <div class="text-muted"><span class="mono"><?= esc($r['lead_code']) ?></span><?= $r['contact_person'] ? ' · ' . esc($r['contact_person']) : '' ?><?= $r['source_name'] ? ' · ' . esc($r['source_name']) : '' ?></div></td>
-        <td class="mono"><?php if ((int) $r['dnd'] === 1): ?><span class="badge text-bg-dark" title="Do not call">DND</span> <?= esc(mask_tail($r['mobile'], 2)) ?><?php else: ?><a href="tel:<?= esc(preg_replace('/[^0-9+]/', '', $r['mobile'])) ?>"><?= esc($r['mobile']) ?></a><?php endif ?></td>
+        <td class="mono"><?php if ((int) $r['dnd'] === 1): ?><span class="badge badge-neutral" title="Do not call">DND</span> <?= esc(mask_tail($r['mobile'], 2)) ?><?php else: ?><a href="tel:<?= esc(preg_replace('/[^0-9+]/', '', $r['mobile'])) ?>"><?= esc($r['mobile']) ?></a><?php endif ?></td>
         <td><?= esc((string) $r['city']) ?><div class="text-muted"><?= esc((string) $r['industry']) ?></div></td>
-        <td><span class="badge" style="background:<?= esc(preg_match('/^#[0-9a-f]{6}$/i', (string) $r['stage_color']) ? $r['stage_color'] : '#6c757d') ?>"><?= esc((string) $r['stage_name']) ?></span></td>
+        <td><span class="badge badge-<?= stage_tone($r['stage_code'], $r['is_won'], $r['is_lost'], $r['is_dnd']) ?>"><?= esc((string) $r['stage_name']) ?></span></td>
         <td class="<?= $over ? 'text-danger fw-semibold' : '' ?>"><?= $r['next_followup_at'] ? dmy($r['next_followup_at'], true) : '—' ?><?= $over ? '<div class="small">overdue</div>' : '' ?></td>
         <td><?= esc(mb_strimwidth((string) $r['last_action'], 0, 60, '…')) ?><div class="text-muted"><?= $r['last_action_at'] ? dmy($r['last_action_at'], true) : '' ?></div></td>
         <td class="num"><?= (int) $r['call_attempts'] ?><span class="text-muted">/<?= (int) $r['connected_calls'] ?></span></td>

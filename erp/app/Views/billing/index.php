@@ -1,10 +1,10 @@
 <?= $this->extend('layouts/app') ?>
 <?= $this->section('pageActions') ?>
 <?php if ($canExport): ?>
-<div class="btn-group btn-group-sm"><a class="btn btn-outline-dark" href="<?= site_url('billing/documents/export?' . http_build_query($f + ['format' => 'xlsx'])) ?>"><i class="bi bi-file-earmark-excel"></i> Excel</a><a class="btn btn-outline-dark" href="<?= site_url('billing/documents/export?' . http_build_query($f + ['format' => 'csv'])) ?>">CSV</a></div>
+<div class="btn-group btn-group-sm"><a class="btn btn-outline-secondary" href="<?= site_url('billing/documents/export?' . http_build_query($f + ['format' => 'xlsx'])) ?>"><i class="bi bi-file-earmark-excel"></i> Excel</a><a class="btn btn-outline-secondary" href="<?= site_url('billing/documents/export?' . http_build_query($f + ['format' => 'csv'])) ?>">CSV</a></div>
 <?php endif ?>
 <?php if (can(['billing.invoice.create_draft', 'billing.cash_memo.create_draft', 'billing.estimate.create_draft'])): ?>
-<a href="<?= site_url('billing/documents/new' . ($f['type'] && $f['type'] !== 'credit_note' ? '?type=' . $f['type'] : '')) ?>" class="btn btn-gold btn-sm"><i class="bi bi-plus-lg"></i> Create document</a>
+<a href="<?= site_url('billing/documents/new' . ($f['type'] && $f['type'] !== 'credit_note' ? '?type=' . $f['type'] : '')) ?>" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg"></i> Create document</a>
 <?php endif ?>
 <?= $this->endSection() ?>
 <?= $this->section('content') ?>
@@ -22,7 +22,7 @@
     <div class="col-6 col-md-3"><select name="service" class="form-select form-select-sm" data-autosubmit aria-label="Service"><option value="">Any service</option><?php foreach ($services as $s): ?><option value="<?= $s['id'] ?>" <?= $f['service'] === (int) $s['id'] ? 'selected' : '' ?>><?= esc($s['name']) ?></option><?php endforeach ?></select></div>
     <div class="col-6 col-md-2"><input type="date" name="from" value="<?= esc($f['from'] ?? '') ?>" class="form-control form-control-sm" aria-label="From"></div>
     <div class="col-6 col-md-2"><input type="date" name="to" value="<?= esc($f['to'] ?? '') ?>" class="form-control form-control-sm" aria-label="To"></div>
-    <div class="col-md-2"><button class="btn btn-dark btn-sm w-100">Filter</button></div>
+    <div class="col-md-2"><button class="btn btn-primary btn-sm w-100">Filter</button></div>
     <?php if ($sums !== null): ?><div class="col-md-6 small text-md-end align-self-center">Finalized value: <strong><?= inr($sums['total_value'] ?? 0) ?></strong> · Balance due: <strong><?= inr($sums['total_due'] ?? 0) ?></strong></div><?php endif ?>
 </form>
 <div class="table-card"><div class="table-responsive">

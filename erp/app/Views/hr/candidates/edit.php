@@ -1,7 +1,7 @@
 <?= $this->extend('layouts/app') ?>
 <?php $v = static fn (string $k, $d = '') => esc((string) (old($k) ?? ($c[$k] ?? $d))); $l = static fn ($k) => esc(implode("\n", json_decode((string) ($c[$k] ?? '[]'), true) ?: [])); ?>
 <?= $this->section('content') ?>
-<form method="post" action="<?= site_url('hr/candidates/' . $c['id']) ?>" class="card" style="max-width:980px"><div class="card-body">
+<form method="post" action="<?= site_url('hr/candidates/' . $c['id']) ?>" class="u-mxw-980px card"><div class="card-body">
     <?= csrf_field() ?>
     <div class="row g-3">
         <div class="col-md-5"><label class="form-label required" for="full_name">Full name</label><input class="form-control" id="full_name" name="full_name" value="<?= $v('full_name') ?>" required></div>
@@ -21,6 +21,6 @@
         <div class="col-12"><label class="form-label" for="recruiter_notes">Recruiter notes</label><textarea class="form-control" id="recruiter_notes" name="recruiter_notes" rows="3"><?= $v('recruiter_notes') ?></textarea></div>
         <div class="col-12"><div class="form-check"><input class="form-check-input" type="checkbox" id="ai_share_consent" name="ai_share_consent" value="1" <?= $c['ai_share_consent'] ? 'checked' : '' ?>><label class="form-check-label" for="ai_share_consent">Applicant consents to their (de-identified) CV text being sent to the configured AI provider for a job-fit review</label></div></div>
     </div>
-    <div class="mt-3 d-flex gap-2"><button class="btn btn-dark" type="submit">Save</button><a class="btn btn-outline-secondary" href="<?= site_url('hr/candidates/' . $c['id']) ?>">Cancel</a></div>
+    <div class="mt-3 d-flex gap-2"><button class="btn btn-primary" type="submit">Save</button><a class="btn btn-outline-secondary" href="<?= site_url('hr/candidates/' . $c['id']) ?>">Cancel</a></div>
 </div></form>
 <?= $this->endSection() ?>

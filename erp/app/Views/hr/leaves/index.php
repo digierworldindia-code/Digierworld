@@ -1,6 +1,6 @@
 <?= $this->extend('layouts/app') ?>
 <?= $this->section('pageActions') ?>
-<?php if (can('hr.leave.view_all')): ?><a class="btn btn-outline-dark btn-sm" href="<?= site_url('hr/leaves/balances') ?>"><i class="bi bi-table"></i> Balances</a><?php endif ?>
+<?php if (can('hr.leave.view_all')): ?><a class="btn btn-outline-secondary btn-sm" href="<?= site_url('hr/leaves/balances') ?>"><i class="bi bi-table"></i> Balances</a><?php endif ?>
 <?= $this->endSection() ?>
 <?= $this->section('content') ?>
 <div class="row g-3">
@@ -15,7 +15,7 @@
     <div class="col-md-2"><select name="type" class="form-select form-select-sm" data-autosubmit aria-label="Type"><option value="">Any type</option><?php foreach ($types as $t): ?><option value="<?= $t['id'] ?>" <?= $f['type'] === (int) $t['id'] ? 'selected' : '' ?>><?= esc($t['code']) ?></option><?php endforeach ?></select></div>
     <div class="col-6 col-md-2"><input type="date" name="from" value="<?= esc((string) $f['from']) ?>" class="form-control form-control-sm" aria-label="From"></div>
     <div class="col-6 col-md-2"><input type="date" name="to" value="<?= esc((string) $f['to']) ?>" class="form-control form-control-sm" aria-label="To"></div>
-    <div class="col-md-2"><button class="btn btn-dark btn-sm w-100">Filter</button></div>
+    <div class="col-md-2"><button class="btn btn-primary btn-sm w-100">Filter</button></div>
 </form>
 <div class="table-card"><div class="table-responsive"><table class="table align-middle small mb-0">
     <thead><tr><th>Employee</th><th>Leave</th><th>Dates</th><th class="num">Days</th><th>Reason</th><th>Status</th><th></th></tr></thead><tbody>
@@ -30,7 +30,7 @@
         <td class="text-end">
             <?php if ($r['status'] === 'pending' && can('hr.leave.approve') && (int) $r['emp_user_id'] !== (int) current_user_id()): ?>
             <form method="post" action="<?= site_url('hr/leaves/' . $r['id'] . '/decide') ?>" class="d-flex gap-1"><?= csrf_field() ?>
-                <input class="form-control form-control-sm" name="decision_note" placeholder="Note (required to reject)" style="max-width:170px" aria-label="Decision note">
+                <input class="u-mxw-170px form-control form-control-sm" name="decision_note" placeholder="Note (required to reject)" aria-label="Decision note">
                 <button class="btn btn-sm btn-outline-success" name="decision" value="approved">Approve</button><button class="btn btn-sm btn-outline-danger" name="decision" value="rejected">Reject</button></form>
             <?php elseif ($r['status'] === 'approved' && can('hr.leave.approve')): ?>
             <details><summary class="small">Cancel</summary><form method="post" action="<?= site_url('hr/leaves/' . $r['id'] . '/cancel') ?>" class="d-flex gap-1 mt-1"><?= csrf_field() ?><input class="form-control form-control-sm" name="reason" placeholder="Reason" required aria-label="Reason"><button class="btn btn-sm btn-outline-danger">Cancel leave</button></form></details>
@@ -52,7 +52,7 @@
     <label class="form-label" for="lv_half">Half day</label><select class="form-select mb-2" id="lv_half" name="half_day"><option value="none">Full day(s)</option><option value="first_half">First half</option><option value="second_half">Second half</option></select>
     <label class="form-label" for="lv_reason">Reason</label><input class="form-control mb-2" id="lv_reason" name="reason" maxlength="500">
     <div class="form-check mb-2"><input class="form-check-input" type="checkbox" name="approve_now" value="1" id="lv_now"><label class="form-check-label" for="lv_now">Approve immediately (not for your own leave)</label></div>
-    <button class="btn btn-dark w-100" type="submit">Save leave</button>
+    <button class="btn btn-primary w-100" type="submit">Save leave</button>
     <div class="form-text">Holidays and weekly offs inside the range are not counted. Paid types are checked against the balance.</div>
 </div></form>
 <?php endif ?>

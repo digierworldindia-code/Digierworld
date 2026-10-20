@@ -12,7 +12,7 @@ $opts = static function (int $sel) use ($accounts): string {
 $errs = flash_errors();
 ?>
 <?= $this->section('content') ?>
-<form method="post" action="<?= site_url('finance/transfers') ?>" class="card" style="max-width:820px"><div class="card-body">
+<form method="post" action="<?= site_url('finance/transfers') ?>" class="u-mxw-820px card"><div class="card-body">
     <?= csrf_field() ?>
     <div class="row g-3">
         <div class="col-md-6"><label class="form-label required" for="from_account_id">From (money leaves)</label><select class="form-select<?= is_invalid('from_account_id') ?>" id="from_account_id" name="from_account_id" required><?= $opts((int) (old('from_account_id') ?? $fromId)) ?></select><?= field_error('from_account_id') ?></div>
@@ -27,6 +27,6 @@ $errs = flash_errors();
     </div>
     <p class="small text-muted mt-3 mb-0">Accounting: Dr <em>To</em> account, Cr <em>From</em> account. No income, no GST.</p>
 </div>
-<div class="card-footer bg-white text-end"><a href="<?= site_url('finance/transfers') ?>" class="btn btn-outline-secondary">Cancel</a> <button type="submit" class="btn btn-dark">Record transfer</button></div>
+<div class="card-footer text-end"><a href="<?= site_url('finance/transfers') ?>" class="btn btn-outline-secondary">Cancel</a> <button type="submit" class="btn btn-primary">Record transfer</button></div>
 </form>
 <?= $this->endSection() ?>

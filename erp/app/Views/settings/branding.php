@@ -8,7 +8,7 @@
         <div class="card h-100"><div class="card-body">
             <div class="d-flex justify-content-between align-items-start">
                 <div><div class="fw-semibold"><?= esc($label) ?></div><div class="small text-muted"><?= esc($help) ?></div></div>
-                <?= $active ? '<span class="badge bg-success">v' . (int) $active['version'] . ' active</span>' : '<span class="badge bg-secondary">not uploaded</span>' ?>
+                <?= $active ? '<span class="badge badge-success">v' . (int) $active['version'] . ' active</span>' : '<span class="badge badge-neutral">not uploaded</span>' ?>
             </div>
             <div class="asset-preview my-3">
                 <?php if ($active): ?><img src="<?= site_url('settings/branding/' . $active['id'] . '/preview') ?>" alt="<?= esc($label) ?> preview"><?php else: ?><span class="small text-muted">No file</span><?php endif ?>
@@ -32,14 +32,14 @@
                                 <div class="form-check form-check-inline"><input class="form-check-input" type="checkbox" name="enabled_doc_types[]" value="<?= $dk ?>" id="en<?= $active['id'] . $dk ?>" <?= in_array($dk, $en, true) ? 'checked' : '' ?>><label class="form-check-label small" for="en<?= $active['id'] . $dk ?>"><?= esc($dt['label']) ?></label></div>
                             <?php endforeach ?></div>
                     </div>
-                    <button class="btn btn-sm btn-dark mt-2">Save settings</button>
+                    <button class="btn btn-sm btn-primary mt-2">Save settings</button>
                 </form>
             <?php endif ?>
             <form method="post" action="<?= site_url('settings/branding') ?>" enctype="multipart/form-data" class="d-flex gap-2" <?= $active ? 'data-confirm="Replace the active ' . esc($label, 'attr') . '? The current version stays in history and on already-issued documents."' : '' ?>>
                 <?= csrf_field() ?>
                 <input type="hidden" name="asset_type" value="<?= $type ?>">
                 <input type="file" name="file" accept="image/png,image/jpeg,image/webp" class="form-control form-control-sm" required aria-label="<?= esc($label) ?> file">
-                <button class="btn btn-sm btn-outline-dark text-nowrap"><?= $active ? 'Replace' : 'Upload' ?></button>
+                <button class="btn btn-sm btn-outline-secondary text-nowrap"><?= $active ? 'Replace' : 'Upload' ?></button>
             </form>
             <div class="form-text">PNG (transparent background recommended for signature/stamp), JPG or WEBP, max 3 MB.</div>
             <?php if (count($list) > 1): ?>
@@ -51,5 +51,5 @@
     </div>
 <?php endforeach ?>
 </div>
-<?php if ($wizard): ?><div class="sticky-actions"><a href="<?= site_url('settings/banks?wizard=1') ?>" class="btn btn-dark">Continue to bank & payment →</a></div><?php endif ?>
+<?php if ($wizard): ?><div class="sticky-actions"><a href="<?= site_url('settings/banks?wizard=1') ?>" class="btn btn-primary">Continue to bank & payment →</a></div><?php endif ?>
 <?= $this->endSection() ?>

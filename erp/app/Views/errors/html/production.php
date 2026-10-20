@@ -1,25 +1,5 @@
-<!doctype html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <meta name="robots" content="noindex">
-
-    <title><?= lang('Errors.whoops') ?></title>
-
-    <style>
-        <?= preg_replace('#[\r\n\t ]+#', ' ', file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . 'debug.css')) ?>
-    </style>
-</head>
-<body>
-
-    <div class="container text-center">
-
-        <h1 class="headline"><?= lang('Errors.whoops') ?></h1>
-
-        <p class="lead"><?= lang('Errors.weHitASnag') ?></p>
-
-    </div>
-
-</body>
-
-</html>
+<?php
+$errCode = 500;
+$errTitle = 'Something went wrong';
+$errText = 'The problem has been logged. Please try again in a moment; if it keeps happening, tell the administrator what you were doing.';
+include __DIR__ . '/_themed.php';

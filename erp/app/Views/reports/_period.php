@@ -5,6 +5,6 @@
     </select></div>
     <div class="col-6 col-md-2"><input type="date" name="from" value="<?= esc($from) ?>" class="form-control form-control-sm" aria-label="From" <?= $preset === 'custom' ? '' : 'readonly' ?>></div>
     <div class="col-6 col-md-2"><input type="date" name="to" value="<?= esc($to) ?>" class="form-control form-control-sm" aria-label="To" <?= $preset === 'custom' ? '' : 'readonly' ?>></div>
-    <div class="col-md-2"><button class="btn btn-dark btn-sm w-100" name="period" value="custom">Apply dates</button></div>
+    <div class="col-md-2"><button class="btn btn-primary btn-sm w-100" name="period" value="custom">Apply dates</button></div>
     <div class="col-md-3 small text-muted align-self-center text-md-end"><?= dmy($from) ?> – <?= dmy($to) ?></div>
 </form>

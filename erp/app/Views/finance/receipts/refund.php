@@ -12,7 +12,7 @@
                 <option value="<?= $c['id'] ?>"><?= esc($c['name']) ?></option>
             <?php endforeach ?>
         </select></div>
-        <div class="col-md-3"><button class="btn btn-dark">Continue</button></div></div>
+        <div class="col-md-3"><button class="btn btn-primary">Continue</button></div></div>
 </div></form>
 <?php else: ?>
 <form method="post" action="<?= site_url('finance/refunds') ?>" class="card"><div class="card-body">
@@ -33,7 +33,7 @@
     </div>
     <p class="small text-muted mt-3 mb-0">A refund reduces the customer's advance (or credit balance) and the cash/bank balance. It is not an expense.</p>
 </div>
-<div class="card-footer bg-white text-end"><a href="<?= site_url('finance/receipts') ?>" class="btn btn-outline-secondary">Cancel</a> <button type="submit" class="btn btn-dark">Record refund</button></div>
+<div class="card-footer text-end"><a href="<?= site_url('finance/receipts') ?>" class="btn btn-outline-secondary">Cancel</a> <button type="submit" class="btn btn-primary">Record refund</button></div>
 </form>
 <?php endif ?>
 <?= $this->endSection() ?>

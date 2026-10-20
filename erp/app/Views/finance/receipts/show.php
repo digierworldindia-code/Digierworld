@@ -2,11 +2,11 @@
 <?php $isRefund = $r['receipt_type'] === 'refund'; $active = $r['status'] === 'active'; ?>
 <?= $this->section('pageActions') ?>
 <div class="btn-group btn-group-sm">
-    <a class="btn btn-outline-dark" href="<?= site_url('finance/receipts/' . $r['id'] . '/pdf') ?>" target="_blank" rel="noopener"><i class="bi bi-file-earmark-pdf"></i> Voucher PDF</a>
-    <a class="btn btn-outline-dark" href="<?= site_url('finance/receipts/' . $r['id'] . '/pdf?download=1') ?>" aria-label="Download PDF"><i class="bi bi-download"></i></a>
+    <a class="btn btn-outline-secondary" href="<?= site_url('finance/receipts/' . $r['id'] . '/pdf') ?>" target="_blank" rel="noopener"><i class="bi bi-file-earmark-pdf"></i> Voucher PDF</a>
+    <a class="btn btn-outline-secondary" href="<?= site_url('finance/receipts/' . $r['id'] . '/pdf?download=1') ?>" aria-label="Download PDF"><i class="bi bi-download"></i></a>
 </div>
 <?php if ($active && ! $isRefund && (float) $r['unapplied_amount'] > 0 && can('finance.receipt.refund')): ?>
-    <a class="btn btn-outline-dark btn-sm" href="<?= site_url('finance/refunds/new?contact=' . $r['contact_id'] . '&receipt=' . $r['id']) ?>"><i class="bi bi-arrow-return-left"></i> Refund advance</a>
+    <a class="btn btn-outline-secondary btn-sm" href="<?= site_url('finance/refunds/new?contact=' . $r['contact_id'] . '&receipt=' . $r['id']) ?>"><i class="bi bi-arrow-return-left"></i> Refund advance</a>
 <?php endif ?>
 <?php if ($active && can('finance.receipt.void')): ?>
     <button class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#voidModal"><i class="bi bi-x-octagon"></i> Void</button>
@@ -15,9 +15,9 @@
 <?= $this->section('content') ?>
 <div class="d-flex flex-wrap gap-2 mb-3 small">
     <?= status_badge($r['status']) ?>
-    <?php if ($r['requires_review']): ?><span class="badge text-bg-warning">Owner personal account — review</span><?php endif ?>
+    <?php if ($r['requires_review']): ?><span class="badge badge-warning">Owner personal account — review</span><?php endif ?>
     <?php if ($r['mode'] === 'cheque'): ?><?= status_badge($r['cheque_status']) ?><?php endif ?>
-    <span class="badge text-bg-light border">Bank: <?= esc($r['reconciliation_status']) ?></span>
+    <span class="badge badge-neutral">Bank: <?= esc($r['reconciliation_status']) ?></span>
 </div>
 <?php if (! $active): ?><div class="alert alert-secondary"><strong>Void</strong> on <?= dmy($r['voided_at'], true) ?>: <?= esc((string) $r['void_reason']) ?>. The accounting entry was reversed; the voucher number is never reused.</div><?php endif ?>
 <div class="row g-3">
@@ -36,7 +36,7 @@
     </div></div>
 
     <?php if (! $isRefund): ?>
-    <div class="table-card mb-3"><div class="card-header bg-white"><strong>Applied to</strong></div><div class="table-responsive">
+    <div class="table-card mb-3"><div class="card-header"><strong>Applied to</strong></div><div class="table-responsive">
         <table class="table align-middle small mb-0"><thead><tr><th>Document</th><th>Date</th><th class="num">Applied</th><th class="num">Balance now</th><th>Applied on</th><th></th></tr></thead><tbody>
         <?php foreach ($allocations as $a): ?>
             <tr class="<?= $a['reversed_at'] ? 'text-decoration-line-through text-muted' : '' ?>">
@@ -53,19 +53,19 @@
     <form method="post" action="<?= site_url('finance/receipts/' . $r['id'] . '/apply') ?>" class="card mb-3"><div class="card-body">
         <?= csrf_field() ?>
         <div class="card-section-title">Apply advance (<?= inr($r['unapplied_amount']) ?> available)</div>
-        <div class="table-responsive"><table class="table table-sm align-middle small"><thead><tr><th>Document</th><th>Date</th><th class="num">Balance due</th><th class="num" style="width:150px">Apply</th></tr></thead><tbody>
+        <div class="table-responsive"><table class="table table-sm align-middle small"><thead><tr><th>Document</th><th>Date</th><th class="num">Balance due</th><th class="u-w-150px num">Apply</th></tr></thead><tbody>
             <?php foreach ($openDocs as $d): ?>
             <tr><td class="mono"><?= esc($d['document_number']) ?></td><td><?= dmy($d['issue_date']) ?></td><td class="num"><?= inr($d['balance_due']) ?></td>
                 <td><input class="form-control form-control-sm text-end" name="alloc[<?= (int) $d['id'] ?>]" inputmode="decimal" aria-label="Apply to <?= esc($d['document_number']) ?>"></td></tr>
             <?php endforeach ?>
         </tbody></table></div>
-        <button class="btn btn-dark btn-sm" type="submit">Apply advance</button>
+        <button class="btn btn-primary btn-sm" type="submit">Apply advance</button>
     </div></form>
     <?php endif ?>
     <?php endif ?>
 
     <?php if ($refunds !== []): ?>
-    <div class="table-card mb-3"><div class="card-header bg-white"><strong>Refunds from this receipt</strong></div><table class="table small mb-0"><tbody>
+    <div class="table-card mb-3"><div class="card-header"><strong>Refunds from this receipt</strong></div><table class="table small mb-0"><tbody>
         <?php foreach ($refunds as $f): ?><tr><td><a class="mono" href="<?= site_url('finance/receipts/' . $f['id']) ?>"><?= esc($f['receipt_number']) ?></a></td><td><?= dmy($f['receipt_date']) ?></td><td class="num"><?= inr($f['amount']) ?></td><td><?= status_badge($f['status']) ?></td></tr><?php endforeach ?>
     </tbody></table></div>
     <?php endif ?>

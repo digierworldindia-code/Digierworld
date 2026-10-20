@@ -2,7 +2,7 @@
 <?php $v = static fn (string $k, $d = '') => esc((string) (old($k) ?? ($c[$k] ?? $d))); $errs = flash_errors(); ?>
 <?= $this->section('content') ?>
 <?php if ($jobs === []): ?><div class="alert alert-warning">Create a vacancy with its job description first — CVs are always evaluated against a specific JD version.</div><?php endif ?>
-<form method="post" action="<?= site_url('hr/candidates') ?>" enctype="multipart/form-data" class="card" style="max-width:980px"><div class="card-body">
+<form method="post" action="<?= site_url('hr/candidates') ?>" enctype="multipart/form-data" class="u-mxw-980px card"><div class="card-body">
     <?= csrf_field() ?>
     <?php if (isset($errs['duplicate'])): ?><div class="alert alert-warning small">This person already applied for this vacancy (<?= esc($errs['duplicate']) ?>). <div class="form-check mt-1"><input class="form-check-input" type="checkbox" name="allow_duplicate" value="1" id="dup"><label class="form-check-label" for="dup">It is a different person — save anyway</label></div></div><?php endif ?>
     <div class="row g-3">
@@ -21,11 +21,11 @@
         <div class="col-md-6"><label class="form-label" for="recruiter_id">Recruiter</label><select class="form-select" id="recruiter_id" name="recruiter_id"><option value="">Vacancy recruiter / me</option><?php foreach ($users as $uid => $n): ?><option value="<?= $uid ?>"><?= esc($n) ?></option><?php endforeach ?></select></div>
         <div class="col-md-6"><label class="form-label" for="cv">CV (PDF or DOCX, max 5 MB)</label><input type="file" class="form-control" id="cv" name="cv" accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"><div class="form-text">Stored privately; text is extracted on the server.</div></div>
         <div class="col-12"><label class="form-label" for="recruiter_notes">Recruiter notes</label><textarea class="form-control" id="recruiter_notes" name="recruiter_notes" rows="2"><?= $v('recruiter_notes') ?></textarea></div>
-        <div class="col-12"><div class="border rounded p-2 bg-light small">
+        <div class="col-12"><div class="border rounded p-2 bg-body-tertiary small">
             <div class="form-check"><input class="form-check-input<?= is_invalid('consent_given') ?>" type="checkbox" id="consent_given" name="consent_given" value="1" <?= old('consent_given') ? 'checked' : '' ?> required><label class="form-check-label required" for="consent_given">The applicant consented to DGR Office storing their application and CV for this hiring process (consent text <?= esc((string) $consentVersion) ?>). Data is kept until <?= dmy(date('Y-m-d', strtotime('+' . $retentionDays . ' days'))) ?> unless they join.</label><?= field_error('consent_given') ?></div>
             <div class="form-check mt-1"><input class="form-check-input" type="checkbox" id="ai_share_consent" name="ai_share_consent" value="1" <?= old('ai_share_consent') ? 'checked' : '' ?>><label class="form-check-label" for="ai_share_consent">The applicant also agreed that their CV text (with contact and personal details removed) may be sent to the configured AI provider for a job-fit review. Optional — without it, HR assesses manually.</label></div>
         </div></div>
     </div>
-    <div class="mt-3 d-flex gap-2"><button class="btn btn-dark" type="submit" <?= $jobs === [] ? 'disabled' : '' ?>>Save applicant</button><a class="btn btn-outline-secondary" href="<?= site_url('hr/candidates') ?>">Cancel</a></div>
+    <div class="mt-3 d-flex gap-2"><button class="btn btn-primary" type="submit" <?= $jobs === [] ? 'disabled' : '' ?>>Save applicant</button><a class="btn btn-outline-secondary" href="<?= site_url('hr/candidates') ?>">Cancel</a></div>
 </div></form>
 <?= $this->endSection() ?>

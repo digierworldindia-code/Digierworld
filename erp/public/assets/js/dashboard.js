@@ -4,10 +4,9 @@
     const wrap = document.querySelector('[data-dashboard-charts]');
     if (!wrap || typeof Chart === 'undefined') { return; }
 
-    const gold = '#B08D57', ink = '#1b1b1b', grey = '#9a958b';
-    const palette = ['#1b1b1b', '#B08D57', '#6b5531', '#8c8c8c', '#d9c7a5', '#4a4a4a', '#c9a96e', '#bdbdbd'];
-    Chart.defaults.font.family = getComputedStyle(document.body).fontFamily;
-    Chart.defaults.color = '#55514a';
+    const theme = DGR.chartTheme();
+    const gold = theme.gold, ink = theme.series[1], grey = theme.series[2];
+    const palette = theme.series;
     const inrTick = (v) => '₹' + Number(v).toLocaleString('en-IN', { maximumFractionDigits: 0 });
     const tooltipInr = { callbacks: { label: (c) => `${c.dataset.label || c.label}: ₹${Number(c.parsed.y ?? c.parsed).toLocaleString('en-IN', { minimumFractionDigits: 2 })}` } };
 

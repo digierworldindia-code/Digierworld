@@ -183,6 +183,12 @@ final class HrPayrollTest extends DgrTestCase
         $this->get('me/payslips')->assertSee('November 2025');
         $this->assertSame(200, $this->statusOf(fn () => $this->get('files/' . $f1)));
         $this->assertSame(403, $this->statusOf(fn () => $this->get('files/' . $f2)), 'another employee\'s payslip');
+        // PDFs missing on disk (uploads not restored): a clean 404, never a server error, and permission is still checked first
+        foreach ([$f1, $f2] as $fid) {
+            unlink(service('files')->path(service('files')->find($fid)));
+        }
+        $this->assertSame(404, $this->statusOf(fn () => $this->get('files/' . $f1)), 'own payslip whose PDF is missing');
+        $this->assertSame(403, $this->statusOf(fn () => $this->get('files/' . $f2)), 'another employee\'s missing payslip');
         foreach (['hr/payroll', 'hr/payroll/' . $run, 'hr/employees/' . $e2, 'hr/attendance', 'finance/receipts'] as $uri) {
             $this->assertSame(403, $this->statusOf(fn () => $this->get($uri)), $uri);
         }

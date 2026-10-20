@@ -18,7 +18,7 @@
     <select class="form-select mb-2" name="leave_type_id" required aria-label="Leave type"><?php foreach ($types as $t): ?><option value="<?= $t['id'] ?>"><?= esc($t['code']) ?></option><?php endforeach ?></select>
     <input class="form-control mb-2" name="days" placeholder="Days (e.g. 2 or -1)" inputmode="decimal" required aria-label="Days">
     <input class="form-control mb-2" name="reason" placeholder="Reason (opening balance, comp-off…)" required aria-label="Reason">
-    <button class="btn btn-dark w-100">Adjust</button>
+    <button class="btn btn-primary w-100">Adjust</button>
     <div class="form-text">Entitlements per type are set in Settings → Master lists → Leave types. Every adjustment is audited.</div>
 </div></form>
 <?php endif ?>

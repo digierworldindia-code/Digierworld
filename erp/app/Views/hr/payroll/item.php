@@ -8,8 +8,8 @@
         <div class="row mt-2 text-muted"><div class="col">Payable <?= (float) $item['payable_days'] ?> / <?= (float) $item['proration_days'] ?> days</div><div class="col">Present <?= (float) $item['present_days'] ?></div><div class="col">Paid leave <?= (float) $item['paid_leave_days'] ?></div><div class="col">Unpaid <?= (float) $item['unpaid_leave_days'] ?> · Absent <?= (float) $item['absent_days'] ?></div><div class="col">Unmarked <?= (float) $item['unmarked_days'] ?></div></div>
     </div></div>
     <?php foreach ($types as $t => $label): $rows = array_filter($components, static fn ($c) => $c['component_type'] === $t); if (! $rows) { continue; } ?>
-    <div class="table-card mb-3"><div class="card-header bg-white"><strong><?= $label ?></strong></div><table class="table small mb-0"><tbody>
-        <?php foreach ($rows as $c): ?><tr><td><?= esc($c['label']) ?><?= $c['ref_type'] === 'manual' ? ' <span class="badge text-bg-light border">manual</span>' : '' ?></td><td class="num"><?= inr($c['amount']) ?></td>
+    <div class="table-card mb-3"><div class="card-header"><strong><?= $label ?></strong></div><table class="table small mb-0"><tbody>
+        <?php foreach ($rows as $c): ?><tr><td><?= esc($c['label']) ?><?= $c['ref_type'] === 'manual' ? ' <span class="badge badge-neutral">manual</span>' : '' ?></td><td class="num"><?= inr($c['amount']) ?></td>
             <td class="text-end"><?php if ($c['ref_type'] === 'manual' && ! $locked && can('hr.payroll.calculate')): ?><form method="post" action="<?= site_url('hr/payroll/lines/' . $c['id'] . '/delete') ?>"><?= csrf_field() ?><button class="btn btn-link btn-sm text-danger p-0">remove</button></form><?php endif ?></td></tr><?php endforeach ?>
     </tbody></table></div>
     <?php endforeach ?>
@@ -24,7 +24,7 @@
         <div class="card-section-title">Add a one-off line (draft)</div>
         <div class="row g-2"><div class="col-4"><select class="form-select form-select-sm" name="component_type" aria-label="Type"><option value="earning">Earning</option><option value="deduction">Deduction</option></select></div>
             <div class="col-5"><input class="form-control form-control-sm" name="label" placeholder="e.g. Festival bonus" required aria-label="Label"></div><div class="col-3"><input class="form-control form-control-sm" name="amount" placeholder="₹" inputmode="decimal" required aria-label="Amount"></div></div>
-        <button class="btn btn-dark btn-sm mt-2">Add and recalculate</button>
+        <button class="btn btn-primary btn-sm mt-2">Add and recalculate</button>
     </div></form>
     <?php endif ?>
     <?php if ($locked && can('hr.payroll.adjust')): ?>
@@ -44,7 +44,7 @@
             <div class="col-6"><select class="form-select form-select-sm" name="bank_cash_account_id" aria-label="Paid from"><?php foreach ($accounts as $a): ?><option value="<?= $a['id'] ?>"><?= esc($a['display_name']) ?></option><?php endforeach ?></select></div>
             <div class="col-6"><select class="form-select form-select-sm" name="mode" aria-label="Mode"><option value="neft">NEFT</option><option value="imps">IMPS</option><option value="upi">UPI</option><option value="cash">Cash</option><option value="cheque">Cheque</option></select></div>
             <div class="col-12"><input class="form-control form-control-sm" name="reference_no" placeholder="Reference / UTR" aria-label="Reference"></div></div>
-        <button class="btn btn-dark btn-sm mt-2">Record payment</button>
+        <button class="btn btn-primary btn-sm mt-2">Record payment</button>
     </div></form>
     <?php endif ?>
     <div class="card mb-3"><div class="card-body small"><div class="card-section-title">Payments</div>

@@ -1,0 +1,129 @@
+/*!
+ * DGR Office — module components. Colours come only from dgr-theme.css tokens.
+ */
+
+/* ===== Invoice editor: GST type selector, tax advice, line items, totals ===== */
+.gst-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: .75rem; }
+.gst-card { position: relative; border: 1px solid var(--dgr-border-strong); border-radius: var(--dgr-radius); padding: .85rem 1rem; cursor: pointer; background: var(--dgr-inset); transition: border-color .12s, box-shadow .12s; }
+.gst-card input { position: absolute; opacity: 0; pointer-events: none; }
+.gst-card:hover { border-color: var(--dgr-gold-line); }
+.gst-card.selected { border-color: var(--dgr-gold); box-shadow: 0 0 0 1px var(--dgr-gold); background: var(--dgr-gold-soft); }
+.gst-card.disabled { opacity: .45; cursor: not-allowed; }
+.gst-card .gst-title { font-weight: 700; font-size: 1rem; color: var(--dgr-text); }
+.gst-card .gst-sub { font-size: .78rem; color: var(--dgr-text-2); }
+.gst-card .gst-calc { font-size: .8rem; margin-top: .35rem; font-variant-numeric: tabular-nums; color: var(--dgr-text); }
+.tax-advice { border-left: 3px solid var(--dgr-gold); background: var(--dgr-gold-soft); padding: .65rem .85rem; border-radius: var(--dgr-radius-sm); font-size: .85rem; color: var(--dgr-text); }
+.tax-advice.warn { border-left-color: var(--dgr-warning); background: var(--dgr-warning-soft); }
+.tax-advice.block { border-left-color: var(--dgr-danger); background: var(--dgr-danger-soft); }
+.line-items .form-control, .line-items .form-select { min-height: 36px; font-size: .86rem; }
+.line-items td { vertical-align: top; }
+.line-items .li-desc { min-width: 220px; }
+.totals-box { background: var(--dgr-card); border: 1px solid var(--dgr-border); border-radius: var(--dgr-radius); padding: 1rem; }
+.totals-box .row-t { display: flex; justify-content: space-between; padding: .2rem 0; font-variant-numeric: tabular-nums; color: var(--dgr-text-2); }
+.totals-box .row-t > :last-child { color: var(--dgr-text); }
+.totals-box .grand { font-size: 1.15rem; font-weight: 700; border-top: 1px solid var(--dgr-gold-line); margin-top: .4rem; padding-top: .5rem; color: var(--dgr-text); }
+.totals-box .grand > :last-child { color: var(--dgr-gold); }
+
+/* ===== Boards (CRM pipeline, shortlisting) ===== */
+.kanban { display: flex; gap: .75rem; overflow-x: auto; padding-bottom: .75rem; }
+.kanban-col { min-width: 250px; max-width: 280px; background: var(--dgr-sidebar); border: 1px solid var(--dgr-border); border-radius: var(--dgr-radius); padding: .6rem; flex-shrink: 0; }
+.kanban-col h3 { font-size: .76rem; text-transform: uppercase; letter-spacing: .06em; color: var(--dgr-text-2); margin: .2rem .3rem .6rem; display: flex; justify-content: space-between; }
+.kanban-card { background: var(--dgr-card); border-radius: 8px; padding: .6rem .7rem; margin-bottom: .5rem; border: 1px solid var(--dgr-border); font-size: .84rem; display: block; color: inherit; text-decoration: none; }
+.kanban-card:hover { border-color: var(--dgr-gold-line); color: inherit; }
+
+/* ===== Setup wizard, branding previews ===== */
+.wizard-steps { display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: 1rem; }
+.wizard-step { display: flex; align-items: center; gap: .5rem; padding: .45rem .8rem; border-radius: 30px; background: var(--dgr-card); border: 1px solid var(--dgr-border); font-size: .82rem; color: var(--dgr-text-2); text-decoration: none; }
+.wizard-step:hover { color: var(--dgr-text); border-color: var(--dgr-border-strong); }
+.wizard-step .num { width: 22px; height: 22px; border-radius: 50%; background: var(--dgr-raised); color: var(--dgr-text); display: inline-flex; align-items: center; justify-content: center; font-size: .72rem; font-weight: 700; }
+.wizard-step.done { border-color: rgba(74, 222, 128, .35); color: var(--dgr-text); }
+.wizard-step.done .num { background: var(--dgr-success); color: var(--dgr-on-success); }
+.wizard-step.active { border-color: var(--dgr-gold); background: var(--dgr-gold-soft); color: var(--dgr-text); }
+.wizard-step.active .num { background: var(--dgr-gold); color: var(--dgr-on-gold); }
+/* uploaded logo/signature/stamp previewed on a neutral checkerboard, never recoloured */
+.asset-preview { background: repeating-conic-gradient(var(--dgr-border) 0% 25%, var(--dgr-card) 0% 50%) 50% / 16px 16px; border: 1px dashed var(--dgr-border-strong); border-radius: 8px; min-height: 90px; display: flex; align-items: center; justify-content: center; padding: .5rem; }
+.asset-preview img { max-height: 120px; max-width: 100%; }
+
+/* ===== Role & permission controls ===== */
+.perm-matrix th.rot { white-space: nowrap; }
+.perm-matrix td { text-align: center; }
+.perm-matrix td.pk { text-align: left; white-space: nowrap; }
+.perm-matrix .bi-check-lg { color: var(--dgr-gold); }
+.perm-danger { color: var(--dgr-danger); }
+
+/* ===== Calendar & attendance grids ===== */
+.cal-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+.cal-head { padding: 2px 4px; color: var(--dgr-text-2); }
+.cal-cell { min-height: 104px; padding: 4px; background: var(--dgr-card); border: 1px solid var(--dgr-border); border-radius: var(--dgr-radius-sm); overflow: hidden; }
+.cal-empty { background: transparent; border-color: transparent; }
+.cal-off { background: var(--dgr-inset); }
+.cal-today { border-color: var(--dgr-gold); box-shadow: inset 0 0 0 1px var(--dgr-gold); }
+.cal-chip { line-height: 1.35; border-radius: 2px; }
+a.cal-chip:hover, a.cal-chip:focus { background: var(--dgr-gold-soft); }
+.att-grid { font-variant-numeric: tabular-nums; }
+.cal-day { min-height: 64px; }
+
+/* ===== Charts ===== */
+.chart-box { position: relative; height: 260px; }
+.chart-box.tall { height: 320px; }
+
+/* ===== CRM stage markers and target progress ===== */
+.stage-mark { border-left: 3px solid var(--dgr-border-strong); padding-left: 6px; }
+.stage-mark-success { border-left-color: var(--dgr-success); }
+.stage-mark-danger { border-left-color: var(--dgr-danger); }
+.stage-mark-gold { border-left-color: var(--dgr-gold); }
+.stage-mark-info { border-left-color: var(--dgr-info); }
+.dgr-progress { display: block; width: 100%; height: 6px; border: 0; border-radius: 3px; overflow: hidden; background: var(--dgr-inset); appearance: none; }
+.dgr-progress::-webkit-progress-bar { background: var(--dgr-inset); }
+.dgr-progress::-webkit-progress-value { background: var(--dgr-gold); }
+.dgr-progress::-moz-progress-bar { background: var(--dgr-gold); }
+
+/* ===== Layout helpers that replace inline style attributes (CSP style-src 'self') ===== */
+.pre-line { white-space: pre-line; }
+.mw-820 { max-width: 820px; }
+.mw-980 { max-width: 980px; }
+.w-auto-inline { width: auto; }
+.sticky-panel { position: sticky; top: 76px; }
+/* generated column widths and spacing: see tools note in docs/09-UI-THEME.md */
+.u-h-260px { height: 260px; }
+.u-h-6px { height: 6px; }
+.u-mnh-60px { min-height: 60px; }
+.u-mnw-220px { min-width: 220px; }
+.u-mnw-280px { min-width: 280px; }
+.u-mxh-50px { max-height: 50px; }
+.u-mxh-60vh { max-height: 60vh; }
+.u-mxh-640px { max-height: 640px; }
+.u-mxh-75vh { max-height: 75vh; }
+.u-mxw-1040px { max-width: 1040px; }
+.u-mxw-1080px { max-width: 1080px; }
+.u-mxw-1100px { max-width: 1100px; }
+.u-mxw-110px { max-width: 110px; }
+.u-mxw-150px { max-width: 150px; }
+.u-mxw-170px { max-width: 170px; }
+.u-mxw-220px { max-width: 220px; }
+.u-mxw-420px { max-width: 420px; }
+.u-mxw-52px { max-width: 52px; }
+.u-mxw-60px { max-width: 60px; }
+.u-mxw-720px { max-width: 720px; }
+.u-mxw-760px { max-width: 760px; }
+.u-mxw-820px { max-width: 820px; }
+.u-mxw-980px { max-width: 980px; }
+.u-pos-sticky { position: sticky; }
+.u-top-76px { top: 76px; }
+.u-w-10p { width: 10%; }
+.u-w-11p { width: 11%; }
+.u-w-12p { width: 12%; }
+.u-w-130px { width: 130px; }
+.u-w-150px { width: 150px; }
+.u-w-22p { width: 22%; }
+.u-w-240px { width: 240px; }
+.u-w-24p { width: 24%; }
+.u-w-36px { width: 36px; }
+.u-w-70px { width: 70px; }
+.u-w-7p { width: 7%; }
+.u-w-80px { width: 80px; }
+.u-w-84px { width: 84px; }
+.u-w-8p { width: 8%; }
+.u-w-90px { width: 90px; }
+.u-w-auto { width: auto; }
+.u-ws-pre-line { white-space: pre-line; }

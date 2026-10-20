@@ -22,7 +22,7 @@
             <div class="alert alert-warning small d-none" data-danger-warning><i class="bi bi-shield-exclamation"></i> <span data-danger-count>0</span> sensitive permission(s) selected. Adding new sensitive permissions requires your password:
                 <input type="password" name="admin_password" class="form-control form-control-sm mt-2<?= is_invalid('admin_password') ?>" autocomplete="current-password" aria-label="Your password"><?= field_error('admin_password') ?></div>
             <?php endif ?>
-            <button class="btn btn-dark w-100"><?= $role ? 'Save role' : 'Create role' ?></button>
+            <button class="btn btn-primary w-100"><?= $role ? 'Save role' : 'Create role' ?></button>
             <?php if ($role && ! $isSuper && $userCount === 0): ?>
                 <button form="delRole" class="btn btn-outline-danger w-100 mt-2">Delete role</button>
             <?php endif ?>
@@ -31,11 +31,11 @@
     <div class="col-lg-8">
         <?php if (! $isSuper): ?>
         <div class="card"><div class="card-body">
-            <div class="d-flex justify-content-between align-items-center mb-2"><div class="card-section-title mb-0">Permissions</div><input type="search" class="form-control form-control-sm" style="max-width:220px" placeholder="Filter…" data-perm-filter aria-label="Filter permissions"></div>
+            <div class="d-flex justify-content-between align-items-center mb-2"><div class="card-section-title mb-0">Permissions</div><input type="search" class="u-mxw-220px form-control form-control-sm" placeholder="Filter…" data-perm-filter aria-label="Filter permissions"></div>
             <p class="small text-muted">Separate rights for view-own / view-assigned / view-team / view-all, create, edit, approve, finalize, print, download, export and delete. ⚠ marks sensitive permissions.</p>
             <?php foreach ($modules as $mod => $def): ?>
                 <div class="border rounded mb-2">
-                    <div class="d-flex justify-content-between align-items-center px-3 py-2 bg-light"><strong class="small"><?= esc($def['label']) ?></strong><button type="button" class="btn btn-sm btn-link p-0" data-module-toggle="<?= esc($mod) ?>">toggle all</button></div>
+                    <div class="d-flex justify-content-between align-items-center px-3 py-2 bg-body-tertiary"><strong class="small"><?= esc($def['label']) ?></strong><button type="button" class="btn btn-sm btn-link p-0" data-module-toggle="<?= esc($mod) ?>">toggle all</button></div>
                     <div class="px-3 py-2">
                     <?php foreach ($def['perms'] as $key => $meta): $danger = ! empty($meta[1]['danger']); ?>
                         <div class="form-check" data-perm-row="<?= esc($key . ' ' . $meta[0], 'attr') ?>">
@@ -55,4 +55,4 @@
 <form id="delRole" method="post" action="<?= site_url('admin/roles/' . $role['id'] . '/delete') ?>" data-confirm="Delete this role permanently?" data-confirm-danger><?= csrf_field() ?></form>
 <?php endif ?>
 <?= $this->endSection() ?>
-<?= $this->section('scripts') ?><script src="<?= base_url('assets/js/admin.js') ?>"></script><?= $this->endSection() ?>
+<?= $this->section('scripts') ?><script src="<?= asset('js/admin.js') ?>"></script><?= $this->endSection() ?>

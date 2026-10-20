@@ -62,7 +62,7 @@ $errs = flash_errors();
     </div></div>
 </div>
 <div class="col-xl-4">
-    <div class="card totals-box" style="position:sticky;top:76px"><div class="card-body">
+    <div class="u-pos-sticky u-top-76px card totals-box"><div class="card-body">
         <div class="card-section-title">Summary (estimate — server recalculates)</div>
         <div class="d-flex justify-content-between"><span>Amount before GST</span><span data-s="taxable">₹0.00</span></div>
         <div class="d-flex justify-content-between"><span>GST</span><span data-s="tax">₹0.00</span></div>
@@ -72,7 +72,7 @@ $errs = flash_errors();
     </div></div>
 </div>
 </div>
-<div class="sticky-actions"><a href="<?= site_url($e ? 'finance/expenses/' . $e['id'] : 'finance/expenses') ?>" class="btn btn-outline-secondary">Cancel</a><button class="btn btn-dark" type="submit"><?= $e ? 'Save changes' : 'Record & send for approval' ?></button></div>
+<div class="sticky-actions"><a href="<?= site_url($e ? 'finance/expenses/' . $e['id'] : 'finance/expenses') ?>" class="btn btn-outline-secondary">Cancel</a><button class="btn btn-primary" type="submit"><?= $e ? 'Save changes' : 'Record & send for approval' ?></button></div>
 </form>
 <?= $this->endSection() ?>
-<?= $this->section('scripts') ?><script src="<?= base_url('assets/js/expense-form.js') ?>"></script><?= $this->endSection() ?>
+<?= $this->section('scripts') ?><script src="<?= asset('js/expense-form.js') ?>"></script><?= $this->endSection() ?>

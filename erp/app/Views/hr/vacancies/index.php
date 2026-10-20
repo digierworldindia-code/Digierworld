@@ -1,6 +1,6 @@
 <?= $this->extend('layouts/app') ?>
 <?= $this->section('pageActions') ?>
-<?php if (can('hr.vacancy.manage')): ?><a href="<?= site_url('hr/vacancies/new') ?>" class="btn btn-gold btn-sm"><i class="bi bi-plus-lg"></i> New vacancy</a><?php endif ?>
+<?php if (can('hr.vacancy.manage')): ?><a href="<?= site_url('hr/vacancies/new') ?>" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg"></i> New vacancy</a><?php endif ?>
 <?= $this->endSection() ?>
 <?= $this->section('content') ?>
 <ul class="nav nav-tabs small mb-2"><?php foreach (['active' => 'Active', 'open' => 'Open', 'filled' => 'Filled', 'closed' => 'Closed', 'all' => 'All'] as $k => $l): ?><li class="nav-item"><a class="nav-link <?= $status === $k ? 'active' : '' ?>" href="<?= site_url('hr/vacancies?status=' . $k) ?>"><?= $l ?></a></li><?php endforeach ?></ul>

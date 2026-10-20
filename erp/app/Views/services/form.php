@@ -27,6 +27,6 @@
     <div class="mt-3"><label class="form-label" for="review_status">Tax review</label><select class="form-select" id="review_status" name="review_status"><option value="suggested">Suggested (not confirmed)</option><option value="accountant_reviewed" <?= ($s['review_status'] ?? '') === 'accountant_reviewed' ? 'selected' : '' ?>>Accountant reviewed SAC & rate</option></select></div>
     <?php else: ?><div class="small text-muted mt-3">Changing SAC or rate resets the accountant-review status.</div><?php endif ?>
 </div></div></div></div>
-<div class="sticky-actions"><a href="<?= site_url('services') ?>" class="btn btn-outline-secondary">Cancel</a><button class="btn btn-dark">Save service</button></div>
+<div class="sticky-actions"><a href="<?= site_url('services') ?>" class="btn btn-outline-secondary">Cancel</a><button class="btn btn-primary">Save service</button></div>
 </form>
 <?= $this->endSection() ?>

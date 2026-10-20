@@ -47,7 +47,7 @@
     <?php if ($a): ?><div class="form-check form-switch mt-2"><input class="form-check-input" type="checkbox" id="is_active" name="is_active" value="1" <?= $a['is_active'] ? 'checked' : '' ?>><label class="form-check-label" for="is_active">Active</label></div><?php endif ?>
 </div></div></div>
 </div>
-<div class="sticky-actions"><a href="<?= site_url('settings/banks') ?>" class="btn btn-outline-secondary">Cancel</a><button class="btn btn-dark">Save account</button></div>
+<div class="sticky-actions"><a href="<?= site_url('settings/banks') ?>" class="btn btn-outline-secondary">Cancel</a><button class="btn btn-primary">Save account</button></div>
 </form>
 <?= $this->endSection() ?>
-<?= $this->section('scripts') ?><script src="<?= base_url('assets/js/settings.js') ?>"></script><?= $this->endSection() ?>
+<?= $this->section('scripts') ?><script src="<?= asset('js/settings.js') ?>"></script><?= $this->endSection() ?>

@@ -4,7 +4,7 @@
 <div class="row g-3">
 <div class="col-lg-6">
     <div class="card h-100"><div class="card-body">
-        <div class="d-flex justify-content-between align-items-start"><div class="card-section-title">Email (SMTP)</div><?= $smtp['configured'] ? '<span class="badge text-bg-success">Configured</span>' : '<span class="badge text-bg-secondary">Not configured</span>' ?></div>
+        <div class="d-flex justify-content-between align-items-start"><div class="card-section-title">Email (SMTP)</div><?= $smtp['configured'] ? '<span class="badge badge-success">Configured</span>' : '<span class="badge badge-neutral">Not configured</span>' ?></div>
         <dl class="row small mb-2">
             <dt class="col-4">Protocol</dt><dd class="col-8"><?= esc($smtp['protocol']) ?></dd>
             <dt class="col-4">Host</dt><dd class="col-8"><?= esc($smtp['host'] ?: '—') ?><?= $smtp['host'] ? ':' . (int) $smtp['port'] . ' ' . esc((string) $smtp['crypto']) : '' ?></dd>
@@ -13,7 +13,7 @@
             <dt class="col-4">Last test</dt><dd class="col-8"><?= $smtp['lastTest'] ? esc($smtp['lastTest']['summary']) . ' · ' . dmy($smtp['lastTest']['occurred_at'], true) : '—' ?></dd>
         </dl>
         <p class="small text-muted">Used for reminders, login codes and password links. When not configured, those features fall back to in-app notifications only.</p>
-        <form method="post" action="<?= site_url('settings/integrations/smtp/test') ?>"><?= csrf_field() ?><button class="btn btn-outline-dark btn-sm" type="submit" <?= $smtp['configured'] ? '' : 'disabled' ?>><i class="bi bi-envelope"></i> Send test email to <?= esc($myEmail) ?></button></form>
+        <form method="post" action="<?= site_url('settings/integrations/smtp/test') ?>"><?= csrf_field() ?><button class="btn btn-outline-secondary btn-sm" type="submit" <?= $smtp['configured'] ? '' : 'disabled' ?>><i class="bi bi-envelope"></i> Send test email to <?= esc($myEmail) ?></button></form>
     </div></div>
 </div>
 <div class="col-lg-6">

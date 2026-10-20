@@ -25,7 +25,7 @@ class MastersController extends BaseController
                 'name' => ['Reason', 'text', true], 'is_active' => ['Active', 'bool'],
             ]],
             'crm_stages' => ['label' => 'CRM pipeline stages', 'perm' => 'crm.settings.manage', 'order' => 'sort_order', 'fields' => [
-                'code' => ['Code', 'code', true], 'name' => ['Name', 'text', true], 'sort_order' => ['Order', 'int'], 'color' => ['Colour', 'color'],
+                'code' => ['Code', 'code', true], 'name' => ['Name', 'text', true], 'sort_order' => ['Order', 'int'],
                 'is_won' => ['Won', 'bool'], 'is_lost' => ['Lost', 'bool'], 'is_closed' => ['Closed', 'bool'], 'is_dnd' => ['DNC', 'bool'], 'is_active' => ['Active', 'bool'],
             ]],
             'expense_categories' => ['label' => 'Expense categories', 'perm' => 'finance.expense.manage_categories', 'order' => 'name', 'fields' => [
@@ -83,7 +83,6 @@ class MastersController extends BaseController
                 'bool'    => $raw ? 1 : 0,
                 'int'     => (int) $raw,
                 'decimal' => number_format((float) $raw, 2, '.', ''),
-                'color'   => preg_match('/^#[0-9a-fA-F]{6}$/', (string) $raw) ? $raw : '#6c757d',
                 'code'    => strtolower(trim(preg_replace('/[^a-z0-9_]+/i', '_', (string) $raw), '_')),
                 'select'  => ($raw === '' || $raw === null) ? null : (isset($f[3][$raw]) ? $raw : '__invalid__'),
                 default   => trim((string) $raw),

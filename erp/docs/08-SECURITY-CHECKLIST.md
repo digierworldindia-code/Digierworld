@@ -73,7 +73,8 @@ verified manually · ⚠ deployment responsibility / recommendation.
 
 | # | Item | How | Status |
 | --- | --- | --- | --- |
-| 6.1 | Strict Content-Security-Policy | `script-src 'self'` (no inline scripts), `frame-ancestors 'none'`, `object-src 'none'`, `form-action 'self'` | ✔ |
+| 6.1 | Strict Content-Security-Policy | `default-src 'self'`; `script-src 'self'` and `style-src 'self'` (no inline scripts or styles, no `unsafe-inline`), `font-src 'self'`, `connect-src 'self'`, `frame-ancestors 'none'`, `object-src 'none'`, `form-action 'self'`, `base-uri 'self'`; `ThemeComplianceTest` fails on any inline script/style in a view | ✔ |
+| 6.1a | Self-hosted, verified frontend libraries | No CDN at runtime. Bootstrap 5.3.8, Bootstrap Icons 1.13.2 and Chart.js 4.5.1 are official npm-registry files, unmodified, pinned in `public/assets/vendor/MANIFEST.json` (sha512 tarball + sha384 per file). `VendorAssetsTest` checks the hashes offline; `scripts/verify-vendor-assets.sh` re-downloads, compares byte-for-byte and runs `npm audit` (0 vulnerabilities, 2026-10-20). No jQuery. See [09-UI-THEME.md](09-UI-THEME.md) | ✔ |
 | 6.2 | Other headers | `X-Content-Type-Options`, `X-Frame-Options: DENY`, `Referrer-Policy`, `Permissions-Policy`, `COOP` | ✔ |
 | 6.3 | SQL injection | Query Builder / bound parameters throughout; no user input concatenated into SQL | ◐ code review |
 | 6.4 | XSS | Views escape output with `esc()`; untrusted CV/Sheet text is never rendered as HTML | ◐ code review |

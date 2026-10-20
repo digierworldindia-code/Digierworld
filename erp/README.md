@@ -23,6 +23,7 @@ PhpSpreadsheet · Dompdf · google/apiclient (Sheets only) · smalot/pdfparser
 | [docs/06-AI-BOUNDARY.md](docs/06-AI-BOUNDARY.md) | What the AI can and cannot see or do, provider set-up, service tokens |
 | [docs/07-TEST-REPORT.md](docs/07-TEST-REPORT.md) | Automated and manual test results, evidence files, known limitations |
 | [docs/08-SECURITY-CHECKLIST.md](docs/08-SECURITY-CHECKLIST.md) | Security review checklist with how each item is enforced |
+| [docs/09-UI-THEME.md](docs/09-UI-THEME.md) | Approved black · white · gold theme, component reference, self-hosted asset policy, CSP, library upgrades |
 | [docs/samples/](docs/samples/) | Sample import files (clients/vendors, CRM leads, bank statement) |
 | [docs/evidence/](docs/evidence/) | PDFs/XLSX and the exact AI request produced by the acceptance tests |
 
@@ -122,11 +123,14 @@ database) before entering real data.
 
 ### Release files
 
-`dist/dgr-office-1.0.0.zip` (application + production `vendor/`),
+`dist/dgr-office-1.1.0.zip` (application + production `vendor/`),
 `dist/dgr-office-1.0.0-clean.sql` (empty database with base data for real
 use, [§12](docs/04-DEPLOYMENT.md)) and `dist/dgr-office-1.0.0-demo.sql`
 / `.sql.gz` (evaluation-only demo database, [§11](docs/04-DEPLOYMENT.md)),
-each with a `.sha256` checksum.
+each with a `.sha256` checksum. Release 1.1.0 changed only the user
+interface (black theme, self-hosted verified assets, strict CSP); the
+database schema is unchanged, so the 1.0.0 SQL files are the correct ones
+for 1.1.0.
 Rebuild the archive any time with `scripts/build-release.sh <version>`.
 
 ## 5. Folder layout

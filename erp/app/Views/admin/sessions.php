@@ -6,7 +6,7 @@
     <tbody>
     <?php foreach ($rows as $s): ?>
         <tr>
-            <td><a href="<?= site_url('admin/users/' . $s['user_id']) ?>"><?= esc($s['full_name'] ?? ('User #' . $s['user_id'])) ?></a><?= $s['session_id'] === $currentSid ? ' <span class="badge bg-gold-soft text-dark">you</span>' : '' ?></td>
+            <td><a href="<?= site_url('admin/users/' . $s['user_id']) ?>"><?= esc($s['full_name'] ?? ('User #' . $s['user_id'])) ?></a><?= $s['session_id'] === $currentSid ? ' <span class="badge badge-gold">you</span>' : '' ?></td>
             <td class="small"><?= esc(mb_strimwidth((string) $s['user_agent'], 0, 60, '…')) ?></td>
             <td class="small mono"><?= esc($s['ip_address']) ?></td>
             <td class="small"><?= dmy($s['created_at'], true) ?></td>

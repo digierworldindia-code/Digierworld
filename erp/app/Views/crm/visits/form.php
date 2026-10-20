@@ -1,6 +1,6 @@
 <?= $this->extend('layouts/app') ?>
 <?= $this->section('content') ?>
-<form method="post" action="<?= site_url('crm/visits') ?>" class="card" style="max-width:820px" data-visit-form><div class="card-body">
+<form method="post" action="<?= site_url('crm/visits') ?>" class="u-mxw-820px card" data-visit-form><div class="card-body">
     <?= csrf_field() ?>
     <div class="row g-3">
         <div class="col-md-6"><label class="form-label" for="vs_lead">Lead</label>
@@ -12,6 +12,6 @@
         <div class="col-12"><label class="form-label" for="vs_addr">Address</label><input class="form-control" id="vs_addr" name="address" maxlength="300" value="<?= $lead ? esc(trim($lead['address'] . ' ' . $lead['city'])) : '' ?>" data-addr></div>
         <div class="col-12"><label class="form-label" for="vs_pur">Purpose</label><input class="form-control" id="vs_pur" name="purpose" maxlength="300" placeholder="e.g. Present SEO + GBP proposal; collect logo and photos"></div>
     </div>
-</div><div class="card-footer bg-white text-end"><a class="btn btn-outline-secondary" href="<?= site_url('crm/visits') ?>">Cancel</a> <button class="btn btn-dark" type="submit">Schedule visit</button></div></form>
+</div><div class="card-footer text-end"><a class="btn btn-outline-secondary" href="<?= site_url('crm/visits') ?>">Cancel</a> <button class="btn btn-primary" type="submit">Schedule visit</button></div></form>
 <?= $this->endSection() ?>
-<?= $this->section('scripts') ?><script src="<?= base_url('assets/js/crm-visit.js') ?>"></script><?= $this->endSection() ?>
+<?= $this->section('scripts') ?><script src="<?= asset('js/crm-visit.js') ?>"></script><?= $this->endSection() ?>

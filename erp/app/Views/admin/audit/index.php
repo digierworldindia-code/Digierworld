@@ -1,6 +1,6 @@
 <?= $this->extend('layouts/app') ?>
 <?= $this->section('pageActions') ?>
-<a href="<?= site_url('admin/audit/verify') ?>" class="btn btn-outline-dark btn-sm"><i class="bi bi-link-45deg"></i> Verify hash chain</a>
+<a href="<?= site_url('admin/audit/verify') ?>" class="btn btn-outline-secondary btn-sm"><i class="bi bi-link-45deg"></i> Verify hash chain</a>
 <?= $this->endSection() ?>
 <?= $this->section('content') ?>
 <form class="filter-bar row g-2" method="get">
@@ -12,7 +12,7 @@
     <div class="col-md-1"><input name="id" value="<?= $f['id'] ?: '' ?>" class="form-control form-control-sm" placeholder="ID" aria-label="Record id"></div>
     <div class="col-md-2"><input type="date" name="from" value="<?= esc($f['from'] ?? '') ?>" class="form-control form-control-sm" aria-label="From"></div>
     <div class="col-md-2"><input type="date" name="to" value="<?= esc($f['to'] ?? '') ?>" class="form-control form-control-sm" aria-label="To"></div>
-    <div class="col-12 text-end"><button class="btn btn-dark btn-sm">Filter</button></div>
+    <div class="col-12 text-end"><button class="btn btn-primary btn-sm">Filter</button></div>
 </form>
 <div class="table-card"><div class="table-responsive">
 <table class="table table-sm table-hover align-middle small">

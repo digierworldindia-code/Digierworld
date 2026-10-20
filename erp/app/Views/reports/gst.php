@@ -2,8 +2,8 @@
 <?php $D = \App\Libraries\Dec::class; $p = $payable; ?>
 <?= $this->section('pageActions') ?>
 <?php if (can('reports.export')): ?>
-<a class="btn btn-gold btn-sm" href="<?= site_url('reports/gst/gstr1?month=' . urlencode($preset)) ?>"><i class="bi bi-file-earmark-excel"></i> GSTR-1 workbook</a>
-<a class="btn btn-gold btn-sm" href="<?= site_url('reports/gst/gstr3b?month=' . urlencode($preset)) ?>"><i class="bi bi-file-earmark-excel"></i> GSTR-3B workbook</a>
+<a class="btn btn-primary btn-sm" href="<?= site_url('reports/gst/gstr1?month=' . urlencode($preset)) ?>"><i class="bi bi-file-earmark-excel"></i> GSTR-1 workbook</a>
+<a class="btn btn-primary btn-sm" href="<?= site_url('reports/gst/gstr3b?month=' . urlencode($preset)) ?>"><i class="bi bi-file-earmark-excel"></i> GSTR-3B workbook</a>
 <?php endif ?>
 <?= $this->endSection() ?>
 <?= $this->section('content') ?>
@@ -34,14 +34,14 @@
 <?php endif ?>
 <div class="row g-3">
 <div class="col-xl-8">
-    <div class="table-card mb-3"><div class="card-header bg-white d-flex justify-content-between"><strong>Output tax by type &amp; rate</strong><a class="small" href="<?= site_url('reports/gst_output?' . http_build_query(['period' => 'custom', 'from' => $from, 'to' => $to])) ?>">Open report</a></div><div class="table-responsive">
+    <div class="table-card mb-3"><div class="card-header d-flex justify-content-between"><strong>Output tax by type &amp; rate</strong><a class="small" href="<?= site_url('reports/gst_output?' . http_build_query(['period' => 'custom', 'from' => $from, 'to' => $to])) ?>">Open report</a></div><div class="table-responsive">
     <table class="table small align-middle mb-0"><thead><tr><th>GST type</th><th>Treatment</th><th class="num">Rate</th><th class="num">Taxable</th><th class="num">CGST</th><th class="num">SGST/UTGST</th><th class="num">IGST</th></tr></thead><tbody>
     <?php foreach ($output as $o): ?><tr><td><?= esc($o['gst_type']) ?></td><td><?= esc($o['treatment']) ?></td><td class="num"><?= esc($D::rateLabel($o['rate'])) ?>%</td><td class="num"><?= inr($o['taxable']) ?></td><td class="num"><?= inr($o['cgst']) ?></td><td class="num"><?= inr($D::add($o['sgst'], $o['utgst'])) ?></td><td class="num"><?= inr($o['igst']) ?></td></tr><?php endforeach ?>
     <?php if ($output === []): ?><tr><td colspan="7" class="text-muted">No finalized supplies in this period.</td></tr><?php endif ?>
     </tbody></table></div></div>
 </div>
 <div class="col-xl-4">
-    <div class="table-card mb-3"><div class="card-header bg-white"><strong>Documents issued (Table 13)</strong></div><table class="table small mb-0"><tbody>
+    <div class="table-card mb-3"><div class="card-header"><strong>Documents issued (Table 13)</strong></div><table class="table small mb-0"><tbody>
         <?php foreach ($docs as $d): ?><tr><td><?= esc($d['nature']) ?><div class="mono text-muted"><?= esc($d['from']) ?> → <?= esc($d['to']) ?></div></td><td class="num"><?= (int) $d['total'] ?><?= $d['cancelled'] ? '<div class="text-muted">' . (int) $d['cancelled'] . ' cancelled</div>' : '' ?></td></tr><?php endforeach ?>
         <?php if ($docs === []): ?><tr><td class="text-muted">None</td></tr><?php endif ?>
     </tbody></table></div>

@@ -1,6 +1,6 @@
 <?= $this->extend('layouts/app') ?>
 <?= $this->section('pageActions') ?>
-<?php if (can('hr.payroll.statutory')): ?><a class="btn btn-outline-dark btn-sm" href="<?= site_url('hr/payroll/statutory') ?>"><i class="bi bi-sliders"></i> Statutory settings</a><?php endif ?>
+<?php if (can('hr.payroll.statutory')): ?><a class="btn btn-outline-secondary btn-sm" href="<?= site_url('hr/payroll/statutory') ?>"><i class="bi bi-sliders"></i> Statutory settings</a><?php endif ?>
 <?= $this->endSection() ?>
 <?= $this->section('content') ?>
 <div class="row g-3">
@@ -15,7 +15,7 @@
         <?php if ($runs === []): ?><tr><td colspan="7"><div class="empty-state"><i class="bi bi-cash-stack"></i>No payroll yet. Add salary structures on employee profiles, mark attendance, then create the month's payroll.</div></td></tr><?php endif ?>
     </tbody></table></div></div>
     <?php if ($advances): ?>
-    <div class="table-card mt-3"><div class="card-header bg-white"><strong>Open salary advances</strong></div><table class="table small mb-0"><tbody>
+    <div class="table-card mt-3"><div class="card-header"><strong>Open salary advances</strong></div><table class="table small mb-0"><tbody>
         <?php foreach ($advances as $a): ?><tr><td><?= esc($a['full_name']) ?></td><td><?= dmy($a['advance_date']) ?></td><td class="num"><?= inr($a['amount']) ?></td><td class="num">recovered <?= inr($a['recovered_amount']) ?></td><td class="num"><?= inr($a['monthly_recovery']) ?>/month</td></tr><?php endforeach ?>
     </tbody></table></div>
     <?php endif ?>
@@ -24,12 +24,12 @@
     <?php if (can('hr.payroll.calculate')): ?>
     <form method="post" action="<?= site_url('hr/payroll') ?>" class="card mb-3"><div class="card-body small"><?= csrf_field() ?>
         <div class="card-section-title">Run payroll</div>
-        <div class="input-group"><input type="month" class="form-control" name="period" value="<?= date('Y-m', strtotime('first day of last month')) ?>" max="<?= date('Y-m') ?>" required aria-label="Month"><button class="btn btn-dark">Create &amp; calculate</button></div>
+        <div class="input-group"><input type="month" class="form-control" name="period" value="<?= date('Y-m', strtotime('first day of last month')) ?>" max="<?= date('Y-m') ?>" required aria-label="Month"><button class="btn btn-primary">Create &amp; calculate</button></div>
         <div class="form-text">Uses attendance, approved leave, salary structures, approved incentives (each only once), reimbursements, advances and enabled statutory items. Nothing is posted to accounts until you finalize.</div>
     </div></form>
     <?php endif ?>
     <div class="card mb-3"><div class="card-body small"><div class="card-section-title">Statutory deductions</div>
-        <?php foreach ($statutory as $s): ?><div class="d-flex justify-content-between"><span><?= esc($s['label']) ?></span><?= $s['enabled'] ? status_badge('active') : '<span class="badge text-bg-secondary">off</span>' ?></div><?php endforeach ?>
+        <?php foreach ($statutory as $s): ?><div class="d-flex justify-content-between"><span><?= esc($s['label']) ?></span><?= $s['enabled'] ? status_badge('active') : '<span class="badge badge-neutral">off</span>' ?></div><?php endforeach ?>
         <div class="form-text">All off by default. Enable only after your accountant confirms applicability and rates.</div></div></div>
     <?php if (can('hr.payroll.pay')): ?>
     <form method="post" action="<?= site_url('hr/payroll/advances') ?>" class="card"><div class="card-body small"><?= csrf_field() ?>
@@ -38,7 +38,7 @@
         <div class="row g-2 mb-2"><div class="col-6"><input class="form-control form-control-sm" name="amount" placeholder="Amount ₹" inputmode="decimal" required aria-label="Amount"></div><div class="col-6"><input class="form-control form-control-sm" name="monthly_recovery" placeholder="Recover ₹/month" inputmode="decimal" required aria-label="Monthly recovery"></div></div>
         <div class="row g-2 mb-2"><div class="col-6"><input type="date" class="form-control form-control-sm" name="advance_date" value="<?= date('Y-m-d') ?>" aria-label="Date"></div><div class="col-6"><select class="form-select form-select-sm" name="bank_cash_account_id" required aria-label="Paid from"><?php foreach ($accounts as $a): ?><option value="<?= $a['id'] ?>"><?= esc($a['display_name']) ?></option><?php endforeach ?></select></div></div>
         <input class="form-control form-control-sm mb-2" name="notes" placeholder="Note" aria-label="Note">
-        <button class="btn btn-outline-dark btn-sm w-100">Record advance</button>
+        <button class="btn btn-outline-secondary btn-sm w-100">Record advance</button>
     </div></form>
     <?php endif ?>
 </div>

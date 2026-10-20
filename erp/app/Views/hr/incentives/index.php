@@ -1,6 +1,6 @@
 <?= $this->extend('layouts/app') ?>
 <?= $this->section('pageActions') ?>
-<?php if (can('hr.incentive.policy_manage')): ?><a class="btn btn-outline-dark btn-sm" href="<?= site_url('hr/incentives/policies') ?>"><i class="bi bi-sliders"></i> Policies</a><?php endif ?>
+<?php if (can('hr.incentive.policy_manage')): ?><a class="btn btn-outline-secondary btn-sm" href="<?= site_url('hr/incentives/policies') ?>"><i class="bi bi-sliders"></i> Policies</a><?php endif ?>
 <?= $this->endSection() ?>
 <?= $this->section('content') ?>
 <div class="row g-3 mb-3">
@@ -14,7 +14,7 @@
     <div class="col-md-3"><input type="month" name="period" value="<?= esc($f['period']) ?>" class="form-control form-control-sm" aria-label="Month"></div>
     <div class="col-md-4"><select name="employee" class="form-select form-select-sm" data-autosubmit aria-label="Employee"><option value="">All employees</option><?php foreach ($employees as $e): ?><option value="<?= $e['id'] ?>" <?= $f['employee'] === (int) $e['id'] ? 'selected' : '' ?>><?= esc($e['full_name']) ?></option><?php endforeach ?></select></div>
     <div class="col-md-3"><select name="status" class="form-select form-select-sm" data-autosubmit aria-label="Status"><option value="">Any status</option><?php foreach (['proposed', 'approved', 'included', 'paid', 'rejected'] as $s): ?><option <?= $f['status'] === $s ? 'selected' : '' ?>><?= $s ?></option><?php endforeach ?></select></div>
-    <div class="col-md-2"><button class="btn btn-dark btn-sm w-100">Filter</button></div>
+    <div class="col-md-2"><button class="btn btn-primary btn-sm w-100">Filter</button></div>
 </form>
 <form method="post" action="<?= site_url('hr/incentives/approve') ?>" id="bulk"><?= csrf_field() ?></form>
 <div class="table-card"><div class="table-responsive"><table class="table align-middle small mb-0">
@@ -34,7 +34,7 @@
             <?php if ($r['source_type'] !== 'clawback'): ?>
             <form method="post" action="<?= site_url('hr/incentives/' . $r['id'] . '/split') ?>" class="d-flex gap-1 mt-1"><?= csrf_field() ?>
                 <select class="form-select form-select-sm" name="employee_id" aria-label="Split with"><?php foreach ($employees as $e): if ((int) $e['id'] === (int) $r['employee_id']) { continue; } ?><option value="<?= $e['id'] ?>"><?= esc($e['full_name']) ?></option><?php endforeach ?></select>
-                <input class="form-control form-control-sm" name="percent" placeholder="%" style="max-width:60px" aria-label="Percent"><input class="form-control form-control-sm" name="reason" placeholder="Why" aria-label="Reason"><button class="btn btn-sm btn-outline-dark">Split</button></form>
+                <input class="u-mxw-60px form-control form-control-sm" name="percent" placeholder="%" aria-label="Percent"><input class="form-control form-control-sm" name="reason" placeholder="Why" aria-label="Reason"><button class="btn btn-sm btn-outline-secondary">Split</button></form>
             <?php endif ?></details>
         <?php endif ?></td></tr>
     <?php endforeach ?>
@@ -47,7 +47,7 @@
     <form method="post" action="<?= site_url('hr/incentives/generate') ?>" class="card mb-3"><div class="card-body small"><?= csrf_field() ?>
         <div class="card-section-title">Generate proposals</div>
         <input type="month" class="form-control form-control-sm mb-2" name="period" value="<?= esc($f['period'] ?: date('Y-m')) ?>" required aria-label="Month">
-        <button class="btn btn-dark btn-sm w-100">Generate for month</button>
+        <button class="btn btn-primary btn-sm w-100">Generate for month</button>
         <div class="form-text">Reads CRM conversions, invoices and collections per active policy. Safe to repeat: each source creates an entry only once. Cancelled invoices, credit notes and voided receipts reverse or claw back.</div>
     </div></form>
     <?php endif ?>
@@ -58,7 +58,7 @@
         <select class="form-select form-select-sm mb-2" name="policy_id" required aria-label="Policy"><?php foreach ($policies as $p): ?><option value="<?= $p['id'] ?>"><?= esc($p['name']) ?></option><?php endforeach ?></select>
         <div class="row g-2 mb-2"><div class="col-6"><input type="month" class="form-control form-control-sm" name="period" value="<?= date('Y-m') ?>" aria-label="Month"></div><div class="col-6"><input class="form-control form-control-sm" name="amount" placeholder="₹ (− for recovery)" inputmode="decimal" aria-label="Amount"></div></div>
         <input class="form-control form-control-sm mb-2" name="notes" placeholder="Reason" required aria-label="Reason">
-        <button class="btn btn-outline-dark btn-sm w-100" <?= $policies ? '' : 'disabled' ?>>Add for approval</button>
+        <button class="btn btn-outline-secondary btn-sm w-100" <?= $policies ? '' : 'disabled' ?>>Add for approval</button>
     </div></form>
     <?php endif ?>
 </div>

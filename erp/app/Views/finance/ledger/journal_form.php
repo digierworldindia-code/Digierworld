@@ -21,7 +21,7 @@ $opts = static function (int $sel) use ($ledgers): string {
         <div class="col-md-6"><label class="form-label required" for="narration">Narration</label><input class="form-control" id="narration" name="narration" value="<?= esc((string) old('narration')) ?>" required minlength="10" maxlength="255"></div>
     </div>
     <div class="table-responsive"><table class="table table-sm align-middle">
-        <thead><tr><th style="min-width:280px">Ledger</th><th>Memo</th><th class="num" style="width:150px">Debit</th><th class="num" style="width:150px">Credit</th></tr></thead>
+        <thead><tr><th class="u-mnw-280px">Ledger</th><th>Memo</th><th class="u-w-150px num">Debit</th><th class="u-w-150px num">Credit</th></tr></thead>
         <tbody data-jv-body>
         <?php foreach ($old as $i => $l): ?>
         <tr><td><select class="form-select form-select-sm" name="lines[<?= $i ?>][account]" aria-label="Ledger"><?= $opts((int) ($l['account'] ?? 0)) ?></select></td>
@@ -30,10 +30,10 @@ $opts = static function (int $sel) use ($ledgers): string {
             <td><input class="form-control form-control-sm text-end" name="lines[<?= $i ?>][credit]" inputmode="decimal" value="<?= esc((string) ($l['credit'] ?? '')) ?>" data-cr aria-label="Credit"></td></tr>
         <?php endforeach ?>
         </tbody>
-        <tfoot><tr><td colspan="2"><button type="button" class="btn btn-outline-dark btn-sm" data-jv-add><i class="bi bi-plus"></i> Line</button> <span class="small ms-2" data-jv-status></span></td><td class="num fw-semibold" data-jv-dr>0.00</td><td class="num fw-semibold" data-jv-cr>0.00</td></tr></tfoot>
+        <tfoot><tr><td colspan="2"><button type="button" class="btn btn-outline-secondary btn-sm" data-jv-add><i class="bi bi-plus"></i> Line</button> <span class="small ms-2" data-jv-status></span></td><td class="num fw-semibold" data-jv-dr>0.00</td><td class="num fw-semibold" data-jv-cr>0.00</td></tr></tfoot>
     </table></div>
 </div></div>
-<div class="sticky-actions"><a href="<?= site_url('finance/ledger') ?>" class="btn btn-outline-secondary">Cancel</a><button type="submit" class="btn btn-dark" data-jv-submit>Post journal</button></div>
+<div class="sticky-actions"><a href="<?= site_url('finance/ledger') ?>" class="btn btn-outline-secondary">Cancel</a><button type="submit" class="btn btn-primary" data-jv-submit>Post journal</button></div>
 </form>
 <?= $this->endSection() ?>
-<?= $this->section('scripts') ?><script src="<?= base_url('assets/js/journal-form.js') ?>"></script><?= $this->endSection() ?>
+<?= $this->section('scripts') ?><script src="<?= asset('js/journal-form.js') ?>"></script><?= $this->endSection() ?>

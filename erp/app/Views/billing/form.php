@@ -29,18 +29,18 @@ $typeIcons = ['tax_invoice' => 'file-earmark-text', 'cash_memo' => 'cash-coin', 
     <div class="d-flex flex-wrap gap-2 align-items-center">
         <span class="card-section-title mb-0 me-2">Document type</span>
         <?php foreach ($types as $k => $t): if ($k === 'debit_note' || $k === 'credit_note') { continue; } ?>
-            <a href="<?= site_url('billing/documents/new?type=' . $k . ($contact ? '&contact=' . $contact['id'] : '')) ?>" class="btn btn-sm <?= $k === $type ? 'btn-dark' : 'btn-outline-dark' ?>"><i class="bi bi-<?= $typeIcons[$k] ?? 'file' ?>"></i> <?= esc($t['label']) ?></a>
+            <a href="<?= site_url('billing/documents/new?type=' . $k . ($contact ? '&contact=' . $contact['id'] : '')) ?>" class="btn btn-sm <?= $k === $type ? 'btn-primary' : 'btn-outline-secondary' ?>"><i class="bi bi-<?= $typeIcons[$k] ?? 'file' ?>"></i> <?= esc($t['label']) ?></a>
         <?php endforeach ?>
     </div>
     <?php if ($type === 'cash_memo'): ?><div class="small text-muted mt-2"><i class="bi bi-info-circle"></i> A cash memo has its own number series, but GST is decided exactly as for a tax invoice — by the nature of the supply, not by the payment mode.</div><?php endif ?>
     <?php if (in_array($type, ['estimate', 'quotation', 'proforma'], true)): ?><div class="small text-muted mt-2"><i class="bi bi-info-circle"></i> Estimates do not post to accounts or GST until converted into an invoice.</div><?php endif ?>
 </div></div>
 <?php else: ?>
-<div class="mb-2"><span class="badge bg-dark fs-6"><?= esc(doc_type_label($type)) ?></span> <span class="badge bg-secondary"><?= esc($d['draft_ref']) ?> · draft</span></div>
+<div class="mb-2"><span class="badge badge-neutral fs-6"><?= esc(doc_type_label($type)) ?></span> <span class="badge badge-neutral"><?= esc($d['draft_ref']) ?> · draft</span></div>
 <?php endif ?>
 
 <?php if ($isNote): ?>
-<div class="alert alert-light border small"><i class="bi bi-link-45deg"></i> <?= esc(doc_type_label($type)) ?> against <strong><?= esc($original['document_number'] ?? '?') ?></strong> dated <?= dmy($original['issue_date'] ?? null) ?> (total <?= inr($original['grand_total'] ?? 0) ?>). GST type and place of supply must match the original.
+<div class="alert alert-secondary border small"><i class="bi bi-link-45deg"></i> <?= esc(doc_type_label($type)) ?> against <strong><?= esc($original['document_number'] ?? '?') ?></strong> dated <?= dmy($original['issue_date'] ?? null) ?> (total <?= inr($original['grand_total'] ?? 0) ?>). GST type and place of supply must match the original.
     <input type="hidden" name="original_document_id" value="<?= (int) ($d['original_document_id'] ?? 0) ?>"></div>
 <?php endif ?>
 
@@ -60,17 +60,17 @@ $typeIcons = ['tax_invoice' => 'file-earmark-text', 'cash_memo' => 'cash-coin', 
             <div class="d-flex justify-content-between align-items-start">
                 <div>
                     <div class="fw-bold fs-5" data-c="name"><?= esc($contact['legal_name'] ?? '' ?: ($contact['name'] ?? '')) ?></div>
-                    <div class="small" data-c="address" style="white-space:pre-line"><?= esc($contact['billing_address'] ?? '') ?></div>
-                    <div class="small"><span class="text-muted">GSTIN:</span> <span class="mono" data-c="gstin"><?= esc($contact['gstin'] ?? '' ?: 'Unregistered') ?></span> · <span class="text-muted">State:</span> <span data-c="state"><?= esc($contact['billing_state_code'] ?? '—') ?></span> · <span class="badge bg-light text-dark border" data-c="ctype"><?= strtoupper($contact['customer_type'] ?? '') ?></span></div>
+                    <div class="u-ws-pre-line small" data-c="address"><?= esc($contact['billing_address'] ?? '') ?></div>
+                    <div class="small"><span class="text-muted">GSTIN:</span> <span class="mono" data-c="gstin"><?= esc($contact['gstin'] ?? '' ?: 'Unregistered') ?></span> · <span class="text-muted">State:</span> <span data-c="state"><?= esc($contact['billing_state_code'] ?? '—') ?></span> · <span class="badge badge-neutral" data-c="ctype"><?= strtoupper($contact['customer_type'] ?? '') ?></span></div>
                     <div class="small text-muted" data-c="terms"><?= isset($contact['credit_days']) && $contact['credit_days'] !== null ? 'Credit terms: ' . (int) $contact['credit_days'] . ' days' : '' ?></div>
                 </div>
-                <?php if (! $isNote): ?><button type="button" class="btn btn-sm btn-outline-dark" data-change-customer>Change</button><?php endif ?>
+                <?php if (! $isNote): ?><button type="button" class="btn btn-sm btn-outline-secondary" data-change-customer>Change</button><?php endif ?>
             </div>
         </div>
     </div></div>
 
     <!-- 2. GST Type & Place of Supply (dedicated section) -->
-    <div class="card mb-3 border-2" style="border-color:var(--dgr-accent)" data-gst-section><div class="card-body">
+    <div class="card mb-3 border-2 border-primary" data-gst-section><div class="card-body">
         <div class="card-section-title">2. GST type &amp; place of supply</div>
         <div class="row g-3 mb-2 small">
             <div class="col-md-6"><span class="text-muted">Supplier:</span> <strong><?= esc($company['legal_name'] ?? 'Company') ?></strong> · GSTIN <span class="mono"><?= esc($company['gstin'] ?? '—') ?></span> · <?= esc(($supplierState['name'] ?? '?') . ' (' . ($company['state_code'] ?? '?') . ')') ?></div>
@@ -122,7 +122,7 @@ $typeIcons = ['tax_invoice' => 'file-earmark-text', 'cash_memo' => 'cash-coin', 
         <?= field_error('lines') ?>
         <div class="table-responsive">
         <table class="table table-sm line-items align-middle mb-2" data-lines>
-            <thead><tr><th style="width:24%">Service / description</th><th style="width:8%">SAC</th><th style="width:7%">Qty</th><th style="width:7%">Unit</th><th style="width:10%">Rate ₹</th><th style="width:11%">Discount</th><th style="width:12%">Treatment</th><th style="width:8%">GST %</th><th class="num" style="width:10%">Taxable</th><th class="num" style="width:10%">Total</th><th></th></tr></thead>
+            <thead><tr><th class="u-w-24p">Service / description</th><th class="u-w-8p">SAC</th><th class="u-w-7p">Qty</th><th class="u-w-7p">Unit</th><th class="u-w-10p">Rate ₹</th><th class="u-w-11p">Discount</th><th class="u-w-12p">Treatment</th><th class="u-w-8p">GST %</th><th class="u-w-10p num">Taxable</th><th class="u-w-10p num">Total</th><th></th></tr></thead>
             <tbody data-line-body>
             <?php foreach (array_values($rows) as $i => $l): ?>
                 <tr data-line>
@@ -137,7 +137,7 @@ $typeIcons = ['tax_invoice' => 'file-earmark-text', 'cash_memo' => 'cash-coin', 
                     <td><input class="form-control form-control-sm text-end<?= isset($errs["lines.{$i}.unit_rate"]) ? ' is-invalid' : '' ?>" name="lines[<?= $i ?>][unit_rate]" value="<?= esc(isset($l['unit_rate']) ? rtrim(rtrim((string) $l['unit_rate'], '0'), '.') : '') ?>" data-f="unit_rate" data-calc inputmode="decimal" aria-label="Rate"></td>
                     <td><div class="input-group input-group-sm">
                         <input class="form-control text-end" name="lines[<?= $i ?>][discount_value]" value="<?= esc(rtrim(rtrim((string) ($l['discount_value'] ?? '0'), '0'), '.') ?: '0') ?>" data-f="discount_value" data-calc inputmode="decimal" aria-label="Discount">
-                        <select class="form-select" name="lines[<?= $i ?>][discount_type]" data-f="discount_type" data-calc aria-label="Discount type" style="max-width:52px"><option value="amount">₹</option><option value="percent" <?= ($l['discount_type'] ?? '') === 'percent' ? 'selected' : '' ?>>%</option></select>
+                        <select class="u-mxw-52px form-select" name="lines[<?= $i ?>][discount_type]" data-f="discount_type" data-calc aria-label="Discount type"><option value="amount">₹</option><option value="percent" <?= ($l['discount_type'] ?? '') === 'percent' ? 'selected' : '' ?>>%</option></select>
                     </div></td>
                     <td><select class="form-select form-select-sm" name="lines[<?= $i ?>][tax_treatment]" data-f="tax_treatment" data-calc aria-label="Tax treatment">
                         <?php foreach ($treatments as $t): ?><option value="<?= esc($t['code']) ?>" <?= ($l['tax_treatment'] ?? 'regular') === $t['code'] ? 'selected' : '' ?>><?= esc($t['label']) ?></option><?php endforeach ?></select></td>
@@ -152,7 +152,7 @@ $typeIcons = ['tax_invoice' => 'file-earmark-text', 'cash_memo' => 'cash-coin', 
         </table>
         </div>
         <datalist id="svc-list"><?php foreach ($services as $s): ?><option value="<?= esc($s['name']) ?>"><?php endforeach ?></datalist>
-        <button type="button" class="btn btn-sm btn-outline-dark" data-add-line><i class="bi bi-plus-lg"></i> Add line</button>
+        <button type="button" class="btn btn-sm btn-outline-secondary" data-add-line><i class="bi bi-plus-lg"></i> Add line</button>
         <span class="small text-muted ms-2">Pick a catalogue service to auto-fill description, SAC, unit, rate and GST (all editable).</span>
     </div></div>
 
@@ -209,8 +209,8 @@ $typeIcons = ['tax_invoice' => 'file-earmark-text', 'cash_memo' => 'cash-coin', 
 <div class="sticky-actions">
     <div class="me-auto align-self-center small">Grand total <strong class="fs-6" data-t="grand_total">—</strong> <span class="text-muted">· tax <span data-t="tax_total">—</span></span></div>
     <a href="<?= site_url($doc ? 'billing/documents/' . $d['id'] : 'billing/documents') ?>" class="btn btn-outline-secondary">Cancel</a>
-    <button class="btn btn-outline-dark" name="after" value="view">Save draft</button>
-    <button class="btn btn-dark" name="after" value="finalize" title="Save, then review and finalize">Save &amp; review for finalizing →</button>
+    <button class="btn btn-outline-secondary" name="after" value="view">Save draft</button>
+    <button class="btn btn-primary" name="after" value="finalize" title="Save, then review and finalize">Save &amp; review for finalizing →</button>
 </div>
 </form>
 <template id="line-template">
@@ -220,7 +220,7 @@ $typeIcons = ['tax_invoice' => 'file-earmark-text', 'cash_memo' => 'cash-coin', 
         <td><input class="form-control form-control-sm text-end" value="1" data-f="qty" data-calc inputmode="decimal" aria-label="Quantity"></td>
         <td><input class="form-control form-control-sm" data-f="unit" aria-label="Unit"></td>
         <td><input class="form-control form-control-sm text-end" data-f="unit_rate" data-calc inputmode="decimal" aria-label="Rate"></td>
-        <td><div class="input-group input-group-sm"><input class="form-control text-end" value="0" data-f="discount_value" data-calc inputmode="decimal" aria-label="Discount"><select class="form-select" data-f="discount_type" data-calc aria-label="Discount type" style="max-width:52px"><option value="amount">₹</option><option value="percent">%</option></select></div></td>
+        <td><div class="input-group input-group-sm"><input class="form-control text-end" value="0" data-f="discount_value" data-calc inputmode="decimal" aria-label="Discount"><select class="u-mxw-52px form-select" data-f="discount_type" data-calc aria-label="Discount type"><option value="amount">₹</option><option value="percent">%</option></select></div></td>
         <td><select class="form-select form-select-sm" data-f="tax_treatment" data-calc aria-label="Tax treatment"><?php foreach ($treatments as $t): ?><option value="<?= esc($t['code']) ?>"><?= esc($t['label']) ?></option><?php endforeach ?></select></td>
         <td><select class="form-select form-select-sm" data-f="gst_rate" data-calc aria-label="GST rate"><?php foreach ($rates as $r): ?><option value="<?= esc($r['rate']) ?>" <?= \App\Libraries\Dec::cmp($r['rate'], '18') === 0 ? 'selected' : '' ?>><?= esc(\App\Libraries\Dec::rateLabel($r['rate'])) ?>%</option><?php endforeach ?></select></td>
         <td class="num small" data-out="taxable_value">—</td>
@@ -229,4 +229,4 @@ $typeIcons = ['tax_invoice' => 'file-earmark-text', 'cash_memo' => 'cash-coin', 
     </tr>
 </template>
 <?= $this->endSection() ?>
-<?= $this->section('scripts') ?><script src="<?= base_url('assets/js/billing-form.js') ?>"></script><?= $this->endSection() ?>
+<?= $this->section('scripts') ?><script src="<?= asset('js/billing-form.js') ?>"></script><?= $this->endSection() ?>

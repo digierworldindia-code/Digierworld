@@ -1,8 +1,8 @@
 <?= $this->extend('layouts/app') ?>
 <?= $this->section('pageActions') ?>
-<?php if (can('finance.expense.export')): ?><a class="btn btn-outline-dark btn-sm" href="<?= site_url('finance/expenses/export?' . http_build_query(array_filter($f) + ['format' => 'xlsx'])) ?>"><i class="bi bi-file-earmark-excel"></i> Excel</a><?php endif ?>
-<a class="btn btn-outline-dark btn-sm" href="<?= site_url('finance/expenses/recurring') ?>"><i class="bi bi-arrow-repeat"></i> Recurring<?= $dueRecurring ? ' <span class="badge text-bg-warning">' . (int) $dueRecurring . ' due</span>' : '' ?></a>
-<?php if (can('finance.expense.create')): ?><a href="<?= site_url('finance/expenses/new') ?>" class="btn btn-gold btn-sm"><i class="bi bi-plus-lg"></i> Record expense</a><?php endif ?>
+<?php if (can('finance.expense.export')): ?><a class="btn btn-outline-secondary btn-sm" href="<?= site_url('finance/expenses/export?' . http_build_query(array_filter($f) + ['format' => 'xlsx'])) ?>"><i class="bi bi-file-earmark-excel"></i> Excel</a><?php endif ?>
+<a class="btn btn-outline-secondary btn-sm" href="<?= site_url('finance/expenses/recurring') ?>"><i class="bi bi-arrow-repeat"></i> Recurring<?= $dueRecurring ? ' <span class="badge badge-warning">' . (int) $dueRecurring . ' due</span>' : '' ?></a>
+<?php if (can('finance.expense.create')): ?><a href="<?= site_url('finance/expenses/new') ?>" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg"></i> Record expense</a><?php endif ?>
 <?= $this->endSection() ?>
 <?= $this->section('content') ?>
 <div class="row g-3 mb-3">
@@ -19,7 +19,7 @@
     <div class="col-6 col-md-3"><select name="through" class="form-select form-select-sm" data-autosubmit aria-label="Paid through"><option value="">Any payer</option><option value="company" <?= $f['through'] === 'company' ? 'selected' : '' ?>>Company</option><option value="employee_reimbursable" <?= $f['through'] === 'employee_reimbursable' ? 'selected' : '' ?>>Employee (reimburse)</option></select></div>
     <div class="col-6 col-md-2"><input type="date" name="from" value="<?= esc($f['from'] ?? '') ?>" class="form-control form-control-sm" aria-label="From"></div>
     <div class="col-6 col-md-2"><input type="date" name="to" value="<?= esc($f['to'] ?? '') ?>" class="form-control form-control-sm" aria-label="To"></div>
-    <div class="col-md-2"><button class="btn btn-dark btn-sm w-100">Filter</button></div>
+    <div class="col-md-2"><button class="btn btn-primary btn-sm w-100">Filter</button></div>
 </form>
 <div class="table-card"><div class="table-responsive">
 <table class="table table-hover align-middle small">
@@ -32,7 +32,7 @@
         <td><?= esc((string) $r['vendor_name']) ?><div class="text-muted"><?= esc(mb_strimwidth($r['description'], 0, 60, '…')) ?></div></td>
         <td class="num"><?= inr($r['taxable_amount']) ?></td><td class="num"><?= (float) $gst ? inr($gst) : '—' ?></td><td class="num fw-semibold"><?= inr($r['total_amount']) ?></td>
         <td class="num"><?= (float) $r['itc_eligible_amount'] ? inr($r['itc_eligible_amount']) : '—' ?></td>
-        <td><?= status_badge($r['approval_status']) ?> <?= $r['approval_status'] === 'approved' ? status_badge($r['payment_status']) : '' ?><?= $r['paid_through'] === 'employee_reimbursable' ? ' <span class="badge text-bg-light border">reimburse</span>' : '' ?></td>
+        <td><?= status_badge($r['approval_status']) ?> <?= $r['approval_status'] === 'approved' ? status_badge($r['payment_status']) : '' ?><?= $r['paid_through'] === 'employee_reimbursable' ? ' <span class="badge badge-neutral">reimburse</span>' : '' ?></td>
     </tr>
     <?php endforeach ?>
     <?php if ($rows === []): ?><tr><td colspan="9"><div class="empty-state"><i class="bi bi-bag"></i>No expenses match these filters.</div></td></tr><?php endif ?>

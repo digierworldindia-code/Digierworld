@@ -25,7 +25,7 @@ class LeadsController extends CrmBase
     private function query(array $f)
     {
         $b = $this->db->table('leads l')
-            ->select('l.id, l.lead_code, l.company_name, l.contact_person, l.mobile, l.city, l.industry, l.priority, l.next_followup_at, l.last_action, l.last_action_at, l.call_attempts, l.connected_calls, l.dnd, l.expected_value, l.assigned_to, s.name AS stage_name, s.color AS stage_color, s.is_closed, src.name AS source_name, p.full_name AS assignee')
+            ->select('l.id, l.lead_code, l.company_name, l.contact_person, l.mobile, l.city, l.industry, l.priority, l.next_followup_at, l.last_action, l.last_action_at, l.call_attempts, l.connected_calls, l.dnd, l.expected_value, l.assigned_to, s.name AS stage_name, s.code AS stage_code, s.is_won, s.is_lost, s.is_dnd, s.is_closed, src.name AS source_name, p.full_name AS assignee')
             ->join('crm_stages s', 's.id = l.stage_id', 'left')->join('lead_sources src', 'src.id = l.source_id', 'left')->join('user_profiles p', 'p.user_id = l.assigned_to', 'left')
             ->where('l.deleted_at', null);
         service('leadAccess')->applyScope($b, 'l');
@@ -121,7 +121,7 @@ class LeadsController extends CrmBase
     public function show($id)
     {
         $lead = $this->lead($this->idOr404($id));
-        $l = $this->db->table('leads l')->select('l.*, s.name AS stage_name, s.code AS stage_code, s.color AS stage_color, src.name AS source_name, p.full_name AS assignee, lr.name AS lost_reason, c.name AS client_name')
+        $l = $this->db->table('leads l')->select('l.*, s.name AS stage_name, s.code AS stage_code, s.is_won AS stage_won, s.is_lost AS stage_lost, s.is_dnd AS stage_dnd, src.name AS source_name, p.full_name AS assignee, lr.name AS lost_reason, c.name AS client_name')
             ->join('crm_stages s', 's.id = l.stage_id', 'left')->join('lead_sources src', 'src.id = l.source_id', 'left')->join('user_profiles p', 'p.user_id = l.assigned_to', 'left')
             ->join('lost_reasons lr', 'lr.id = l.lost_reason_id', 'left')->join('contacts c', 'c.id = l.contact_id', 'left')->where('l.id', $lead['id'])->get()->getRowArray();
 

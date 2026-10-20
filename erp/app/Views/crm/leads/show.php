@@ -9,10 +9,10 @@ $wa     = preg_replace('/\D/', '', (string) $l['mobile']);
 $wa     = strlen($wa) === 10 ? '91' . $wa : $wa;
 ?>
 <?= $this->section('pageActions') ?>
-<?php if (can('crm.lead.edit')): ?><a class="btn btn-outline-dark btn-sm" href="<?= site_url('crm/leads/' . $l['id'] . '/edit') ?>"><i class="bi bi-pencil"></i> Edit</a><?php endif ?>
-<?php if (can('crm.lead.convert') && $l['converted_at'] === null): ?><button class="btn btn-gold btn-sm" data-bs-toggle="modal" data-bs-target="#convertModal"><i class="bi bi-trophy"></i> Convert to client</button><?php endif ?>
+<?php if (can('crm.lead.edit')): ?><a class="btn btn-outline-secondary btn-sm" href="<?= site_url('crm/leads/' . $l['id'] . '/edit') ?>"><i class="bi bi-pencil"></i> Edit</a><?php endif ?>
+<?php if (can('crm.lead.convert') && $l['converted_at'] === null): ?><button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#convertModal"><i class="bi bi-trophy"></i> Convert to client</button><?php endif ?>
 <div class="dropdown d-inline-block">
-    <button class="btn btn-outline-dark btn-sm dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">More</button>
+    <button class="btn btn-outline-secondary btn-sm dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">More</button>
     <ul class="dropdown-menu dropdown-menu-end">
         <li><button class="dropdown-item" data-bs-toggle="modal" data-bs-target="#stageModal">Change stage</button></li>
         <?php if (can('crm.lead.assign')): ?><li><button class="dropdown-item" data-bs-toggle="modal" data-bs-target="#assignModal">Reassign</button></li><?php endif ?>
@@ -26,10 +26,10 @@ $wa     = strlen($wa) === 10 ? '91' . $wa : $wa;
 <?= $this->endSection() ?>
 <?= $this->section('content') ?>
 <div class="d-flex flex-wrap gap-2 align-items-center mb-3 small">
-    <span class="badge fs-6" style="background:<?= esc(preg_match('/^#[0-9a-f]{6}$/i', (string) $l['stage_color']) ? $l['stage_color'] : '#6c757d') ?>"><?= esc((string) $l['stage_name']) ?></span>
-    <span class="badge text-bg-light border"><?= ucfirst($l['priority']) ?> priority</span>
-    <?php if ($dnd): ?><span class="badge text-bg-dark"><i class="bi bi-slash-circle"></i> Do-Not-Call since <?= dmy($l['dnd_marked_at']) ?></span><?php endif ?>
-    <?php if ($l['consent_status'] === 'consented'): ?><span class="badge text-bg-success">Consented</span><?php endif ?>
+    <span class="badge fs-6 badge-<?= stage_tone($l['stage_code'], $l['stage_won'], $l['stage_lost'], $l['stage_dnd']) ?>"><?= esc((string) $l['stage_name']) ?></span>
+    <span class="badge badge-neutral"><?= ucfirst($l['priority']) ?> priority</span>
+    <?php if ($dnd): ?><span class="badge badge-neutral"><i class="bi bi-slash-circle"></i> Do-Not-Call since <?= dmy($l['dnd_marked_at']) ?></span><?php endif ?>
+    <?php if ($l['consent_status'] === 'consented'): ?><span class="badge badge-success">Consented</span><?php endif ?>
     <span class="text-muted mono"><?= esc($l['lead_code']) ?></span> · <span>Assigned to <strong><?= esc((string) $l['assignee']) ?></strong></span>
     · <span><?= (int) $l['call_attempts'] ?> calls, <?= (int) $l['connected_calls'] ?> connected</span>
     <?php if ($l['lost_reason']): ?>· <span class="text-danger">Lost: <?= esc($l['lost_reason']) ?></span><?php endif ?>
@@ -41,7 +41,7 @@ $wa     = strlen($wa) === 10 ? '91' . $wa : $wa;
         <div class="d-flex flex-wrap justify-content-between gap-2">
             <div><div class="fs-5 fw-semibold"><?= esc($l['company_name']) ?></div><div class="text-muted"><?= esc((string) $l['contact_person']) ?></div></div>
             <div class="d-flex gap-2 align-items-start">
-                <?php if (! $dnd): ?><a class="btn btn-dark" href="tel:<?= esc($phone) ?>"><i class="bi bi-telephone"></i> <?= esc($l['mobile']) ?></a>
+                <?php if (! $dnd): ?><a class="btn btn-primary" href="tel:<?= esc($phone) ?>"><i class="bi bi-telephone"></i> <?= esc($l['mobile']) ?></a>
                 <a class="btn btn-outline-success" href="https://wa.me/<?= esc($wa) ?>" target="_blank" rel="noopener" aria-label="WhatsApp"><i class="bi bi-whatsapp"></i></a>
                 <?php else: ?><span class="btn btn-outline-secondary disabled">Calls blocked (DND)</span><?php endif ?>
             </div>
@@ -54,8 +54,8 @@ $wa     = strlen($wa) === 10 ? '91' . $wa : $wa;
         <div class="d-flex justify-content-between align-items-center mb-2">
             <div class="card-section-title mb-0">Log a call</div>
             <div class="btn-group btn-group-sm" role="group" aria-label="Direction">
-                <input type="radio" class="btn-check" name="direction" value="outbound" id="dir_out" <?= $dnd ? 'disabled' : 'checked' ?>><label class="btn btn-outline-dark" for="dir_out">Outgoing</label>
-                <input type="radio" class="btn-check" name="direction" value="inbound" id="dir_in" <?= $dnd ? 'checked' : '' ?>><label class="btn btn-outline-dark" for="dir_in">Incoming</label>
+                <input type="radio" class="btn-check" name="direction" value="outbound" id="dir_out" <?= $dnd ? 'disabled' : 'checked' ?>><label class="btn btn-outline-secondary" for="dir_out">Outgoing</label>
+                <input type="radio" class="btn-check" name="direction" value="inbound" id="dir_in" <?= $dnd ? 'checked' : '' ?>><label class="btn btn-outline-secondary" for="dir_in">Incoming</label>
             </div>
         </div>
         <div class="d-flex flex-wrap gap-1 mb-2" role="radiogroup" aria-label="Outcome">
@@ -78,8 +78,8 @@ $wa     = strlen($wa) === 10 ? '91' . $wa : $wa;
             <div class="col-md-6"><label class="form-label small" for="called_at">Call time</label><input type="datetime-local" class="form-control form-control-sm" id="called_at" name="called_at" max="<?= date('Y-m-d\TH:i') ?>"><div class="form-text">Blank = now.</div></div>
         </div>
         <div class="d-flex gap-2 justify-content-end mt-2">
-            <button class="btn btn-outline-dark" type="submit" name="after" value="stay">Save call</button>
-            <button class="btn btn-dark" type="submit" name="after" value="next">Save &amp; next due lead →</button>
+            <button class="btn btn-outline-secondary" type="submit" name="after" value="stay">Save call</button>
+            <button class="btn btn-primary" type="submit" name="after" value="next">Save &amp; next due lead →</button>
         </div>
     </div></form>
     <?php endif ?>
@@ -117,7 +117,7 @@ $wa     = strlen($wa) === 10 ? '91' . $wa : $wa;
         <?php if (! $dnd && ! $closed && can('crm.followup.manage')): ?>
         <form method="post" action="<?= site_url('crm/leads/' . $l['id'] . '/followups') ?>" class="border-top pt-2"><?= csrf_field() ?>
             <input class="form-control form-control-sm mb-1" name="title" placeholder="Follow-up (e.g. Call for decision)" aria-label="Follow-up title">
-            <div class="d-flex gap-1"><input type="datetime-local" class="form-control form-control-sm" name="due_at" required aria-label="Due at"><button class="btn btn-sm btn-dark" type="submit">Add</button></div>
+            <div class="d-flex gap-1"><input type="datetime-local" class="form-control form-control-sm" name="due_at" required aria-label="Due at"><button class="btn btn-sm btn-primary" type="submit">Add</button></div>
         </form>
         <?php endif ?>
     </div></div>
@@ -165,7 +165,7 @@ $wa     = strlen($wa) === 10 ? '91' . $wa : $wa;
         <input class="form-control" name="note" placeholder="Note (optional)" aria-label="Note">
         <div class="form-text">To mark Won, use “Convert to client”.</div>
     </div>
-    <div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button><button type="submit" class="btn btn-dark">Save</button></div>
+    <div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button><button type="submit" class="btn btn-primary">Save</button></div>
 </form></div></div></div>
 
 <?php if (can('crm.lead.assign')): ?>
@@ -174,7 +174,7 @@ $wa     = strlen($wa) === 10 ? '91' . $wa : $wa;
     <div class="modal-header"><h2 class="modal-title fs-5" id="asTitle">Reassign lead</h2><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
     <div class="modal-body"><select class="form-select mb-2" name="assigned_to" aria-label="Assign to"><?php foreach ($users as $u): ?><option value="<?= $u['id'] ?>" <?= (int) $u['id'] === (int) $l['assigned_to'] ? 'selected' : '' ?>><?= esc($u['name']) ?></option><?php endforeach ?></select>
         <input class="form-control" name="reason" placeholder="Reason (optional)" aria-label="Reason"><div class="form-text">Open follow-ups move to the new owner.</div></div>
-    <div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button><button type="submit" class="btn btn-dark">Reassign</button></div>
+    <div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button><button type="submit" class="btn btn-primary">Reassign</button></div>
 </form></div></div></div>
 <?php endif ?>
 
@@ -209,8 +209,8 @@ $wa     = strlen($wa) === 10 ? '91' . $wa : $wa;
         <div class="col-md-6"><label class="form-label" for="cv_doc">Also create a draft</label><select class="form-select" id="cv_doc" name="create_document"><option value="none">No document now</option><?php foreach (array_keys($docTypes) as $d): ?><option value="<?= $d ?>"><?= esc(doc_type_label($d)) ?> draft</option><?php endforeach ?></select></div>
         <div class="col-12"><label class="form-label" for="cv_svc">Services on the draft</label><select class="form-select" id="cv_svc" name="service_ids[]" multiple size="4"><?php foreach ($services as $s): ?><option value="<?= $s['id'] ?>"><?= esc($s['name']) ?></option><?php endforeach ?></select></div>
     </div><p class="text-muted mt-2 mb-0">A draft has no number and posts nothing until it is reviewed and finalized. Incentives are not paid on conversion; they follow the approved policy.</p></div>
-    <div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button><button type="submit" class="btn btn-gold">Convert</button></div>
+    <div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button><button type="submit" class="btn btn-primary">Convert</button></div>
 </form></div></div></div>
 <?php endif ?>
 <?= $this->endSection() ?>
-<?= $this->section('scripts') ?><script src="<?= base_url('assets/js/crm-lead.js') ?>"></script><?= $this->endSection() ?>
+<?= $this->section('scripts') ?><script src="<?= asset('js/crm-lead.js') ?>"></script><?= $this->endSection() ?>

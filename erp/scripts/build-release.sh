@@ -2,12 +2,12 @@
 # Build a deployable release archive: the committed source tree plus the
 # production vendor/ folder resolved from composer.lock.
 #
-#   scripts/build-release.sh 1.0.0      → dist/dgr-office-1.0.0.zip (+ .sha256)
+#   scripts/build-release.sh 1.1.0      → dist/dgr-office-1.1.0.zip (+ .sha256)
 #
 # Never includes .env, uploads, backups, logs or dev dependencies.
 set -euo pipefail
 
-VERSION="${1:?usage: scripts/build-release.sh <version, e.g. 1.0.0>}"
+VERSION="${1:?usage: scripts/build-release.sh <version, e.g. 1.1.0>}"
 [[ "$VERSION" =~ ^[0-9A-Za-z.+-]+$ ]] || { echo "Invalid version: $VERSION" >&2; exit 1; }
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -33,12 +33,27 @@ git -C "$(git rev-parse --show-toplevel)" archive --format=tar "$TREE" | tar -x 
 [[ -f "$STAGE/composer.json" ]] || { echo "git archive produced no files" >&2; exit 1; }
 rm -rf "$STAGE/tests" "$STAGE/dist" "$STAGE/phpunit.dist.xml"
 
-# every static asset the views reference must be in the committed tree
+# every static asset the views reference (literal paths and asset('…') calls) must be in the committed tree
 missing=0
 while read -r asset; do
     [[ -f "$STAGE/public/$asset" ]] || { echo "Missing committed asset: public/$asset" >&2; missing=1; }
-done < <(grep -rhoE "assets/[A-Za-z0-9_./-]+\.(css|js|png|svg|ico|woff2?)" "$STAGE/app/Views" | sort -u)
+done < <( { grep -rhoE "assets/[A-Za-z0-9_./-]+\.(css|js|png|svg|ico|woff2?)" "$STAGE/app/Views" || true
+            grep -rhoE "asset\('[A-Za-z0-9_./-]+'\)" "$STAGE/app/Views" | sed -E "s/^asset\('(.*)'\)$/assets\/\1/" || true; } | sort -u)
 [[ $missing == 0 ]] || exit 1
+
+# self-hosted frontend libraries must be exactly the verified files listed in MANIFEST.json
+php -r '
+    $dir = $argv[1] . "/public/assets/vendor/";
+    $m = json_decode(file_get_contents($dir . "MANIFEST.json"), true);
+    $bad = [];
+    foreach ($m["packages"] as $p) {
+        foreach ($p["files"] as $f => $d) {
+            $h = is_file($dir . $f) ? "sha384-" . base64_encode(hash_file("sha384", $dir . $f, true)) : "missing";
+            if ($h !== $d["sha384"]) { $bad[] = $f; }
+        }
+    }
+    if ($bad) { fwrite(STDERR, "Vendor files differ from MANIFEST.json: " . implode(", ", $bad) . "\n"); exit(1); }
+' "$STAGE"
 
 # 2. production dependencies exactly as locked
 composer install --working-dir="$STAGE" --no-dev --prefer-dist --optimize-autoloader \

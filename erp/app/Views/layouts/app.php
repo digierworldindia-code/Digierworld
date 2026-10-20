@@ -8,11 +8,9 @@
 $menu    = \App\Libraries\MenuBuilder::build();
 $uid     = current_user_id();
 $unread  = $uid ? service('notifier')->unreadCount($uid) : 0;
-$company = db_connect()->table('company_settings')->select('trade_name, legal_name, brand_primary, brand_accent')->where('id', 1)->get()->getRowArray() ?? [];
+$company = db_connect()->table('company_settings')->select('trade_name, legal_name')->where('id', 1)->get()->getRowArray() ?? [];
 $hasLogo = db_connect()->table('branding_assets')->where(['asset_type' => 'logo', 'is_active' => 1])->countAllResults() > 0;
 $brandName = $company['trade_name'] ?? '' ?: ($company['legal_name'] ?? '' ?: 'DIGIE R WORLD');
-$primary = preg_match('/^#[0-9a-fA-F]{6}$/', $company['brand_primary'] ?? '') ? $company['brand_primary'] : '#111111';
-$accent  = preg_match('/^#[0-9a-fA-F]{6}$/', $company['brand_accent'] ?? '') ? $company['brand_accent'] : '#B08D57';
 $quick = [];
 if (can(['billing.invoice.create_draft'])) { $quick[] = ['Tax Invoice', 'billing/documents/new?type=tax_invoice', 'file-earmark-text']; }
 if (can(['billing.cash_memo.create_draft'])) { $quick[] = ['Cash Memo', 'billing/documents/new?type=cash_memo', 'cash-coin']; }
@@ -25,7 +23,7 @@ if (can(['crm.task.create'])) { $quick[] = ['Task', 'crm/tasks#new', 'list-check
 if (can(['hr.candidate.create'])) { $quick[] = ['Applicant', 'hr/candidates/new', 'person-badge']; }
 ?>
 <!doctype html>
-<html lang="en-IN">
+<html lang="en-IN" data-bs-theme="dark">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -34,11 +32,10 @@ if (can(['hr.candidate.create'])) { $quick[] = ['Applicant', 'hr/candidates/new'
     <meta name="csrf-field" content="<?= csrf_token() ?>">
     <meta name="base-url" content="<?= esc(rtrim(site_url('/'), '/')) ?>">
     <title><?= esc($pageTitle) ?> · DGR Office</title>
-    <link rel="icon" href="<?= base_url('assets/img/favicon.png') ?>">
-    <link rel="stylesheet" href="<?= base_url('assets/vendor/bootstrap/bootstrap.min.css') ?>">
-    <link rel="stylesheet" href="<?= base_url('assets/vendor/bootstrap-icons/bootstrap-icons.min.css') ?>">
-    <link rel="stylesheet" href="<?= base_url('assets/css/app.css') ?>">
-    <style>:root{--dgr-primary:<?= $primary /* validated #RRGGBB */ ?>;--dgr-accent:<?= $accent /* validated #RRGGBB */ ?>;}</style>
+    <meta name="color-scheme" content="dark">
+    <meta name="theme-color" content="#0B0B0D">
+    <link rel="icon" href="<?= asset('img/favicon.png') ?>">
+    <?= view('partials/theme_head') ?>
     <?= $this->renderSection('head') ?>
 </head>
 <body>
@@ -48,7 +45,7 @@ if (can(['hr.candidate.create'])) { $quick[] = ['Applicant', 'hr/candidates/new'
         <div class="sidebar-brand">
             <a href="<?= site_url('/') ?>" class="d-flex align-items-center text-decoration-none">
                 <?php if ($hasLogo): ?>
-                    <span class="brand-logo-wrap"><img src="<?= site_url('brand/logo') ?>" alt="<?= esc($brandName) ?> logo" class="brand-logo"></span>
+                    <img src="<?= site_url('brand/logo') ?>" alt="<?= esc($brandName) ?> logo" class="brand-logo">
                 <?php else: ?>
                     <span class="brand-text"><?= esc($brandName) ?></span>
                 <?php endif ?>
@@ -94,7 +91,7 @@ if (can(['hr.candidate.create'])) { $quick[] = ['Applicant', 'hr/candidates/new'
             <div class="topbar-actions">
                 <?php if ($quick !== []): ?>
                 <div class="dropdown">
-                    <button class="btn btn-gold btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-plus-lg"></i><span class="d-none d-md-inline ms-1">New</span></button>
+                    <button class="btn btn-primary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-plus-lg"></i><span class="d-none d-md-inline ms-1">New</span></button>
                     <ul class="dropdown-menu dropdown-menu-end shadow-sm">
                         <?php foreach ($quick as [$label, $url, $icon]): ?>
                             <li><a class="dropdown-item" href="<?= site_url($url) ?>"><i class="bi bi-<?= $icon ?> me-2"></i><?= esc($label) ?></a></li>
@@ -165,15 +162,15 @@ if (can(['hr.candidate.create'])) { $quick[] = ['Applicant', 'hr/candidates/new'
             <div class="modal-body" data-confirm-body>Are you sure?</div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-dark" data-confirm-ok>Confirm</button>
+                <button type="button" class="btn btn-primary" data-confirm-ok>Confirm</button>
             </div>
         </div>
     </div>
 </div>
 <div class="toast-container position-fixed bottom-0 end-0 p-3" data-toasts></div>
 
-<script src="<?= base_url('assets/vendor/bootstrap/bootstrap.bundle.min.js') ?>"></script>
-<script src="<?= base_url('assets/js/app.js') ?>"></script>
+<script src="<?= asset('vendor/bootstrap/bootstrap.bundle.min.js') ?>"></script>
+<script src="<?= asset('js/app.js') ?>"></script>
 <?= $this->renderSection('scripts') ?>
 </body>
 </html>

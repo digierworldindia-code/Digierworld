@@ -4,7 +4,7 @@ $v   = static fn (string $k, $d = '') => esc((string) (old($k) ?? ($job[$k] ?? $
 $sel = static fn (string $k, $val) => (string) (old($k) ?? ($job[$k] ?? '')) === (string) $val ? 'selected' : '';
 ?>
 <?= $this->section('content') ?>
-<form method="post" action="<?= site_url(isset($job['id']) ? 'hr/vacancies/' . $job['id'] : 'hr/vacancies') ?>" class="card" style="max-width:1080px"><div class="card-body">
+<form method="post" action="<?= site_url(isset($job['id']) ? 'hr/vacancies/' . $job['id'] : 'hr/vacancies') ?>" class="u-mxw-1080px card"><div class="card-body">
     <?= csrf_field() ?>
     <div class="card-section-title">Vacancy</div>
     <div class="row g-3">
@@ -23,6 +23,6 @@ $sel = static fn (string $k, $val) => (string) (old($k) ?? ($job[$k] ?? '')) ===
     <div class="card-section-title mt-4">Job description (version 1)</div>
     <?= view('hr/vacancies/_jd_fields', ['jd' => null, 'rubricDefaults' => $rubricDefaults]) ?>
     <?php else: ?><p class="form-text mt-3">To change the job description, add a new JD version from the vacancy page (old versions are kept).</p><?php endif ?>
-    <div class="mt-4 d-flex gap-2"><button class="btn btn-dark" type="submit">Save vacancy</button><a class="btn btn-outline-secondary" href="<?= site_url('hr/vacancies') ?>">Cancel</a></div>
+    <div class="mt-4 d-flex gap-2"><button class="btn btn-primary" type="submit">Save vacancy</button><a class="btn btn-outline-secondary" href="<?= site_url('hr/vacancies') ?>">Cancel</a></div>
 </div></form>
 <?= $this->endSection() ?>

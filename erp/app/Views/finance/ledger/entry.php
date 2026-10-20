@@ -13,7 +13,7 @@
         <div class="col-sm-3"><div class="text-muted">Reference</div><span class="mono"><?= esc((string) $e['reference']) ?: '—' ?></span></div>
         <div class="col-sm-3"><div class="text-muted">Posted</div><?= esc((string) $e['poster']) ?> · <?= dmy($e['posted_at'], true) ?></div>
         <div class="col-12"><div class="text-muted">Narration</div><?= esc($e['narration']) ?></div>
-        <?php if ($reversal): ?><div class="col-12"><span class="badge text-bg-secondary">Reversed</span> by <a class="mono" href="<?= site_url('finance/ledger/entries/' . $reversal['id']) ?>"><?= esc($reversal['entry_no']) ?></a></div><?php endif ?>
+        <?php if ($reversal): ?><div class="col-12"><span class="badge badge-neutral">Reversed</span> by <a class="mono" href="<?= site_url('finance/ledger/entries/' . $reversal['id']) ?>"><?= esc($reversal['entry_no']) ?></a></div><?php endif ?>
         <?php if ($original): ?><div class="col-12">Reversal of <a class="mono" href="<?= site_url('finance/ledger/entries/' . $original['id']) ?>"><?= esc($original['entry_no']) ?></a></div><?php endif ?>
     </div>
 </div></div>
@@ -26,7 +26,7 @@
         <td><?= esc((string) ($l['contact_name'] ?? $l['bank_name'] ?? '')) ?></td><td class="text-muted"><?= esc((string) $l['memo']) ?></td>
         <td class="num"><?= (float) $l['debit'] > 0 ? inr($l['debit']) : '' ?></td><td class="num"><?= (float) $l['credit'] > 0 ? inr($l['credit']) : '' ?></td></tr>
     <?php endforeach ?>
-    <tr class="table-light fw-semibold"><td colspan="3">Total</td><td class="num"><?= inr($e['total_debit']) ?></td><td class="num"><?= inr($e['total_credit']) ?></td></tr>
+    <tr class="fw-semibold"><td colspan="3">Total</td><td class="num"><?= inr($e['total_debit']) ?></td><td class="num"><?= inr($e['total_credit']) ?></td></tr>
     </tbody>
 </table>
 </div></div>

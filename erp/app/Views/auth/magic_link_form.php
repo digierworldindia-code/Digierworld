@@ -35,7 +35,7 @@
                 </div>
 
                 <div class="d-grid col-12 col-md-8 mx-auto m-3">
-                    <button type="submit" class="btn btn-dark w-100"><?= lang('Auth.send') ?></button>
+                    <button type="submit" class="btn btn-primary w-100"><?= lang('Auth.send') ?></button>
                 </div>
 
             </form>

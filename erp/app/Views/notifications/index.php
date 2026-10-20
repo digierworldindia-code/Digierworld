@@ -1,6 +1,6 @@
 <?= $this->extend('layouts/app') ?>
 <?= $this->section('pageActions') ?>
-<form method="post" action="<?= site_url('notifications/read-all') ?>"><?= csrf_field() ?><button class="btn btn-outline-dark btn-sm"><i class="bi bi-check2-all"></i> Mark all read</button></form>
+<form method="post" action="<?= site_url('notifications/read-all') ?>"><?= csrf_field() ?><button class="btn btn-outline-secondary btn-sm"><i class="bi bi-check2-all"></i> Mark all read</button></form>
 <?= $this->endSection() ?>
 <?= $this->section('content') ?>
 <div class="table-card">

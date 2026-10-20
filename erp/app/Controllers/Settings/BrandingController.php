@@ -131,8 +131,9 @@ class BrandingController extends BaseController
     {
         $asset = $this->db->table('branding_assets')->where('id', $this->idOr404($id))->get()->getRowArray() ?? $this->notFound();
         $file  = service('files')->find((int) $asset['stored_file_id']) ?? $this->notFound();
+        $path  = service('files')->existingPath($file) ?? $this->notFound();
 
         return $this->response->setHeader('Content-Type', $file['mime_type'])->setHeader('Cache-Control', 'private, no-store')
-            ->setBody((string) file_get_contents(service('files')->path($file)));
+            ->setBody((string) file_get_contents($path));
     }
 }

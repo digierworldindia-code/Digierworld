@@ -23,7 +23,7 @@
         <label class="form-label" for="vf">Client feedback</label><textarea class="form-control mb-2" id="vf" name="client_feedback" rows="2"></textarea>
         <div class="row g-2 mb-2"><div class="col-md-7"><label class="form-label" for="vn">Next action</label><input class="form-control" id="vn" name="next_action" placeholder="e.g. Send revised quote"></div>
             <div class="col-md-5"><label class="form-label" for="vna">Follow up on</label><input type="datetime-local" class="form-control" id="vna" name="next_action_at"></div></div>
-        <div class="d-flex gap-2"><button class="btn btn-dark" name="status" value="completed">Save outcome</button><button class="btn btn-outline-secondary" name="status" value="cancelled" formnovalidate>Visit cancelled</button></div>
+        <div class="d-flex gap-2"><button class="btn btn-primary" name="status" value="completed">Save outcome</button><button class="btn btn-outline-secondary" name="status" value="cancelled" formnovalidate>Visit cancelled</button></div>
     </div></form>
     <?php endif ?>
 </div>

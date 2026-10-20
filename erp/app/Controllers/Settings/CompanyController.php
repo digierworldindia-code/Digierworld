@@ -69,8 +69,6 @@ class CompanyController extends BaseController
             'default_payment_terms_days' => max(0, min(365, (int) ($p('default_payment_terms_days') ?? 15))),
             'rounding_policy'       => $p('rounding_policy') === 'none' ? 'none' : 'nearest_rupee',
             'default_price_mode'    => $p('default_price_mode') === 'inclusive' ? 'inclusive' : 'exclusive',
-            'brand_primary'         => preg_match('/^#[0-9a-fA-F]{6}$/', (string) $p('brand_primary')) ? $p('brand_primary') : '#111111',
-            'brand_accent'          => preg_match('/^#[0-9a-fA-F]{6}$/', (string) $p('brand_accent')) ? $p('brand_accent') : '#B08D57',
             'contact_persons'       => json_encode($this->parseContacts((string) $p('contact_persons'))),
             'updated_by'            => $this->userId,
         ];

@@ -6,11 +6,11 @@
 <div class="kanban">
 <?php foreach ($stages as $s): $items = $cards[(int) $s['id']] ?? []; $sum = array_sum(array_map(static fn ($c) => (float) $c['expected_value'], $items)); ?>
     <div class="kanban-col">
-        <div class="d-flex justify-content-between align-items-center mb-2"><strong class="small" style="border-left:4px solid <?= esc(preg_match('/^#[0-9a-f]{6}$/i', (string) $s['color']) ? $s['color'] : '#6c757d') ?>;padding-left:6px"><?= esc($s['name']) ?></strong><span class="badge text-bg-light border"><?= count($items) ?></span></div>
+        <div class="d-flex justify-content-between align-items-center mb-2"><strong class="small stage-mark stage-mark-<?= stage_tone($s['code'], $s['is_won'], $s['is_lost'], $s['is_dnd']) ?>"><?= esc($s['name']) ?></strong><span class="badge badge-neutral"><?= count($items) ?></span></div>
         <?php if ($sum > 0): ?><div class="small text-muted mb-2"><?= inr($sum) ?> expected</div><?php endif ?>
         <?php foreach (array_slice($items, 0, 60) as $c): $over = $c['next_followup_at'] && $c['next_followup_at'] < date('Y-m-d H:i:s'); ?>
         <a class="kanban-card d-block text-decoration-none text-reset" href="<?= site_url('crm/leads/' . $c['id']) ?>">
-            <div class="fw-semibold small"><?= esc($c['company_name']) ?><?= $c['priority'] === 'hot' ? ' <span class="badge text-bg-danger">Hot</span>' : '' ?></div>
+            <div class="fw-semibold small"><?= esc($c['company_name']) ?><?= $c['priority'] === 'hot' ? ' <span class="badge badge-danger">Hot</span>' : '' ?></div>
             <div class="small text-muted"><?= esc((string) $c['assignee']) ?><?= $c['expected_value'] ? ' · ' . inr($c['expected_value']) : '' ?></div>
             <?php if ($c['next_followup_at']): ?><div class="small <?= $over ? 'text-danger' : 'text-muted' ?>"><i class="bi bi-alarm"></i> <?= dmy($c['next_followup_at'], true) ?></div><?php endif ?>
         </a>

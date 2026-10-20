@@ -1,13 +1,13 @@
 <?= $this->extend('layouts/app') ?>
 <?= $this->section('pageActions') ?>
-<?php if (can('hr.employee.manage')): ?><a href="<?= site_url('hr/employees/new') ?>" class="btn btn-gold btn-sm"><i class="bi bi-plus-lg"></i> Add employee</a><?php endif ?>
+<?php if (can('hr.employee.manage')): ?><a href="<?= site_url('hr/employees/new') ?>" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg"></i> Add employee</a><?php endif ?>
 <?= $this->endSection() ?>
 <?= $this->section('content') ?>
 <form class="filter-bar row g-2" method="get">
     <div class="col-md-4"><input type="search" name="q" value="<?= esc($f['q']) ?>" class="form-control form-control-sm" placeholder="Name, code, work email or phone" aria-label="Search"></div>
     <div class="col-6 col-md-3"><select name="department" class="form-select form-select-sm" data-autosubmit aria-label="Department"><option value="">All departments</option><?php foreach ($departments as $id => $n): ?><option value="<?= $id ?>" <?= $f['department'] === (int) $id ? 'selected' : '' ?>><?= esc($n) ?></option><?php endforeach ?></select></div>
     <div class="col-6 col-md-3"><select name="status" class="form-select form-select-sm" data-autosubmit aria-label="Status"><?php foreach (['current' => 'Current staff', 'probation' => 'On probation', 'active' => 'Active', 'notice' => 'Serving notice', 'exited' => 'Exited', 'all' => 'Everyone'] as $k => $l): ?><option value="<?= $k ?>" <?= $f['status'] === $k ? 'selected' : '' ?>><?= $l ?></option><?php endforeach ?></select></div>
-    <div class="col-md-2"><button class="btn btn-dark btn-sm w-100">Filter</button></div>
+    <div class="col-md-2"><button class="btn btn-primary btn-sm w-100">Filter</button></div>
 </form>
 <div class="table-card"><div class="table-responsive">
 <table class="table table-hover align-middle small">

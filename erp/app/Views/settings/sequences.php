@@ -9,11 +9,11 @@
 <div class="alert alert-info small"><i class="bi bi-123"></i> Each document type has its <strong>own</strong> series — a Cash Memo never consumes a Tax Invoice number. Statutory series follow GST Rule 46: consecutive, unique within the financial year, at most <strong>16 characters</strong>, using only letters, digits, “-” and “/”. Numbers are assigned only when a document is <strong>finalized</strong> (drafts use an internal DRAFT id) and are never reused. Continuing from an old book? Enter the <em>last number used</em> (e.g. 121 → the next invoice will be 122).</div>
 <div class="table-card"><div class="table-responsive">
 <table class="table align-middle small">
-    <thead><tr><th style="width:22%">Series</th><th>Prefix · padding · suffix · last number used → next number</th></tr></thead>
+    <thead><tr><th class="u-w-22p">Series</th><th>Prefix · padding · suffix · last number used → next number</th></tr></thead>
     <tbody>
     <?php foreach ($rows as $r): ?>
         <tr>
-            <td><strong><?= esc($r['name']) ?></strong><div class="text-muted"><?= esc(doc_type_label($r['doc_type'])) ?> · <?= $r['is_statutory'] ? '<span class="badge bg-dark">statutory ≤16</span>' : '<span class="badge bg-light text-dark border">internal</span>' ?></div></td>
+            <td><strong><?= esc($r['name']) ?></strong><div class="text-muted"><?= esc(doc_type_label($r['doc_type'])) ?> · <?= $r['is_statutory'] ? '<span class="badge badge-neutral">statutory ≤16</span>' : '<span class="badge badge-neutral">internal</span>' ?></div></td>
             <td>
                 <form method="post" action="<?= site_url('settings/sequences/' . $r['id']) ?>" class="row g-2 align-items-center" data-confirm="Save numbering for <?= esc($r['name'], 'attr') ?>?">
                     <?= csrf_field() ?>
@@ -23,7 +23,7 @@
                     <div class="col-2"><input class="form-control form-control-sm mono" name="suffix" value="<?= esc($r['suffix']) ?>" maxlength="10" aria-label="Suffix"></div>
                     <div class="col-2"><input type="number" min="0" class="form-control form-control-sm" name="last_used" value="<?= (int) $r['next_number'] - 1 ?>" aria-label="Last used number"></div>
                     <div class="col-3"><span class="mono fw-semibold"><?= esc($r['next_label']) ?></span> <span class="text-muted">(<?= strlen($r['next_label']) ?> chars)</span></div>
-                    <div class="col-12 col-xl-auto"><span class="text-muted">Issued: <?= $r['max_used'] > 0 ? (int) $r['max_used'] : 'none' ?></span> <button class="btn btn-sm btn-dark ms-2">Save</button></div>
+                    <div class="col-12 col-xl-auto"><span class="text-muted">Issued: <?= $r['max_used'] > 0 ? (int) $r['max_used'] : 'none' ?></span> <button class="btn btn-sm btn-primary ms-2">Save</button></div>
                 </form>
             </td>
         </tr>
@@ -31,5 +31,5 @@
     </tbody>
 </table>
 </div></div>
-<?php if ($wizard): ?><div class="sticky-actions"><a href="<?= site_url('settings/templates?wizard=1') ?>" class="btn btn-dark">Continue to invoice template →</a></div><?php endif ?>
+<?php if ($wizard): ?><div class="sticky-actions"><a href="<?= site_url('settings/templates?wizard=1') ?>" class="btn btn-primary">Continue to invoice template →</a></div><?php endif ?>
 <?= $this->endSection() ?>

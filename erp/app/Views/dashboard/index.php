@@ -9,18 +9,18 @@ $f = $widgets['finance'] ?? null;
 ?>
 <?= $this->section('pageActions') ?>
 <form method="get" class="d-flex flex-wrap gap-2 align-items-center" action="<?= site_url('/') ?>">
-    <select name="period" class="form-select form-select-sm" style="width:auto" data-autosubmit aria-label="Period">
+    <select name="period" class="u-w-auto form-select form-select-sm" data-autosubmit aria-label="Period">
         <?php foreach (['this_month' => 'This month', 'last_month' => 'Last month', 'this_fy' => 'This FY', 'last_fy' => 'Last FY', 'custom' => 'Custom range'] as $k => $v): ?>
             <option value="<?= $k ?>" <?= $period === $k ? 'selected' : '' ?>><?= $v ?></option>
         <?php endforeach ?>
     </select>
     <?php if ($period === 'custom'): ?>
-        <input type="date" name="from" value="<?= esc($from) ?>" class="form-control form-control-sm" style="width:auto" aria-label="From">
-        <input type="date" name="to" value="<?= esc($to) ?>" class="form-control form-control-sm" style="width:auto" aria-label="To">
-        <button class="btn btn-sm btn-dark">Apply</button>
+        <input type="date" name="from" value="<?= esc($from) ?>" class="u-w-auto form-control form-control-sm" aria-label="From">
+        <input type="date" name="to" value="<?= esc($to) ?>" class="u-w-auto form-control form-control-sm" aria-label="To">
+        <button class="btn btn-sm btn-primary">Apply</button>
     <?php endif ?>
     <?php if (can('reports.finance.view')): ?>
-        <a class="btn btn-sm btn-outline-dark" href="<?= site_url('reports/digest?from=' . $from . '&to=' . $to) ?>"><i class="bi bi-printer"></i> Daily digest</a>
+        <a class="btn btn-sm btn-outline-secondary" href="<?= site_url('reports/digest?from=' . $from . '&to=' . $to) ?>"><i class="bi bi-printer"></i> Daily digest</a>
     <?php endif ?>
 </form>
 <?= $this->endSection() ?>
@@ -33,11 +33,11 @@ $f = $widgets['finance'] ?? null;
     <div class="card-body">
         <div class="d-flex justify-content-between align-items-center mb-2">
             <strong><i class="bi bi-magic text-gold"></i> Finish your one-time setup</strong>
-            <a href="<?= site_url('settings/setup') ?>" class="btn btn-sm btn-gold">Open Setup Wizard</a>
+            <a href="<?= site_url('settings/setup') ?>" class="btn btn-sm btn-primary">Open Setup Wizard</a>
         </div>
         <div class="row g-2 small">
             <?php foreach ($checklist as $c): ?>
-                <div class="col-md-6"><a href="<?= site_url($c['url']) ?>" class="text-decoration-none <?= $c['done'] ? 'text-success' : 'text-dark' ?>"><i class="bi <?= $c['done'] ? 'bi-check-circle-fill' : 'bi-circle' ?> me-1"></i><?= esc($c['label']) ?></a></div>
+                <div class="col-md-6"><a href="<?= site_url($c['url']) ?>" class="text-decoration-none <?= $c['done'] ? 'text-success' : 'text-body' ?>"><i class="bi <?= $c['done'] ? 'bi-check-circle-fill' : 'bi-circle' ?> me-1"></i><?= esc($c['label']) ?></a></div>
             <?php endforeach ?>
         </div>
     </div>
@@ -63,7 +63,7 @@ $f = $widgets['finance'] ?? null;
 <div class="row g-3 mb-3">
     <div class="col-6 col-xl-3"><?= $kpi('Expenses', inr($f['expenses']), 'Approved expenses dated in the period: taxable value + GST that is NOT claimable as ITC (accrual basis).') ?></div>
     <div class="col-6 col-xl-3"><?= $kpi('Net cash movement', inr($f['net_cash_movement']), 'Change in all cash + bank ledgers during the period. Internal transfers (e.g. cash deposited to bank) net to zero.') ?></div>
-    <div class="col-6 col-xl-3"><?= $kpi('Cash in hand', inr($f['cash_balance']), 'Cash ledger balance as at period end.', 'Deposited to bank: ' . inr($f['cash_deposited']) . ' <span class="badge bg-light text-dark">transfer, not income</span>') ?></div>
+    <div class="col-6 col-xl-3"><?= $kpi('Cash in hand', inr($f['cash_balance']), 'Cash ledger balance as at period end.', 'Deposited to bank: ' . inr($f['cash_deposited']) . ' <span class="badge badge-neutral">transfer, not income</span>') ?></div>
     <div class="col-6 col-xl-3"><?= $kpi('Bank & UPI balance', inr($f['bank_balance']), 'Bank, UPI clearing and other non-cash account balances as at period end (includes owner-clearing accounts shown separately in Bank / Cash Accounts).') ?></div>
 </div>
 <?php endif ?>
@@ -118,11 +118,11 @@ $f = $widgets['finance'] ?? null;
             <div class="col-4"><div class="fw-bold fs-5"><?= $h['pending_leaves'] ?></div>Leave requests</div>
         </div>
         <div class="mb-1 text-muted">Today's attendance</div>
-        <?php foreach (['present' => 'success', 'absent' => 'danger', 'half_day' => 'warning', 'leave' => 'info', 'holiday' => 'secondary', 'week_off' => 'secondary'] as $st => $cls): ?>
-            <span class="badge bg-<?= $cls ?> me-1"><?= ucwords(str_replace('_', ' ', $st)) ?>: <?= (int) ($h['attendance'][$st] ?? 0) ?></span>
+        <?php foreach (['present' => 'success', 'absent' => 'danger', 'half_day' => 'warning', 'leave' => 'info', 'holiday' => 'neutral', 'week_off' => 'neutral'] as $st => $cls): ?>
+            <span class="badge badge-<?= $cls ?> me-1"><?= ucwords(str_replace('_', ' ', $st)) ?>: <?= (int) ($h['attendance'][$st] ?? 0) ?></span>
         <?php endforeach ?>
         <div class="mt-2 mb-1 text-muted">Recruitment pipeline</div>
-        <?php foreach ($h['pipeline'] as $st => $n): ?><span class="badge bg-light text-dark me-1"><?= esc(ucwords(str_replace('_', ' ', $st))) ?>: <?= (int) $n ?></span><?php endforeach ?>
+        <?php foreach ($h['pipeline'] as $st => $n): ?><span class="badge badge-neutral me-1"><?= esc(ucwords(str_replace('_', ' ', $st))) ?>: <?= (int) $n ?></span><?php endforeach ?>
         <?php if ($h['pipeline'] === []): ?><span class="text-muted">No active applicants.</span><?php endif ?>
     </div></div></div>
     <?php endif ?>
@@ -130,9 +130,9 @@ $f = $widgets['finance'] ?? null;
     <?php if (isset($widgets['sync'])): $s = $widgets['sync']; ?>
     <div class="col-lg-3"><div class="card h-100"><div class="card-header">Google Sheets sync</div><div class="card-body small">
         <?php if (! $s['configured']): ?>
-            <span class="badge bg-secondary">Not configured</span><p class="mt-2 mb-0">Live sync is off. CRM data is safe in the database; export to Excel any time.</p>
+            <span class="badge badge-neutral">Not configured</span><p class="mt-2 mb-0">Live sync is off. CRM data is safe in the database; export to Excel any time.</p>
         <?php else: ?>
-            <span class="badge <?= $s['enabled'] ? 'bg-success' : 'bg-secondary' ?>"><?= $s['enabled'] ? 'Connected' : 'Disabled' ?></span>
+            <span class="badge <?= $s['enabled'] ? 'badge-success' : 'badge-neutral' ?>"><?= $s['enabled'] ? 'Connected' : 'Disabled' ?></span>
             <div class="mt-2">Last success: <?= dmy($s['last_success'], true) ?></div>
             <div>Pending: <?= $s['pending'] ?> · Failed: <span class="<?= $s['failed'] ? 'text-danger fw-bold' : '' ?>"><?= $s['failed'] ?></span></div>
         <?php endif ?>
@@ -155,7 +155,7 @@ $f = $widgets['finance'] ?? null;
 
 <?= $this->section('scripts') ?>
 <?php if ($f !== null): ?>
-<script src="<?= base_url('assets/vendor/chartjs/chart.umd.min.js') ?>"></script>
-<script src="<?= base_url('assets/js/dashboard.js') ?>"></script>
+<script src="<?= asset('vendor/chartjs/chart.umd.min.js') ?>"></script>
+<script src="<?= asset('js/dashboard.js') ?>"></script>
 <?php endif ?>
 <?= $this->endSection() ?>

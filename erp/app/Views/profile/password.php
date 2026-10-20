@@ -20,7 +20,7 @@
             <input type="password" class="form-control<?= is_invalid('password_confirm') ?>" id="password_confirm" name="password_confirm" autocomplete="new-password" required>
             <?= field_error('password_confirm') ?>
         </div>
-        <button class="btn btn-dark">Update password</button>
+        <button class="btn btn-primary">Update password</button>
     </form>
 </div></div>
 </div></div>

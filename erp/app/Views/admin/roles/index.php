@@ -1,7 +1,7 @@
 <?= $this->extend('layouts/app') ?>
 <?= $this->section('pageActions') ?>
-<a href="<?= site_url('admin/roles/matrix') ?>" class="btn btn-outline-dark btn-sm"><i class="bi bi-grid-3x3"></i> Full matrix</a>
-<a href="<?= site_url('admin/roles/new') ?>" class="btn btn-gold btn-sm"><i class="bi bi-plus-lg"></i> New role</a>
+<a href="<?= site_url('admin/roles/matrix') ?>" class="btn btn-outline-secondary btn-sm"><i class="bi bi-grid-3x3"></i> Full matrix</a>
+<a href="<?= site_url('admin/roles/new') ?>" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg"></i> New role</a>
 <?= $this->endSection() ?>
 <?= $this->section('content') ?>
 <p class="small text-muted">Role names are labels only. What a person can see and do is decided by the permission keys in their roles (plus per-user overrides), enforced on every page, API, export and file download.</p>
@@ -16,10 +16,10 @@
             <td class="num"><?= (int) $r['users'] ?></td>
             <td class="num"><?= $r['is_super'] ? 'All (' . $total . ')' : (int) $r['perms'] ?></td>
             <td class="num"><?= $r['is_super'] ? '—' : (int) $r['danger'] ?></td>
-            <td><?= $r['is_active'] ? '<span class="badge bg-success">Active</span>' : '<span class="badge bg-secondary">Inactive</span>' ?></td>
+            <td><?= $r['is_active'] ? '<span class="badge badge-success">Active</span>' : '<span class="badge badge-neutral">Inactive</span>' ?></td>
             <td class="text-end text-nowrap">
                 <?php if (! $r['is_super']): ?>
-                <form method="post" action="<?= site_url('admin/roles/' . $r['id'] . '/clone') ?>" class="d-inline"><?= csrf_field() ?><button class="btn btn-sm btn-outline-dark">Clone</button></form>
+                <form method="post" action="<?= site_url('admin/roles/' . $r['id'] . '/clone') ?>" class="d-inline"><?= csrf_field() ?><button class="btn btn-sm btn-outline-secondary">Clone</button></form>
                 <?php endif ?>
             </td>
         </tr>

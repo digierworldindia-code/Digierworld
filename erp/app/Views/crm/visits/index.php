@@ -1,6 +1,6 @@
 <?= $this->extend('layouts/app') ?>
 <?= $this->section('pageActions') ?>
-<a class="btn btn-gold btn-sm" href="<?= site_url('crm/visits/new') ?>"><i class="bi bi-plus-lg"></i> Schedule visit</a>
+<a class="btn btn-primary btn-sm" href="<?= site_url('crm/visits/new') ?>"><i class="bi bi-plus-lg"></i> Schedule visit</a>
 <?= $this->endSection() ?>
 <?= $this->section('content') ?>
 <ul class="nav nav-tabs small mb-2">

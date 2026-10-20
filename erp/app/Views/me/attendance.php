@@ -8,7 +8,7 @@
         <?php foreach (['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as $d): ?><div class="cal-head"><?= $d ?></div><?php endforeach ?>
         <?php for ($i = 0; $i < $pad; $i++): ?><div></div><?php endfor ?>
         <?php foreach ($days as $d): $m = $d['mark']; ?>
-        <div class="cal-day border rounded p-1 <?= $d['kind'] ? 'bg-light' : '' ?>"><div class="fw-semibold"><?= (int) substr($d['date'], 8) ?></div>
+        <div class="cal-day border rounded p-1 <?= $d['kind'] ? 'bg-body-tertiary' : '' ?>"><div class="fw-semibold"><?= (int) substr($d['date'], 8) ?></div>
             <?php if ($m): ?><?= status_badge($m['status']) ?><?= $m['check_in_at'] ? '<div class="text-muted">' . date('H:i', strtotime($m['check_in_at'])) . ($m['check_out_at'] ? '–' . date('H:i', strtotime($m['check_out_at'])) : '') . '</div>' : '' ?>
             <?php elseif ($d['holiday']): ?><span class="text-muted"><?= esc($d['holiday']) ?></span><?php elseif ($d['kind'] === 'week_off'): ?><span class="text-muted">Off</span><?php endif ?></div>
         <?php endforeach ?>

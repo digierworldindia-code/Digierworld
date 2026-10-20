@@ -1,6 +1,6 @@
 <?= $this->extend('layouts/app') ?>
 <?= $this->section('pageActions') ?>
-<?php if (can('finance.ledger.journal')): ?><a href="<?= site_url('finance/ledger/journal/new') ?>" class="btn btn-gold btn-sm"><i class="bi bi-plus-lg"></i> Manual journal</a><?php endif ?>
+<?php if (can('finance.ledger.journal')): ?><a href="<?= site_url('finance/ledger/journal/new') ?>" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg"></i> Manual journal</a><?php endif ?>
 <?= $this->endSection() ?>
 <?= $this->section('content') ?>
 <?= view('finance/ledger/_tabs', ['active' => 'finance/ledger']) ?>
@@ -21,7 +21,7 @@ $extra .= '</select></div>';
     <tr class="<?= $r['reversed_by_id'] ? 'text-muted' : '' ?>">
         <td><a class="mono fw-semibold" href="<?= site_url('finance/ledger/entries/' . $r['id']) ?>"><?= esc($r['entry_no']) ?></a></td>
         <td><?= dmy($r['entry_date']) ?></td>
-        <td><?= esc($r['narration']) ?><?= $r['reversed_by_id'] ? ' <span class="badge text-bg-secondary">reversed</span>' : '' ?><?= $r['reversal_of_id'] ? ' <span class="badge text-bg-light border">reversal</span>' : '' ?></td>
+        <td><?= esc($r['narration']) ?><?= $r['reversed_by_id'] ? ' <span class="badge badge-neutral">reversed</span>' : '' ?><?= $r['reversal_of_id'] ? ' <span class="badge badge-neutral">reversal</span>' : '' ?></td>
         <td><?= $url ? '<a href="' . $url . '">' . esc($label) . '</a>' : esc($label) ?></td>
         <td class="mono"><?= esc((string) $r['reference']) ?></td>
         <td class="num"><?= inr($r['total_debit']) ?></td>

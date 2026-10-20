@@ -25,7 +25,7 @@
         <div class="col-6"><label class="form-label" for="mt_mode">Mode</label><select class="form-select" id="mt_mode" name="mode"><option value="in_person">In person</option><option value="phone">Phone</option><option value="video">Video</option></select></div></div>
     <label class="form-label" for="mt_loc">Location / link</label><input class="form-control mb-2" id="mt_loc" name="location_or_link" maxlength="300">
     <label class="form-label" for="mt_att">Attendees</label><select class="form-select mb-2" id="mt_att" name="attendee_ids[]" multiple size="4"><?php foreach ($users as $u): ?><option value="<?= $u['id'] ?>"><?= esc($u['name']) ?></option><?php endforeach ?></select>
-    <button class="btn btn-dark w-100" type="submit">Schedule</button>
+    <button class="btn btn-primary w-100" type="submit">Schedule</button>
 </div></form>
 </div>
 </div>

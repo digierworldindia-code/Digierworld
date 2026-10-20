@@ -27,8 +27,9 @@ class SecurityHeadersFilter implements FilterInterface
         $response->setHeader('Cross-Origin-Opener-Policy', 'same-origin');
         $response->setHeader(
             'Content-Security-Policy',
-            "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; "
-            . "font-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; form-action 'self'; base-uri 'self'; object-src 'none'"
+            // self-hosted assets only: no CDN, no inline script, no inline style, no external font
+            "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; "
+            . "font-src 'self'; connect-src 'self'; frame-ancestors 'none'; form-action 'self'; base-uri 'self'; object-src 'none'"
         );
         if ($request instanceof \CodeIgniter\HTTP\IncomingRequest && $request->isSecure()) {
             $response->setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
