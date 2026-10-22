@@ -464,7 +464,8 @@ Use it **only for a new installation**. An existing installation is
 upgraded with `php spark dgr:install` (§10); importing this file would
 replace its tables.
 
-Verified for 1.3.0: imports into an empty MySQL 8.0 and MariaDB 11.8
+Verified for 1.3.1 (and before for 1.3.0; the two files differ only in
+their creation timestamps): imports into an empty MySQL 8.0 and MariaDB 11.8
 database (122 tables, starter roles with their landing pages); then
 `dgr:install` reports nothing pending, `dgr:create-owner` works and
 `dgr:diagnostics` shows no failed checks (only the expected warnings of a
