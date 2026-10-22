@@ -220,7 +220,7 @@ payslip PDFs with and without branding, and that `.env`, `app/`,
    php spark dgr:diagnostics
    ```
 
-   Instead of `dgr:install` you can import `dgr-office-1.3.0-clean.sql` in
+   Instead of `dgr:install` you can import `dgr-office-1.3.1-clean.sql` in
    phpMyAdmin (§12). Without SSH, run each command once as a temporary cron
    job (§5 step 5).
 6. **Permissions:** PHP runs as your hosting user, so the default `755`
@@ -356,7 +356,8 @@ first writes `writable/backups/dgr-<date>-<time>.sql.gz` and reads it
 back to verify it (every table, every row count). If the backup cannot
 be made or verified it stops **before** changing anything. Download that
 file before continuing. (`--no-backup` skips it — only if you have just
-made and checked one yourself.) Upgrading 1.2.0 → 1.3.0 applies three
+made and checked one yourself.) Upgrading 1.3.0 → 1.3.1 applies no
+migrations (files only). Upgrading 1.2.0 → 1.3.x applies three
 additive migrations (`AddRoleLandingUrl`, `AddPerformanceIndexes`,
 `MarkAuditCanonicalHashing`); they add one nullable column, four indexes
 and two settings rows and change no existing data. Tested on a copy of the
@@ -400,7 +401,7 @@ because the sign-in page's logo needed a session. Fixed in 1.1.1.)
 
 ```bash
 cd erp
-scripts/build-release.sh 1.3.0        # → dist/dgr-office-1.3.0.zip + .sha256
+scripts/build-release.sh 1.3.1        # → dist/dgr-office-1.3.1.zip + .sha256
 ```
 
 The script exports the committed tree (`git archive`), runs

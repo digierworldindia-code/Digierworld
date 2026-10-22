@@ -94,7 +94,7 @@ $gstCols = match ($d['gst_type']) { 'cgst_sgst' => ['cgst' => 'CGST', 'sgst' => 
                     <td class="num"><?= esc(rtrim(rtrim($l['qty'], '0'), '.')) ?> <?= esc((string) $l['unit']) ?></td>
                     <td class="num"><?= inr($l['unit_rate']) ?></td>
                     <td class="num"><?= inr($l['taxable_value']) ?></td>
-                    <?php foreach ($gstCols as $k => $lbl): ?><td class="num"><?= (float) $l[$k . '_amount'] > 0 ? \App\Libraries\Dec::rateLabel($l[$k . '_rate']) . '% · ' . inr($l[$k . '_amount']) : '—' ?></td><?php endforeach ?>
+                    <?php foreach ($gstCols as $k => $lbl): ?><td class="num"><?php if ((float) $l[$k . '_amount'] > 0): ?><?= inr($l[$k . '_amount']) ?><div class="text-muted"><?= \App\Libraries\Dec::rateLabel($l[$k . '_rate']) ?>%</div><?php else: ?>—<?php endif ?></td><?php endforeach ?>
                     <td class="num fw-semibold"><?= inr($l['line_total']) ?></td></tr>
             <?php endforeach ?>
             </tbody>

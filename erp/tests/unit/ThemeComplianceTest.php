@@ -130,6 +130,9 @@ final class ThemeComplianceTest extends CIUnitTestCase
         );
         $custom = (string) preg_replace(['/\/\*.*?\*\//s', '/url\("data:[^"]*"\)/'], '', (string) file_get_contents(FCPATH . 'assets/css/custom.css'));
         $this->assertDoesNotMatchRegularExpression('/#[0-9a-fA-F]{3,8}\b/', $custom, 'custom.css must use dgr-theme.css tokens, not colours');
+        // the gold accent is too light to read on white: text and icons use --dgr-gold-text (the accent itself on dark)
+        $rules = (string) preg_replace('/\/\*.*?\*\//s', '', $css) . $custom;
+        $this->assertDoesNotMatchRegularExpression('/(?<![-\w])color:\s*var\(--dgr-gold\)/', $rules, 'gold used as a text colour must be var(--dgr-gold-text)');
 
         foreach (['dark', 'light'] as $mode) {
             $t = self::theme($css, $mode);

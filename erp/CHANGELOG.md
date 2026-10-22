@@ -7,6 +7,38 @@ and, on an existing installation, first writes a backup to
 `writable/backups` and reads it back to verify it; if that fails, nothing
 is changed.
 
+## 1.3.1 — fixes from a full check of 1.3.0 (no database changes)
+
+Found by crawling every page as each role, a browser pass over every
+screen in both themes, form flows in a real browser and running every
+command-line tool (details in docs/07-TEST-REPORT.md §0a). 1.3.1 has no
+migrations; upgrading from 1.3.0 only replaces files.
+
+- *Demo data could not be loaded with the documented password.* The usage
+  text of `dgr:demo` suggested `--password "Demo-Pass-123"`, but passwords
+  may not contain the user's name and every demo user is called
+  "DEMO · …", so loading stopped part-way with a password error and was
+  rolled back. The password is now checked against all nine demo users
+  before anything is written, the message says why and gives a working
+  example, and the usage text shows one (`Train-Ledger-2026`).
+- *Password rule message read "Password must have not contain your
+  name."* (new user, change password, first sign-in). Now: "Password must
+  be at least 10 characters long, not contain your name."
+- *Light theme: grand totals unreadable.* The grand total on invoices
+  (screen and entry form) and the ticks in the permission matrix used the
+  gold accent as a text colour: 2.1:1 on white. They now use the darker
+  gold text colour (5.4:1); a test refuses gold-as-text from now on.
+- *Dark theme: highlighted table rows were bright yellow/pink.* Bootstrap's
+  `table-warning`/`table-danger` rows (audit "what changed", import
+  previews, attendance day, incentives) have fixed light colours with
+  black text, so in the dark theme they showed as bright bars and the gold
+  field names on them were unreadable (1.9:1). They now use the theme's
+  soft status tints in both themes.
+- *Phones: the vacancy / JD form was 6 px wider than the screen* (the
+  evaluation rubric labels could not wrap). They wrap and stack now.
+- *Invoice screen: the Total column was off-screen at 1366 px.* The GST
+  rate is shown under the GST amount, so all columns fit.
+
 ## 1.3.0 — stability, performance (504), PDFs, bank setup, Light/Dark theme (PHP 8.2+)
 
 Each item names the root cause found in the code. Performance numbers

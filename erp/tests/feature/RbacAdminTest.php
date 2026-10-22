@@ -86,6 +86,23 @@ final class RbacAdminTest extends DgrTestCase
         $this->assertSame(403, $this->statusOf(fn () => $this->get('finance/receipts')));
     }
 
+    public function testWeakPasswordIsRefusedWithAReadableReason(): void
+    {
+        try {
+            service('users')->assertPasswordStrength('kavita7', 'kavita.rao@example.test', 'Kavita Rao');
+            $this->fail('A short password containing the name must be refused');
+        } catch (\App\Exceptions\BusinessRuleException $e) {
+            $this->assertSame('Password must be at least ' . config('Auth')->minimumPasswordLength . ' characters long, not contain your name.', $e->getMessage());
+        }
+
+        $this->loginAs($this->owner());
+        $email = 'weak.' . bin2hex(random_bytes(3)) . '@example.test';
+        $employee = (string) db_connect()->table('roles')->where('code', 'employee')->get()->getRow()->id;
+        $this->postForm('admin/users', ['email' => $email, 'full_name' => 'Weak Password', 'password' => 'Weakpassword', 'roles' => [$employee]])->assertRedirect();
+        $this->assertSame(0, db_connect()->table('auth_identities')->where('secret', $email)->countAllResults(), 'no user is created');
+        $this->assertStringContainsString('Password must include both letters and numbers, not contain your name.', json_encode(session('errors') ?? session('error') ?? []));
+    }
+
     public function testLastSuperAdminCannotBeRemovedOrDeactivated(): void
     {
         $owner = $this->owner();

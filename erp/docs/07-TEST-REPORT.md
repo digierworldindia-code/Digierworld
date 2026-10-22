@@ -1,16 +1,21 @@
 # DGR Office — Test report
 
-**Release 1.3.0** (2026-10-23, branch `ccr-5922b9e2-4of5k8`), `vendor/bin/phpunit`, PHPUnit 10.5.66:
+**Release 1.3.1** (2026-10-23, branch `ccr-5922b9e2-4of5k8`), `vendor/bin/phpunit`, PHPUnit 10.5.66:
 
 | Platform | Result |
 | --- | --- |
-| PHP 8.3.6 + MySQL 8.0.46 | **136 tests, 1,770 assertions — all passed** (0 failures, 0 errors, 0 skipped) |
-| PHP 8.3.6 + MariaDB 11.8.9 | **136 tests, 1,770 assertions — all passed** |
-| PHP 8.2.10 + MySQL 8.0.46 | **136 tests, 1,734 assertions — all passed** |
+| PHP 8.3.6 + MySQL 8.0.46 | **137 tests, 1,775 assertions — all passed** (0 failures, 0 errors, 0 skipped) |
+| PHP 8.3.6 + MariaDB 11.8.9 | **137 tests, 1,775 assertions — all passed** |
+| PHP 8.2.10 + MySQL 8.0.46 | **137 tests, 1,739 assertions — all passed** |
 
 (The PHP 8.2 container has no `pdfinfo`/`pdfimages`, so the PDF tests skip
 their page-size and embedded-image checks there; everything else is
-identical.) Release 1.2.0 had 107 tests; 1.3.0 adds 29.
+identical.) Release 1.2.0 had 107 tests; 1.3.0 added 29 and 1.3.1 adds one
+(`RbacAdminTest::testWeakPasswordIsRefusedWithAReadableReason`) plus a new
+check in `ThemeComplianceTest` (gold accent never used as a text colour).
+Which server each run used was confirmed from the database side (the
+MariaDB server's insert counter and test tables changed during its run; the
+PHP 8.2 run wrote to its own test database).
 
 Tests run against a real MySQL or MariaDB test database (`database.tests.*`), go
 through the real routes, filters, controllers, services and views (CI4
@@ -19,6 +24,28 @@ XLSX files. External services are replaced by fakes only at the network
 edge: `FakeSheetsClient` (Google Sheets) and `FakeAiProvider` (Anthropic).
 
 ---
+
+## 0a. Release 1.3.1 — full check of the running application
+
+Run on a production-mode copy (`CI_ENVIRONMENT = production`, PHP 8.3,
+MySQL 8) installed from scratch and loaded with `dgr:demo`, plus the
+owner's own records created during the checks.
+
+| Check | How | Result |
+| --- | --- | --- |
+| Every linked page, every role | Crawler signed in as the owner and each of the 9 demo roles (accountant, billing, CRM manager, 2 telecallers, HR, recruiter, payroll, employee) and followed every link on every page: 1,551 page loads | 0 server errors, 0 PHP error text, 0 forbidden links shown to a role; application log empty |
+| Pages no link points to | Every GET route from `php spark routes` not reached by the crawler (lookups, JSON feeds, previews, `me/*`, health) requested directly | all answer correctly (JSON where expected, the themed 404 page for missing records, 401 for the AI API without a token) |
+| Every screen in a real browser | Chromium: one page per route pattern (179 for the owner, plus the employee, telecaller and HR screens) × Dark and Light × 1366 px and 390 px — 812 page loads | 0 JavaScript errors, 0 console errors, 0 failed requests; after the fixes 0 pages wider than the screen and 0 text below 3:1 contrast |
+| Forms in a real browser | New client → tax invoice with customer search, GST and line entry → finalize → PDF → record payment from the invoice → receipt PDF → invoice shows Paid; edit a bank account and reload; new lead → log a call; new expense (duplicate warning shown for a repeated one); employee requests leave | all saved and shown correctly, 0 JavaScript errors |
+| Command-line tools | `dgr:install`, `dgr:diagnostics`, `dgr:backup` (verified 122 tables), `dgr:cron`, `dgr:demo` load → `--purge` → load → `--purge` on a fresh database | all succeed; purge removes every demo record and login and keeps the owner and audit log; purge refuses while non-demo records exist |
+
+**Bugs found and fixed** (details in CHANGELOG 1.3.1): `dgr:demo` refused
+its own documented example password; the password rule message was
+ungrammatical; grand totals (and permission ticks) were 2.1:1 on white in
+the Light theme; highlighted table rows were bright yellow/pink in the Dark
+theme with unreadable gold text (1.9:1); the vacancy form was 6 px wider
+than a phone screen; the invoice screen's Total column was off-screen at
+1366 px.
 
 ## 0. Release 1.3.0 — regression tests 1–18 (requested list)
 

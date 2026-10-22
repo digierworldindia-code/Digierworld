@@ -189,15 +189,15 @@ class UserService
         $min = (int) config('Auth')->minimumPasswordLength;
         $errors = [];
         if (mb_strlen($password) < $min) {
-            $errors[] = "at least {$min} characters";
+            $errors[] = "be at least {$min} characters long";
         }
         if (! preg_match('/[A-Za-z]/', $password) || ! preg_match('/\d/', $password)) {
-            $errors[] = 'letters and numbers';
+            $errors[] = 'include both letters and numbers';
         }
         $lower = strtolower($password);
         $local = strtolower(strstr($email, '@', true) ?: '');
         if ($local !== '' && strlen($local) >= 3 && str_contains($lower, $local)) {
-            $errors[] = 'not contain your email name';
+            $errors[] = 'not contain the part of the email before @';
         }
         foreach (preg_split('/\s+/', strtolower($name)) ?: [] as $part) {
             if (strlen($part) >= 4 && str_contains($lower, $part)) {
@@ -209,7 +209,9 @@ class UserService
             $errors[] = 'not be a common password';
         }
         if ($errors !== []) {
-            throw new BusinessRuleException('Password must have ' . implode(', ', $errors) . '.', ['password' => 'Password must have ' . implode(', ', $errors) . '.']);
+            $message = 'Password must ' . implode(', ', $errors) . '.';
+
+            throw new BusinessRuleException($message, ['password' => $message]);
         }
     }
 

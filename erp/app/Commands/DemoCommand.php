@@ -24,7 +24,7 @@ class DemoCommand extends BaseCommand
     protected $group       = 'DGR Office';
     protected $name        = 'dgr:demo';
     protected $description = 'Load (or --purge) clearly-marked demo data for training and evaluation on a fresh install.';
-    protected $usage       = 'dgr:demo [--purge] [--password "Demo-Pass-123"]';
+    protected $usage       = 'dgr:demo [--purge] [--password "Train-Ledger-2026"]';
 
     private const P = 'DEMO · ';
 
@@ -95,6 +95,18 @@ class DemoCommand extends BaseCommand
             return EXIT_ERROR;
         }
 
+        // the demo users' names all contain "DEMO", and a password may not contain the user's name
+        foreach (self::DEMO_USERS as [$name, $local]) {
+            try {
+                service('users')->assertPasswordStrength($password, $local . '@demo.dgr.local', self::P . $name);
+            } catch (\App\Exceptions\BusinessRuleException $e) {
+                CLI::error('That password cannot be used for the demo logins (user "' . self::P . $name . '"): ' . $e->getMessage()
+                    . ' Use one without "demo" or the demo names, e.g. --password "Train-Ledger-2026".');
+
+                return EXIT_ERROR;
+            }
+        }
+
         // all-or-nothing: a failure part-way leaves no demo rows behind
         $db->transBegin();
         try {
@@ -159,14 +171,16 @@ class DemoCommand extends BaseCommand
         return $id;
     }
 
+    /** key => [name, email local part] */
+    private const DEMO_USERS = [
+        'accountant' => ['Anjali Accounts', 'accountant'], 'billing_operator' => ['Bharat Billing', 'billing'], 'crm_manager' => ['Chitra CRM Manager', 'crm.manager'],
+        'telecaller' => ['Deepak Telecaller', 'telecaller1'], 'telecaller2' => ['Esha Telecaller', 'telecaller2'], 'hr_manager' => ['Farah HR', 'hr'],
+        'hr_recruiter' => ['Gaurav Recruiter', 'recruiter'], 'payroll_manager' => ['Heena Payroll', 'payroll'], 'employee' => ['Imran Designer', 'employee'],
+    ];
+
     private function users(string $password): void
     {
-        $defs = [
-            'accountant' => ['Anjali Accounts', 'accountant'], 'billing_operator' => ['Bharat Billing', 'billing'], 'crm_manager' => ['Chitra CRM Manager', 'crm.manager'],
-            'telecaller' => ['Deepak Telecaller', 'telecaller1'], 'telecaller2' => ['Esha Telecaller', 'telecaller2'], 'hr_manager' => ['Farah HR', 'hr'],
-            'hr_recruiter' => ['Gaurav Recruiter', 'recruiter'], 'payroll_manager' => ['Heena Payroll', 'payroll'], 'employee' => ['Imran Designer', 'employee'],
-        ];
-        foreach ($defs as $key => [$name, $local]) {
+        foreach (self::DEMO_USERS as $key => [$name, $local]) {
             $role  = $key === 'telecaller2' ? 'telecaller' : $key;
             $email = $local . '@demo.dgr.local';
             $id    = service('users')->create($email, self::P . $name, $password, [$role]);

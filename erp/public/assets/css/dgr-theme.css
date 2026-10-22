@@ -378,6 +378,16 @@ hr { border-color: var(--dgr-border); opacity: 1; }
     --bs-table-active-bg: var(--dgr-gold-soft); --bs-table-active-color: var(--dgr-text);
 }
 .table > :not(caption) > * > * { padding: .6rem .7rem; }
+/* highlighted rows: Bootstrap's table variants are fixed light colours with black text, so they are themed here */
+.table-success, .table-warning, .table-danger, .table-info {
+    --bs-table-color: var(--dgr-text); --bs-table-border-color: var(--dgr-border);
+    --bs-table-striped-color: var(--dgr-text); --bs-table-hover-color: var(--dgr-text); --bs-table-active-color: var(--dgr-text);
+    color: var(--bs-table-color); border-color: var(--bs-table-border-color);
+}
+.table-success { --bs-table-bg: var(--dgr-success-soft); --bs-table-striped-bg: var(--dgr-success-soft); --bs-table-hover-bg: var(--dgr-success-soft); --bs-table-active-bg: var(--dgr-success-soft); }
+.table-warning { --bs-table-bg: var(--dgr-warning-soft); --bs-table-striped-bg: var(--dgr-warning-soft); --bs-table-hover-bg: var(--dgr-warning-soft); --bs-table-active-bg: var(--dgr-warning-soft); }
+.table-danger  { --bs-table-bg: var(--dgr-danger-soft);  --bs-table-striped-bg: var(--dgr-danger-soft);  --bs-table-hover-bg: var(--dgr-danger-soft);  --bs-table-active-bg: var(--dgr-danger-soft);  }
+.table-info    { --bs-table-bg: var(--dgr-info-soft);    --bs-table-striped-bg: var(--dgr-info-soft);    --bs-table-hover-bg: var(--dgr-info-soft);    --bs-table-active-bg: var(--dgr-info-soft);    }
 .table thead th { font-size: .72rem; text-transform: uppercase; letter-spacing: .06em; color: var(--dgr-text-2); font-weight: 650; background: var(--dgr-inset); white-space: nowrap; border-bottom-color: var(--dgr-border-strong); }
 .table tfoot td, .table tfoot th { background: var(--dgr-inset); font-weight: 650; }
 .table a:not(.btn) { text-decoration: none; }

@@ -159,8 +159,8 @@ database) before entering real data.
 
 ### Release files
 
-`dist/dgr-office-1.3.0.zip` (application + production `vendor/`),
-`dist/dgr-office-1.3.0-clean.sql` (empty database with base data for a
+`dist/dgr-office-1.3.1.zip` (application + production `vendor/`),
+`dist/dgr-office-1.3.1-clean.sql` (empty database with base data for a
 new installation, [§12](docs/04-DEPLOYMENT.md)) and
 `dist/dgr-office-1.0.0-demo.sql` / `.sql.gz` (evaluation-only demo
 database, [§11](docs/04-DEPLOYMENT.md); `dgr:install` brings it up to

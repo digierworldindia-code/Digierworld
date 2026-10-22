@@ -22,7 +22,7 @@
 .totals-box .row-t { display: flex; justify-content: space-between; padding: .2rem 0; font-variant-numeric: tabular-nums; color: var(--dgr-text-2); }
 .totals-box .row-t > :last-child { color: var(--dgr-text); }
 .totals-box .grand { font-size: 1.15rem; font-weight: 700; border-top: 1px solid var(--dgr-gold-line); margin-top: .4rem; padding-top: .5rem; color: var(--dgr-text); }
-.totals-box .grand > :last-child { color: var(--dgr-gold); }
+.totals-box .grand > :last-child { color: var(--dgr-gold-text); }
 
 /* ===== Boards (CRM pipeline, shortlisting) ===== */
 .kanban { display: flex; gap: .75rem; overflow-x: auto; padding-bottom: .75rem; }
@@ -48,7 +48,7 @@
 .perm-matrix th.rot { white-space: nowrap; }
 .perm-matrix td { text-align: center; }
 .perm-matrix td.pk { text-align: left; white-space: nowrap; }
-.perm-matrix .bi-check-lg { color: var(--dgr-gold); }
+.perm-matrix .bi-check-lg { color: var(--dgr-gold-text); }
 .perm-danger { color: var(--dgr-danger); }
 
 /* ===== Calendar & attendance grids ===== */
