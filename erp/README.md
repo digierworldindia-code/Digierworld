@@ -8,8 +8,8 @@ narrowly-scoped AI CV review, HRM (attendance, leave), payroll and
 incentives — all behind an owner-editable, deny-by-default permission
 matrix with an audit trail.
 
-Stack: PHP 8.3 · CodeIgniter 4.7 · CodeIgniter Shield · MySQL 8 (InnoDB,
-utf8mb4) · Bootstrap 5.3 (bundled locally) · vanilla JS · Chart.js ·
+Stack: PHP 8.3 · CodeIgniter 4.7 · CodeIgniter Shield · MySQL 8 or
+MariaDB 10.6+ (InnoDB, utf8mb4) · Bootstrap 5.3 (bundled locally) · vanilla JS · Chart.js ·
 PhpSpreadsheet · Dompdf · google/apiclient (Sheets only) · smalot/pdfparser
 · brick/math · anthropic-ai/sdk (optional AI review).
 
@@ -18,7 +18,7 @@ PhpSpreadsheet · Dompdf · google/apiclient (Sheets only) · smalot/pdfparser
 | [docs/01-BLUEPRINT.md](docs/01-BLUEPRINT.md) | Requirements, assumptions, sitemap, workflows, wireframes, accounting rules, isolation matrix |
 | [docs/02-PERMISSIONS.md](docs/02-PERMISSIONS.md) | Permission registry and starter-role matrix (generated) |
 | [docs/03-SCHEMA.md](docs/03-SCHEMA.md) | Table-by-table schema and ERD (generated from the migrated database) |
-| [docs/04-DEPLOYMENT.md](docs/04-DEPLOYMENT.md) | XAMPP, local Apache, cPanel and VPS deployment, SSL, cron, permissions, SMTP, backups, upgrades |
+| [docs/04-DEPLOYMENT.md](docs/04-DEPLOYMENT.md) | XAMPP, local Apache, cPanel, Hostinger and VPS deployment, SSL, cron, permissions, SMTP, backups, upgrades |
 | [docs/05-GOOGLE-SHEETS.md](docs/05-GOOGLE-SHEETS.md) | Service account, sharing, tab mapping, retry behaviour |
 | [docs/06-AI-BOUNDARY.md](docs/06-AI-BOUNDARY.md) | What the AI can and cannot see or do, provider set-up, service tokens |
 | [docs/07-TEST-REPORT.md](docs/07-TEST-REPORT.md) | Automated and manual test results, evidence files, known limitations |
@@ -29,13 +29,44 @@ PhpSpreadsheet · Dompdf · google/apiclient (Sheets only) · smalot/pdfparser
 
 ---
 
+## Quick start on Hostinger
+
+1. **PHP 8.3** with the extensions listed in §1 (hPanel → *PHP
+   Configuration*). Create a MySQL/MariaDB database and user (hPanel →
+   *Databases*).
+2. Create the folder (e.g. `public_html/dgr`), upload this zip into it and
+   extract it there. The files sit at the top of the zip; the root
+   `.htaccess` serves `public/` and blocks `.env`, `app/`, `writable/` and
+   `vendor/`. Keep it.
+3. Copy `.env.example` to `.env` and set `CI_ENVIRONMENT = production`,
+   `app.baseURL = 'https://your-domain.com/dgr/'` (exact address, trailing
+   slash) and the `database.default.*` values (hostname `localhost`, the
+   full `u123…_` names).
+4. Over SSH, in that folder: `php spark key:generate` (**once**; never again
+   on a working install), `php spark dgr:install`,
+   `php spark dgr:create-owner --email you@your-domain.com --name "Your Name"`,
+   `php spark dgr:diagnostics`.
+5. Add the cron job `php …/dgr/spark dgr:cron` (every minute) and a daily
+   `… spark dgr:backup --files --keep 14`.
+6. After SSL: `https://` in `app.baseURL`, `app.forceGlobalSecureRequests = true`,
+   `cookie.secure = true`.
+
+**Upgrading an existing install:** keep your `.env` and the whole
+`writable/` folder (uploads, backups): extract the new zip into a new
+folder, copy `.env` and `writable/` from the old one into it, swap the
+folder names, then run `php spark dgr:install` (applies only new migrations,
+never deletes data) and `php spark dgr:diagnostics`. Details and the
+no-SSH variant: [docs/04-DEPLOYMENT.md](docs/04-DEPLOYMENT.md) §5a and §10.
+
 ## 1. Requirements
 
 * **PHP 8.3 or newer** with extensions: `intl`, `mbstring`, `json`,
   `mysqli`, `curl`, `openssl`, `gd`, `zip`, `xml`, `dom`, `xmlwriter`,
-  `fileinfo`, `iconv`, `ctype`, `sodium`.
+  `fileinfo`, `iconv`, `ctype`. (`sodium` is not needed: encryption uses
+  OpenSSL.)
 * PHP limits: `upload_max_filesize = 20M`, `post_max_size = 25M`, `memory_limit = 256M`.
-* **MySQL 8.0+** (InnoDB, `utf8mb4`). MariaDB is not tested.
+* **MySQL 8.0.16+** or **MariaDB 10.6+** (InnoDB, `utf8mb4`). The full
+  test suite passes on MySQL 8.0 and on MariaDB 11.8.
 * **Apache 2.4 with `mod_rewrite`** (XAMPP, cPanel) or **Nginx + PHP-FPM**.
 * A **cron** entry that can run `php` every minute (cPanel “Cron Jobs” is fine).
 * **Composer 2** — only if you install from git; the release archive
@@ -46,8 +77,8 @@ PhpSpreadsheet · Dompdf · google/apiclient (Sheets only) · smalot/pdfparser
 Full, environment-specific steps are in [docs/04-DEPLOYMENT.md](docs/04-DEPLOYMENT.md).
 
 ```bash
-# 1. code — either unzip the release archive (vendor/ included) …
-unzip dgr-office-<version>.zip && cd dgr-office
+# 1. code — either unzip the release archive (vendor/ included) into a new folder …
+mkdir dgr-office && unzip dgr-office-<version>.zip -d dgr-office && cd dgr-office
 #    … or from git
 git clone <repo> && cd <repo>/erp && composer install --no-dev --optimize-autoloader
 
@@ -123,14 +154,13 @@ database) before entering real data.
 
 ### Release files
 
-`dist/dgr-office-1.1.1.zip` (application + production `vendor/`),
+`dist/dgr-office-1.2.0.zip` (application + production `vendor/`),
 `dist/dgr-office-1.0.0-clean.sql` (empty database with base data for real
 use, [§12](docs/04-DEPLOYMENT.md)) and `dist/dgr-office-1.0.0-demo.sql`
 / `.sql.gz` (evaluation-only demo database, [§11](docs/04-DEPLOYMENT.md)),
-each with a `.sha256` checksum. Releases 1.1.0 (black theme, self-hosted
-verified assets, strict CSP) and 1.1.1 (graceful handling of uploads
-missing from `writable/uploads`) did not change the database schema, so
-the 1.0.0 SQL files are the correct ones for 1.1.1.
+each with a `.sha256` checksum. Releases 1.1.x and 1.2.0 did not change
+the database schema, so the 1.0.0 SQL files are the correct ones for
+1.2.0. What changed in each release: [CHANGELOG.md](CHANGELOG.md).
 Rebuild the archive any time with `scripts/build-release.sh <version>`.
 
 ## 5. Folder layout
@@ -149,7 +179,7 @@ docs/                    documentation, samples and test evidence
 
 ## 6. Running the tests
 
-Tests use a **separate, disposable** MySQL database configured in `.env`
+Tests use a **separate, disposable** MySQL or MariaDB database configured in `.env`
 as `database.tests.*` (see `.env.example`). They need the dev
 dependencies (`composer install` without `--no-dev`).
 

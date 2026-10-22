@@ -40,7 +40,8 @@ class BillingAccess
         if ($this->authz->can("billing.{$ns}.view_all")) {
             return 'all';
         }
-        if ($this->authz->can("billing.{$ns}.view_own")) {
+        // credit/debit notes have no "own" scope (view_all only), so only ask for keys that exist
+        if ($this->authz->isRegistered("billing.{$ns}.view_own") && $this->authz->can("billing.{$ns}.view_own")) {
             return 'own';
         }
 

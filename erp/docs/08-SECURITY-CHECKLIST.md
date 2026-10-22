@@ -81,6 +81,9 @@ verified manually · ⚠ deployment responsibility / recommendation.
 | 6.4 | XSS | Views escape output with `esc()`; untrusted CV/Sheet text is never rendered as HTML | ◐ code review |
 | 6.5 | Invalid characters | CI4 `invalidchars` filter globally | ✔ |
 | 6.6 | Exact money arithmetic | `brick/math` decimals (no floats) for tax, ledger and payroll | ✔ |
+| 6.7 | Strict SQL mode | The app's own connection sets `STRICT_ALL_TABLES` (`strictOn` in `Config\Database`), so invalid data is rejected instead of silently truncated, whatever the server default | ✔ |
+| 6.8 | Errors shown safely | Business-rule errors that no controller catches are shown as their message (form → back with input, script call → JSON 422, page → themed page); every other exception keeps the generic error page in production and is logged. Missing uploads are logged at ERROR level | ✔ |
+| 6.9 | App folder inside `public_html` | The root `.htaccess` serves only `public/`; `.env`, `app/`, `writable/`, `vendor/`, `tests/` answer 403/404 (verified with Apache in a subfolder). Diagnostics fails if that `.htaccess` is missing in this layout | ✔ |
 
 ## 7. AI boundary (details in 06-AI-BOUNDARY.md)
 

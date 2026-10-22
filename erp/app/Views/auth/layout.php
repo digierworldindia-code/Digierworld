@@ -1,5 +1,6 @@
 <?php
-$hasLogo = brand_logo_state() === 'ok';
+$hasLogo     = brand_logo_state() === 'ok';
+$addressMiss = base_url_mismatch();
 ?>
 <!doctype html>
 <html lang="en-IN" data-bs-theme="dark">
@@ -24,6 +25,15 @@ $hasLogo = brand_logo_state() === 'ok';
             <?php endif ?>
             <div class="small text-muted mb-3">DGR Office — Business ERP</div>
         </div>
+        <?php if ($addressMiss !== null): ?>
+            <div class="alert alert-warning small" role="alert">
+                <strong>Site address setting does not match.</strong> This page was opened at
+                <span class="mono"><?= esc($addressMiss['detected']) ?></span> but <span class="mono">app.baseURL</span> in
+                <span class="mono">.env</span> is <span class="mono"><?= esc($addressMiss['configured']) ?></span>.
+                Links, styles and the page after sign-in follow app.baseURL, so set
+                <span class="mono">app.baseURL = '<?= esc($addressMiss['detected']) ?>'</span> in .env.
+            </div>
+        <?php endif ?>
         <?= $this->renderSection('main') ?>
     </div>
 </main>

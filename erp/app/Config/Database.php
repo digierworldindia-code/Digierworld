@@ -39,7 +39,7 @@ class Database extends Config
         'swapPre'      => '',
         'encrypt'      => false,
         'compress'     => false,
-        'strictOn'     => false,
+        'strictOn'     => true, // reject invalid data instead of silently truncating it (as the test suite runs)
         'failover'     => [],
         'port'         => 3306,
         'numberNative' => false,

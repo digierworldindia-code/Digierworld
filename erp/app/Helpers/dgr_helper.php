@@ -26,6 +26,52 @@ if (! function_exists('asset')) {
     }
 }
 
+if (! function_exists('base_url_mismatch')) {
+    /**
+     * When the page was opened at a different address than app.baseURL in
+     * .env, returns ['configured' => …, 'detected' => …]; otherwise null (and
+     * always null on the command line). The detected application root is the
+     * leading path that the request and the front controller share, exactly
+     * how CodeIgniter routes, so it is right both when the domain points at
+     * public/ and when the whole folder sits in public_html/<folder>/.
+     * A wrong baseURL breaks every link, stylesheet and post-sign-in redirect.
+     *
+     * @return array{configured: string, detected: string}|null
+     */
+    function base_url_mismatch(): ?array
+    {
+        $request = service('request');
+        if (is_cli() || ! $request instanceof \CodeIgniter\HTTP\IncomingRequest) {
+            return null;
+        }
+        $host   = strtolower((string) $request->getServer('HTTP_HOST'));
+        $script = explode('/', (string) $request->getServer('SCRIPT_NAME'));
+        $path   = explode('/', (string) parse_url('http://x' . $request->getServer('REQUEST_URI'), PHP_URL_PATH));
+        if ($host === '' || count($script) < 2) {
+            return null;
+        }
+        $root = [];
+        foreach ($script as $i => $segment) {
+            if ($i === 0) {
+                continue;
+            }
+            if (str_ends_with($segment, '.php') || ! isset($path[$i]) || rawurldecode($path[$i]) !== $segment) {
+                break;
+            }
+            $root[] = $segment;
+        }
+        $detected   = ($request->isSecure() ? 'https' : 'http') . '://' . $host . '/' . ($root === [] ? '' : implode('/', $root) . '/');
+        $configured = rtrim(config('App')->baseURL, '/') . '/';
+        $cfg        = parse_url($configured);
+        $sameHost   = strtolower((string) ($cfg['host'] ?? '')) . (isset($cfg['port']) ? ':' . $cfg['port'] : '') === $host;
+        $samePath   = rtrim((string) ($cfg['path'] ?? '/'), '/') . '/' === '/' . ($root === [] ? '' : implode('/', $root) . '/');
+        // an https page with an http baseURL loads its own links and styles insecurely
+        $sameScheme = ! $request->isSecure() || ($cfg['scheme'] ?? '') === 'https';
+
+        return $sameHost && $samePath && $sameScheme ? null : ['configured' => $configured, 'detected' => $detected];
+    }
+}
+
 if (! function_exists('brand_logo_state')) {
     /**
      * 'ok' when an active logo is uploaded and its file is on disk, 'missing'

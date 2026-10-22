@@ -51,6 +51,21 @@ final class MenuBuilder
         return $out;
     }
 
+    /** First menu page the signed-in user may open ('' is the dashboard), or null when the user may open none. */
+    public static function homeUrl(): ?string
+    {
+        $authz = service('authz');
+        foreach (config(Menu::class)->sections as $section) {
+            foreach ($section['items'] as $item) {
+                if ($authz->canAny($item['perms'])) {
+                    return trim($item['url'], '/');
+                }
+            }
+        }
+
+        return null;
+    }
+
     private static function isActive(string $url, string $path, string $current): bool
     {
         if ($url === '') {

@@ -2,6 +2,9 @@
 <?php $v = static fn (string $k, $d = '') => esc((string) (old($k) ?? ($a[$k] ?? $d))); $sel = static fn (string $k, string $val, string $d = '') => ((string) (old($k) ?? ($a[$k] ?? $d))) === $val ? 'selected' : ''; ?>
 <?= $this->section('content') ?>
 <?php if ($wizard): ?><?= view('settings/_wizard', ['current' => 'banks']) ?><?php endif ?>
+<?php if (! \App\Services\Settings\SettingsStore::encryptionReady()): ?>
+<div class="alert alert-warning"><i class="bi bi-exclamation-triangle me-1"></i> This server has no encryption key yet, so account numbers and CIF cannot be saved. The administrator must run <span class="mono">php spark key:generate</span> once in the application folder and keep a safe copy of <span class="mono">.env</span>.</div>
+<?php endif ?>
 <form method="post" action="<?= site_url($a ? 'settings/banks/' . $a['id'] : 'settings/banks') ?>" autocomplete="off">
 <?= csrf_field() ?>
 <?php if ($wizard): ?><input type="hidden" name="wizard" value="1"><?php endif ?>

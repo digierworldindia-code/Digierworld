@@ -40,4 +40,27 @@ final class SignInFlowTest extends DgrTestCase
         $res->assertRedirectTo(site_url('login'));
         $this->assertStringEndsWith('billing/documents', (string) session()->getTempdata('beforeLoginUrl'));
     }
+
+    public function testHomeOpensTheFirstModuleOfARoleWithoutTheDashboard(): void
+    {
+        $db = db_connect();
+        $db->table('roles')->insert(['code' => 'receipts_clerk_' . bin2hex(random_bytes(3)), 'name' => 'Receipts clerk', 'is_super' => 0, 'is_system' => 0, 'is_active' => 1]);
+        $roleId = (int) $db->insertID();
+        $db->table('role_permissions')->insert(['role_id' => $roleId, 'permission_id' => (int) $db->table('permissions')->where('perm_key', 'finance.receipt.view')->get()->getRow()->id]);
+        $clerk = $this->makeUser((string) $db->table('roles')->where('id', $roleId)->get()->getRow()->code, 'Receipts Clerk');
+        $this->loginAs($clerk);
+        $this->get('/')->assertRedirectTo(site_url('finance/receipts'));
+        $this->assertSame(403, $this->statusOf(fn () => $this->get('dashboard/data')), 'dashboard data still needs dashboard.view');
+
+        $db->table('role_permissions')->where('role_id', $roleId)->delete();
+        service('authz')->forget();
+        $res = $this->get('/');
+        $res->assertOK();
+        $res->assertSee('No modules are assigned to your account yet');
+
+        $this->loginAs($this->makeUser('employee', 'Plain Employee'));
+        $res = $this->get('/');
+        $res->assertOK();
+        $res->assertSee('Dashboard');
+    }
 }

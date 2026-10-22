@@ -119,7 +119,7 @@ class FileStorage
     {
         $full = $this->resolve($file);
         if ($full === null) {
-            log_message('warning', 'Stored file {id} ({path}) is missing on disk; restore writable/uploads from the files backup.', ['id' => $file['id'], 'path' => $file['disk_path']]);
+            log_message('error', 'Stored file {id} ({path}) is missing on disk; restore writable/uploads from the files backup.', ['id' => $file['id'], 'path' => $file['disk_path']]);
         }
 
         return $full;

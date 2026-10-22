@@ -27,9 +27,12 @@ class Diagnostics
 
         // PHP
         $add('PHP', 'PHP version', version_compare(PHP_VERSION, '8.3.0', '>=') ? 'ok' : (version_compare(PHP_VERSION, '8.2.0', '>=') ? 'warn' : 'fail'), PHP_VERSION . ' (8.3+ recommended)');
-        foreach (['intl', 'mbstring', 'json', 'mysqli', 'curl', 'openssl', 'gd', 'zip', 'xml', 'dom', 'xmlwriter', 'fileinfo', 'iconv', 'ctype', 'sodium'] as $ext) {
-            $add('PHP', "ext-{$ext}", extension_loaded($ext) ? 'ok' : 'fail', extension_loaded($ext) ? 'loaded' : 'missing — install/enable in PHP');
+        // required by the application or its locked dependencies (composer.lock)
+        foreach (['intl', 'mbstring', 'json', 'mysqli', 'curl', 'openssl', 'gd', 'zip', 'xml', 'dom', 'xmlwriter', 'fileinfo', 'iconv', 'ctype'] as $ext) {
+            $add('PHP', "ext-{$ext}", extension_loaded($ext) ? 'ok' : 'fail', extension_loaded($ext) ? 'loaded' : 'missing — enable it in the hosting panel (PHP extensions)');
         }
+        // sodium is only suggested by CodeIgniter and firebase/php-jwt; encryption here uses the OpenSSL driver
+        $add('PHP', 'ext-sodium (optional)', 'ok', extension_loaded('sodium') ? 'loaded' : 'not loaded — not needed: DGR Office encrypts with OpenSSL');
         $add('PHP', 'memory_limit', $this->bytes((string) ini_get('memory_limit')) >= 256 * 1048576 || ini_get('memory_limit') === '-1' ? 'ok' : 'warn', (string) ini_get('memory_limit') . ' (256M+ recommended for PDF/XLSX)');
         $add('PHP', 'upload_max_filesize', (string) ini_get('upload_max_filesize'), (string) ini_get('upload_max_filesize'));
         $out[array_key_last($out)][2] = $this->bytes((string) ini_get('upload_max_filesize')) >= 8 * 1048576 ? 'ok' : 'warn';
@@ -55,7 +58,11 @@ class Diagnostics
             $mode = (string) ($this->db->query('SELECT @@sql_mode m')->getRow()->m ?? '');
             $isMaria = stripos($ver, 'mariadb') !== false;
             $add('Database', 'Connection', 'ok', $this->db->getDatabase() . ' @ ' . $this->db->hostname);
-            $add('Database', 'Server version', ! $isMaria && version_compare($ver, '8.0.16', '>=') ? 'ok' : 'warn', $ver . ($isMaria ? ' (MariaDB: CHECK constraints/JSON behave differently — MySQL 8 is the supported target)' : ''));
+            $num  = preg_match('/^\d+(\.\d+)+/', $ver, $m) ? $m[0] : '0';
+            $okDb = $isMaria ? version_compare($num, '10.6', '>=') : version_compare($num, '8.0.16', '>=');
+            $add('Database', 'Server version', $okDb ? 'ok' : 'warn', $ver . ($isMaria
+                ? ($okDb ? ' — supported (full test suite passes on MariaDB 11.8)' : ' — MariaDB 10.6 or newer required')
+                : ($okDb ? '' : ' — MySQL 8.0.16 or newer required')));
             $add('Database', 'Strict SQL mode', str_contains($mode, 'STRICT_TRANS_TABLES') ? 'ok' : 'warn', $mode ?: '(empty)');
             $charset = (string) ($this->db->query('SELECT DEFAULT_CHARACTER_SET_NAME c FROM information_schema.SCHEMATA WHERE SCHEMA_NAME = DATABASE()')->getRow()->c ?? '');
             $add('Database', 'Charset', $charset === 'utf8mb4' ? 'ok' : 'warn', $charset);
@@ -85,7 +92,17 @@ class Diagnostics
             $add('Filesystem', "writable/{$dir}", $ok ? 'ok' : 'fail', $ok ? 'writable' : 'not writable — chmod/chown for the web server user');
         }
         $uploadsPublic = str_starts_with(realpath(WRITEPATH) ?: '', realpath(FCPATH) ?: '#');
-        $add('Filesystem', 'Private files outside web root', $uploadsPublic ? 'fail' : 'ok', $uploadsPublic ? 'writable/ is inside public web root!' : 'writable/ is outside public/');
+        // whole folder inside the web root (e.g. public_html/dgr), served through the root .htaccess: only the .htaccess files protect it
+        $request     = service('request');
+        $throughRoot = ! is_cli() && str_ends_with((string) $request->getServer('SCRIPT_NAME'), '/public/index.php')
+            && ! str_contains((string) parse_url('http://x' . $request->getServer('REQUEST_URI'), PHP_URL_PATH), '/public/');
+        $guarded = is_file(ROOTPATH . '.htaccess') && is_file(WRITEPATH . '.htaccess');
+        $add('Filesystem', 'Private files outside web root', $uploadsPublic || ($throughRoot && ! $guarded) ? 'fail' : 'ok', match (true) {
+            $uploadsPublic => 'writable/ is inside public/ — move it out of the web root',
+            $throughRoot   => $guarded ? 'the whole app folder is inside the web root and served through its root .htaccess, which blocks .env, app/, writable/ and vendor/ — keep both .htaccess files'
+                : 'the app folder is inside the web root but .htaccess or writable/.htaccess is missing — .env and uploads may be downloadable; restore them from the release zip',
+            default        => 'writable/ is outside public/',
+        });
         // files the database lists but the disk no longer has (folder replaced on upgrade, uploads not restored, demo SQL from another install)
         try {
             $files   = service('files');
@@ -138,9 +155,28 @@ class Diagnostics
         // Security
         $env = ENVIRONMENT;
         $add('Security', 'Environment', $env === 'production' ? 'ok' : 'warn', $env . ($env !== 'production' ? ' — set CI_ENVIRONMENT = production on live servers' : ''));
-        $add('Security', 'Force HTTPS', config('App')->forceGlobalSecureRequests ? 'ok' : 'warn', config('App')->forceGlobalSecureRequests ? 'on' : 'off — enable app.forceGlobalSecureRequests after installing SSL');
+        $https = str_starts_with(config('App')->baseURL, 'https://');
+        $force = config('App')->forceGlobalSecureRequests;
+        $add('Security', 'Force HTTPS', $force && $https ? 'ok' : 'warn', match (true) {
+            $force && $https => 'on',
+            $force           => 'on, but app.baseURL starts with http:// — change it to https://',
+            $https           => 'off — set app.forceGlobalSecureRequests = true and cookie.secure = true in .env (SSL is in use)',
+            default          => 'off — install SSL, then use an https:// app.baseURL and set app.forceGlobalSecureRequests = true',
+        });
         $key = (string) config('Encryption')->key;
-        $add('Security', 'Encryption key', strlen($key) >= 32 ? 'ok' : 'fail', strlen($key) >= 32 ? 'set (not shown)' : 'missing — run php spark key:generate and back it up');
+        $add('Security', 'Encryption key', $key === '' ? 'fail' : (strlen($key) >= 32 ? 'ok' : 'warn'), match (true) {
+            $key === ''        => 'missing or unreadable — bank numbers and passwords cannot be saved. Run php spark key:generate once in the application folder and back up .env',
+            strlen($key) < 32 => 'set but shorter than 32 bytes — keep it (existing data depends on it); use key:generate only on a new install',
+            default            => 'set (not shown) — keep a safe copy of .env; changing it makes saved bank numbers unreadable',
+        });
+        $base = config('App')->baseURL;
+        $placeholder = str_contains($base, 'example.com') || str_starts_with($base, 'http://localhost:8080');
+        $add('Security', 'Site address (app.baseURL)', $placeholder ? ($env === 'production' ? 'fail' : 'warn') : 'ok', $placeholder
+            ? "{$base} is a placeholder — set app.baseURL in .env to the address users open, with a trailing slash (e.g. https://your-domain/dgr/)"
+            : $base);
+        if (($miss = base_url_mismatch()) !== null) {
+            $add('Security', 'Site address matches this page', 'fail', "this page was opened at {$miss['detected']} but app.baseURL is {$miss['configured']} — set app.baseURL = '{$miss['detected']}' in .env");
+        }
         $supers = service('users')->activeSuperAdminCount();
         $add('Security', 'Active Owner/Super Admins', $supers >= 1 ? ($supers > 3 ? 'warn' : 'ok') : 'fail', (string) $supers . ($supers > 3 ? ' — keep full-access accounts to a minimum' : ''));
         $demo = $this->db->table('auth_identities')->like('secret', '@demo.dgr.local', 'before')->countAllResults();

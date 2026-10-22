@@ -2,12 +2,12 @@
 # Build a deployable release archive: the committed source tree plus the
 # production vendor/ folder resolved from composer.lock.
 #
-#   scripts/build-release.sh 1.1.1      → dist/dgr-office-1.1.1.zip (+ .sha256)
+#   scripts/build-release.sh 1.2.0      → dist/dgr-office-1.2.0.zip (+ .sha256)
 #
 # Never includes .env, uploads, backups, logs or dev dependencies.
 set -euo pipefail
 
-VERSION="${1:?usage: scripts/build-release.sh <version, e.g. 1.1.1>}"
+VERSION="${1:?usage: scripts/build-release.sh <version, e.g. 1.2.0>}"
 [[ "$VERSION" =~ ^[0-9A-Za-z.+-]+$ ]] || { echo "Invalid version: $VERSION" >&2; exit 1; }
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -31,7 +31,9 @@ mkdir -p "$STAGE"
 # run from the top level: inside a subdirectory git archive filters paths by that prefix
 git -C "$(git rev-parse --show-toplevel)" archive --format=tar "$TREE" | tar -x -C "$STAGE"
 [[ -f "$STAGE/composer.json" ]] || { echo "git archive produced no files" >&2; exit 1; }
-rm -rf "$STAGE/tests" "$STAGE/dist" "$STAGE/phpunit.dist.xml"
+# tests/ and phpunit.dist.xml stay (outside public/, blocked by the root .htaccess); running them needs
+# `composer install` with dev dependencies and a disposable test database
+rm -rf "$STAGE/dist"
 
 # every static asset the views reference (literal paths and asset('…') calls) must be in the committed tree
 missing=0
@@ -87,7 +89,8 @@ php -d display_errors=1 -r '
 
 mkdir -p "$OUT"
 rm -f "$OUT/$NAME.zip" "$OUT/$NAME.zip.sha256"
-(cd "$WORK" && zip -qr -X "$OUT/$NAME.zip" dgr-office)
+# files at the top of the zip (no wrapper folder): extract straight into the target folder
+(cd "$STAGE" && zip -qr -X "$OUT/$NAME.zip" .)
 (cd "$OUT" && sha256sum "$NAME.zip" > "$NAME.zip.sha256")
 
 echo "Built $OUT/$NAME.zip ($(du -h "$OUT/$NAME.zip" | cut -f1)), vendor $(du -sh "$STAGE/vendor" | cut -f1)"

@@ -152,6 +152,12 @@ class Authorization
         return array_keys($this->load($userId)['perms']);
     }
 
+    /** True when the permission key exists in the registry (Config\Permissions). */
+    public function isRegistered(string $perm): bool
+    {
+        return isset($this->registry()[$perm]);
+    }
+
     public function can(string $perm, ?int $userId = null): bool
     {
         $userId ??= $this->currentUserId();

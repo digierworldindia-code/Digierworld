@@ -1,13 +1,16 @@
 # DGR Office — Deployment guide
 
 This guide covers **XAMPP (Windows)**, **local Apache (Linux/macOS)**,
-**cPanel shared hosting** and an **Ubuntu VPS**. Every environment uses
+**cPanel shared hosting**, **Hostinger** (§5a) and an **Ubuntu VPS**. Every environment uses
 the same steps; only the web-server and cron set-up differ.
 
 > Golden rules
-> 1. The web server's document root is the **`public/`** folder — never the
->    project folder. `.env`, `app/`, `vendor/` and `writable/` (uploads,
->    backups, Google credentials) must not be reachable from a browser.
+> 1. The web server's document root is the **`public/`** folder. If your
+>    host only lets you use a folder inside `public_html`, put the whole
+>    project folder there: its root `.htaccess` then serves `public/` and
+>    blocks everything else (§5a). `.env`, `app/`, `vendor/` and `writable/`
+>    (uploads, backups, Google credentials) must never be reachable from a
+>    browser.
 > 2. `.env` and the **encryption key** are secrets. Back up the key
 >    separately from database backups: without it, encrypted bank account
 >    numbers, CIF and employee bank details cannot be read.
@@ -20,7 +23,7 @@ the same steps; only the web-server and cron set-up differ.
 
 | Option | Contents | When |
 | --- | --- | --- |
-| **Release archive** `dgr-office-<version>.zip` | Application + production `vendor/` (no dev tools), `.env.example`, docs, empty `writable/` | Shared hosting / no Composer on the server |
+| **Release archive** `dgr-office-<version>.zip` | Application + production `vendor/` (no dev tools), `.env.example`, docs, tests, empty `writable/`. The files sit at the top of the zip (no extra folder): extract it into the folder you want the app in | Shared hosting / no Composer on the server |
 | **Git checkout** of `erp/` + `composer install --no-dev --optimize-autoloader` | Same, with dependencies resolved from `composer.lock` | VPS / developer machines |
 
 Both are identical at runtime: `composer.lock` pins every dependency, and
@@ -29,7 +32,8 @@ the release archive is built from that lock file by
 
 ## 2. Common steps (all environments)
 
-1. **Create the database and a dedicated user** (MySQL 8, utf8mb4):
+1. **Create the database and a dedicated user** (MySQL 8.0.16+ or MariaDB
+   10.6+, utf8mb4; the full test suite passes on MySQL 8.0 and MariaDB 11.8):
 
    ```sql
    CREATE DATABASE dgr_office CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -46,7 +50,7 @@ the release archive is built from that lock file by
    | Key | Value |
    | --- | --- |
    | `CI_ENVIRONMENT` | `production` (use `development` only on your own PC) |
-   | `app.baseURL` | Full public URL with trailing slash, e.g. `https://office.example.in/` |
+   | `app.baseURL` | The address people open, with trailing slash and folder if any, e.g. `https://office.example.in/` or `https://example.in/dgr/` |
    | `app.appTimezone` | `Asia/Kolkata` (the DB session time zone follows it automatically) |
    | `database.default.*` | Host, database, user, password from step 1 |
    | `encryption.key` | Generate with `php spark key:generate` (writes it into `.env`) |
@@ -79,13 +83,14 @@ the release archive is built from that lock file by
 1. Install a XAMPP build that ships **PHP 8.3 or newer** (check with
    `C:\xampp\php\php.exe -v`). In `C:\xampp\php\php.ini` make sure these
    lines are **not** commented out: `extension=intl`, `extension=gd`,
-   `extension=zip`, `extension=sodium`, `extension=mysqli`,
+   `extension=zip`, `extension=mysqli`,
    `extension=fileinfo`, `extension=curl`, `extension=openssl`,
    `extension=mbstring`, and set the PHP limits from §2. Restart Apache.
-2. **Database:** XAMPP bundles **MariaDB**, which is *not tested* with this
-   app. Install **MySQL 8 Community Server** (Windows installer) and use
-   it instead, or stop XAMPP's MySQL module and run MySQL 8 on port 3306.
-3. Unzip the release to `C:\xampp\dgr-office` (outside `htdocs`).
+2. **Database:** XAMPP bundles **MariaDB**. MariaDB 10.6 or newer works
+   (tested on 11.8); older XAMPP builds ship MariaDB 10.4, so use a newer
+   XAMPP or install MySQL 8 Community Server instead.
+3. Create `C:\xampp\dgr-office` (outside `htdocs`) and unzip the release
+   into it.
 4. Add a virtual host — `C:\xampp\apache\conf\extra\httpd-vhosts.conf`:
 
    ```apache
@@ -138,14 +143,16 @@ For quick local trials without Apache: `php spark serve --port 8080` and
 
 1. **PHP:** *MultiPHP Manager* → set the domain/subdomain to **PHP 8.3**;
    *Select PHP Version → Extensions* → enable `intl`, `gd`, `zip`,
-   `sodium`, `mysqli`, `fileinfo`, `curl`, `mbstring`, `xml`, `dom`,
+   `mysqli`, `fileinfo`, `curl`, `mbstring`, `xml`, `dom`,
    `xmlwriter`, `iconv`; *MultiPHP INI Editor* → set the PHP limits from §2.
 2. **Database:** *MySQL® Databases* → create the database and user, add
    the user with **ALL PRIVILEGES**. cPanel prefixes names
    (`cpuser_dgroffice`); use the full prefixed names in `.env`. Confirm the
-   server runs MySQL 8 (*phpMyAdmin* shows the version).
+   server runs MySQL 8.0.16+ or MariaDB 10.6+ (*phpMyAdmin* shows the
+   version).
 3. **Upload:** *File Manager* → upload the release zip to your **home
-   directory** (e.g. `/home/cpuser/`), extract to `/home/cpuser/dgr-office`.
+   directory** (e.g. `/home/cpuser/`), create `/home/cpuser/dgr-office` and
+   extract the zip into it.
    Do **not** extract inside `public_html`.
 4. **Document root:** *Domains* (or *Subdomains*) → create
    `office.your-domain.in` with document root
@@ -171,6 +178,63 @@ For quick local trials without Apache: `php spark serve --port 8080` and
    `cd /home/cpuser/dgr-office && /opt/cpanel/ea-php83/root/usr/bin/php spark dgr:cron >> writable/logs/cron.log 2>&1`
    and a daily backup job (§7). Set the cron e-mail to your address once to
    see errors, then clear it.
+
+## 5a. Hostinger (hPanel)
+
+Both layouts below were tested end to end (Apache with the same
+`.htaccess` handling Hostinger's LiteSpeed uses, PHP 8.3, MariaDB 11.8,
+production mode): sign-in, sign-out, every role's pages, invoice and
+payslip PDFs with and without branding, and that `.env`, `app/`,
+`writable/` and `vendor/` cannot be downloaded.
+
+1. **PHP:** *Advanced → PHP Configuration* → PHP **8.3**. On the
+   *Extensions* tab make sure `intl`, `gd`, `zip`, `mysqli`, `fileinfo`,
+   `curl`, `mbstring`, `xml`, `dom`, `iconv` are on (`sodium` is not
+   needed). On *PHP options* set `memory_limit` 256M, `upload_max_filesize`
+   20M, `post_max_size` 25M.
+2. **Database:** *Databases → Management* → create the database and user.
+   Hostinger prefixes both names (e.g. `u123456789_dgr`); use the full
+   names in `.env`, with `database.default.hostname = localhost`.
+3. **Files**, choose one:
+   * **A. Folder in `public_html`** (simplest; e.g. `https://your-domain.com/dgr/`):
+     in *File Manager* create `public_html/dgr`, upload the zip into it and
+     extract it there. The project's root `.htaccess` serves `public/` and
+     blocks everything else; keep it.
+   * **B. Application outside `public_html`:** extract the zip into e.g.
+     `domains/your-domain.com/dgr-office`, copy the *contents* of its
+     `public/` folder into `public_html/dgr`, and in
+     `public_html/dgr/index.php` change
+     `require FCPATH . '../app/Config/Paths.php';` to the path from there to
+     the app, e.g. `require FCPATH . '../../dgr-office/app/Config/Paths.php';`.
+4. **`.env`:** copy `.env.example` to `.env` (same folder as `spark`) and set
+   `CI_ENVIRONMENT = production`, `app.baseURL = 'https://your-domain.com/dgr/'`
+   (the exact address, with the folder and the trailing slash) and the
+   `database.default.*` values.
+5. **Commands** (*Advanced → SSH Access*, then `cd` into the folder that
+   contains `spark`; `php -v` must say 8.3):
+
+   ```bash
+   php spark key:generate          # once per install; never on a working install
+   php spark dgr:install           # tables + base data (safe to re-run)
+   php spark dgr:create-owner --email you@your-domain.com --name "Your Name"
+   php spark dgr:diagnostics
+   ```
+
+   Instead of `dgr:install` you can import `dgr-office-1.0.0-clean.sql` in
+   phpMyAdmin (§12). Without SSH, run each command once as a temporary cron
+   job (§5 step 5).
+6. **Permissions:** PHP runs as your hosting user, so the default `755`
+   folders and `644` files are right and `writable/` is already writable.
+   Never use `777`.
+7. **Cron** (*Advanced → Cron Jobs*, custom, every minute), with the full
+   path File Manager shows for your folder:
+   `php /home/u123456789/domains/your-domain.com/public_html/dgr/spark dgr:cron`
+   and a daily `… spark dgr:backup --files --keep 14`.
+8. **SSL:** once `https://` works, set `app.baseURL` to the `https://`
+   address, `app.forceGlobalSecureRequests = true` and `cookie.secure = true`.
+9. Open the address. If the sign-in page shows **Site address setting does
+   not match**, set `app.baseURL` exactly as it says. Then check
+   *Admin → Diagnostics*.
 
 ## 6. Ubuntu 24.04 VPS (Nginx + PHP-FPM)
 
@@ -293,8 +357,8 @@ are. **Never delete or replace the old folder before copying
 `writable/` out of it.** With only a hosting *File Manager* (Hostinger,
 cPanel):
 
-1. Upload the new zip next to the old folder and extract it (it creates
-   `dgr-office/`; rename it, e.g. `dgr-office-new`).
+1. Create a new folder next to the old one (e.g. `dgr-office-new`), upload
+   the new zip into it and extract it there.
 2. Copy `.env` from the old folder into the new one, and copy the old
    `writable/` folder over the new, empty `writable/` (replace).
 3. Rename the old folder (e.g. `dgr-office-old`) and the new one to the
@@ -322,7 +386,7 @@ because the sign-in page's logo needed a session. Fixed in 1.1.1.)
 
 ```bash
 cd erp
-scripts/build-release.sh 1.1.1        # → dist/dgr-office-1.1.1.zip + .sha256
+scripts/build-release.sh 1.2.0        # → dist/dgr-office-1.2.0.zip + .sha256
 ```
 
 The script exports the committed tree (`git archive`), runs
@@ -374,7 +438,8 @@ suggestions, lead sources) and **no users, company identity, bank details
 or demo data**. Use it when it is easier to import SQL (phpMyAdmin →
 Import) than to run migrations:
 
-1. Create an **empty** MySQL 8 database (utf8mb4) and import the file. It
+1. Create an **empty** MySQL 8 / MariaDB 10.6+ database (utf8mb4) and
+   import the file (verified on MySQL 8.0 and MariaDB 11.8). It
    drops and recreates the DGR Office tables it contains.
 2. Point `.env` at the database and run `php spark key:generate`,
    `php spark dgr:install` (reports nothing pending — it is safe to run)

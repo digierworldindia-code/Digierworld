@@ -1,0 +1,20 @@
+# DGR Office: keep this file.
+#
+# It is only read when this whole application folder sits inside the web
+# root, e.g. Hostinger public_html/dgr/ opened as https://your-domain/dgr/.
+# Every request is served from public/ (whose own .htaccess routes it to
+# index.php); app/, writable/, vendor/, tests/, .env and every other file
+# outside public/ can never be downloaded. If the domain's document root
+# points at public/ directly, this file is not used at all.
+
+Options -Indexes
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
+
+<IfModule !mod_rewrite.c>
+    # without URL rewriting nothing in this folder may be served
+    Require all denied
+</IfModule>

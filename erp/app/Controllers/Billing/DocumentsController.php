@@ -295,7 +295,7 @@ class DocumentsController extends BaseController
                 ->where(['a.entity_type' => 'billing_document', 'a.entity_id' => $doc['id']])->orderBy('a.id')->get()->getResultArray(),
             'canFinalize' => $doc['status'] === 'draft' && $this->access()->can('finalize', $doc['doc_type']),
             'canEdit'     => $doc['status'] === 'draft' && $this->access()->can('edit_draft', $doc['doc_type']),
-            'canCancel'   => $doc['status'] === 'finalized' && $this->access()->can('cancel', $doc['doc_type']) && ! in_array($doc['doc_type'], ['estimate', 'quotation', 'proforma'], true),
+            'canCancel'   => $doc['status'] === 'finalized' && ! in_array($doc['doc_type'], ['estimate', 'quotation', 'proforma'], true) && $this->access()->can('cancel', $doc['doc_type']),
             'canPdf'      => $this->access()->can('download', $doc['doc_type']) || $this->access()->can('print', $doc['doc_type']) || ($doc['status'] === 'draft' && $this->access()->can('create_draft', $doc['doc_type'])),
             'canSign'     => $doc['status'] === 'draft' && service('billing')->canSign($doc['doc_type'], (int) $this->userId),
             'canOverride' => $this->can('billing.tax.override'),

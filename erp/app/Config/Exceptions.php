@@ -101,6 +101,11 @@ class Exceptions extends BaseConfig
      */
     public function handler(int $statusCode, Throwable $exception): ExceptionHandlerInterface
     {
+        // business-rule messages are written for users: show them instead of a 500 page (not on the command line)
+        if ($exception instanceof \App\Exceptions\BusinessRuleException && ! is_cli()) {
+            return new \App\Libraries\BusinessRuleExceptionHandler();
+        }
+
         return new ExceptionHandler($this);
     }
 }

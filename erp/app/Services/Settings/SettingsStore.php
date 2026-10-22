@@ -2,7 +2,9 @@
 
 namespace App\Services\Settings;
 
+use App\Exceptions\BusinessRuleException;
 use CodeIgniter\Database\BaseConnection;
+use CodeIgniter\Encryption\EncrypterInterface;
 use Throwable;
 
 /**
@@ -81,7 +83,7 @@ class SettingsStore
     {
         $stored = $value;
         if ($secret && $value !== null && $value !== '') {
-            $stored = base64_encode(service('encrypter')->encrypt($value));
+            $stored = base64_encode(self::encrypter()->encrypt($value));
         }
         $userId = service('authz')->currentUserId();
         $this->db->query(
@@ -110,6 +112,29 @@ class SettingsStore
         }
     }
 
+    /**
+     * True when .env provides encryption.key (php spark key:generate writes it).
+     * Without it CodeIgniter cannot encrypt ("Encrypter needs a starter key").
+     */
+    public static function encryptionReady(): bool
+    {
+        $key = config('Encryption')->key;
+
+        return is_string($key) && $key !== '';
+    }
+
+    /** The encrypter, or a clear, safe message when the key is missing; never generates or changes a key. */
+    private static function encrypter(): EncrypterInterface
+    {
+        if (! self::encryptionReady()) {
+            throw new BusinessRuleException('This server has no encryption key yet, so bank numbers and passwords cannot be saved. '
+                . 'The administrator must run "php spark key:generate" once in the application folder (it writes encryption.key into .env) '
+                . 'and keep a safe copy of that .env file. Never replace the key afterwards: values already saved with it could no longer be read.');
+        }
+
+        return service('encrypter');
+    }
+
     /** Encrypt an arbitrary sensitive value (bank numbers, CIF) for column storage. */
     public static function encrypt(?string $plain): ?string
     {
@@ -117,7 +142,7 @@ class SettingsStore
             return null;
         }
 
-        return base64_encode(service('encrypter')->encrypt($plain));
+        return base64_encode(self::encrypter()->encrypt($plain));
     }
 
     public static function decrypt(?string $cipher): ?string
