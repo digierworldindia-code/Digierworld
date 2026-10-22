@@ -18,7 +18,9 @@ class BackupCommand extends BaseCommand
     public function run(array $params)
     {
         try {
-            $names = (new BackupService(db_connect()))->create(CLI::getOption('files') !== null, (int) (CLI::getOption('keep') ?: 14));
+            $service = new BackupService(db_connect());
+            $names   = $service->create(CLI::getOption('files') !== null, (int) (CLI::getOption('keep') ?: 14));
+            $check   = $service->verify($names[0]); // read the SQL file back: complete, every table, every row
         } catch (Throwable $e) {
             CLI::error('Backup failed: ' . $e->getMessage());
 
@@ -27,6 +29,7 @@ class BackupCommand extends BaseCommand
         foreach ($names as $n) {
             CLI::write('Created writable/backups/' . $n . ' (' . number_format((int) filesize(BackupService::dir() . $n) / 1024, 1) . ' KB)', 'green');
         }
+        CLI::write("Verified: {$check['tables']} tables, " . number_format($check['rows']) . ' rows.', 'green');
         service('audit')->asActor('cron')->log('backup.created', 'backup', null, null, ['files' => $names], 'Backup created from CLI');
         CLI::write('Copy backups off the server regularly, and keep the .env encryption key in a separate safe place.', 'yellow');
 

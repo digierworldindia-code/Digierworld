@@ -187,7 +187,7 @@ production mode): sign-in, sign-out, every role's pages, invoice and
 payslip PDFs with and without branding, and that `.env`, `app/`,
 `writable/` and `vendor/` cannot be downloaded.
 
-1. **PHP:** *Advanced → PHP Configuration* → PHP **8.3**. On the
+1. **PHP:** *Advanced → PHP Configuration* → PHP **8.2 or 8.3**. On the
    *Extensions* tab make sure `intl`, `gd`, `zip`, `mysqli`, `fileinfo`,
    `curl`, `mbstring`, `xml`, `dom`, `iconv` are on (`sodium` is not
    needed). On *PHP options* set `memory_limit` 256M, `upload_max_filesize`
@@ -211,7 +211,7 @@ payslip PDFs with and without branding, and that `.env`, `app/`,
    (the exact address, with the folder and the trailing slash) and the
    `database.default.*` values.
 5. **Commands** (*Advanced → SSH Access*, then `cd` into the folder that
-   contains `spark`; `php -v` must say 8.3):
+   contains `spark`; `php -v` must say 8.2 or newer):
 
    ```bash
    php spark key:generate          # once per install; never on a working install
@@ -220,7 +220,7 @@ payslip PDFs with and without branding, and that `.env`, `app/`,
    php spark dgr:diagnostics
    ```
 
-   Instead of `dgr:install` you can import `dgr-office-1.0.0-clean.sql` in
+   Instead of `dgr:install` you can import `dgr-office-1.3.0-clean.sql` in
    phpMyAdmin (§12). Without SSH, run each command once as a temporary cron
    job (§5 step 5).
 6. **Permissions:** PHP runs as your hosting user, so the default `755`
@@ -351,6 +351,20 @@ as in-app notifications; email 2FA and magic links stay off.
 `.env` and `writable/`, run `php spark dgr:install` (applies new
 migrations only), `php spark cache:clear`, then `dgr:diagnostics`.
 
+When migrations are pending on an existing installation, `dgr:install`
+first writes `writable/backups/dgr-<date>-<time>.sql.gz` and reads it
+back to verify it (every table, every row count). If the backup cannot
+be made or verified it stops **before** changing anything. Download that
+file before continuing. (`--no-backup` skips it — only if you have just
+made and checked one yourself.) Upgrading 1.2.0 → 1.3.0 applies three
+additive migrations (`AddRoleLandingUrl`, `AddPerformanceIndexes`,
+`MarkAuditCanonicalHashing`); they add one nullable column, four indexes
+and two settings rows and change no existing data. Tested on a copy of the
+database you supplied: only `migrations` (+3) and `app_settings` (+2)
+changed row counts, every foreign key checked without orphans, `CHECK
+TABLE` OK for all 122 tables, and the automatic backup restored to exactly
+the pre-upgrade database.
+
 `writable/uploads/` holds every uploaded logo, signature, stamp, CV,
 statement and generated payslip; the database only records where they
 are. **Never delete or replace the old folder before copying
@@ -386,7 +400,7 @@ because the sign-in page's logo needed a session. Fixed in 1.1.1.)
 
 ```bash
 cd erp
-scripts/build-release.sh 1.2.0        # → dist/dgr-office-1.2.0.zip + .sha256
+scripts/build-release.sh 1.3.0        # → dist/dgr-office-1.3.0.zip + .sha256
 ```
 
 The script exports the committed tree (`git archive`), runs
@@ -445,5 +459,62 @@ Import) than to run migrations:
    `php spark dgr:install` (reports nothing pending — it is safe to run)
    and `php spark dgr:create-owner --email … --name "…"`.
 
-Verified: imported into an empty database, then install, owner creation,
-diagnostics (no blocking problems) and a 332-page crawl as the owner.
+Use it **only for a new installation**. An existing installation is
+upgraded with `php spark dgr:install` (§10); importing this file would
+replace its tables.
+
+Verified for 1.3.0: imports into an empty MySQL 8.0 and MariaDB 11.8
+database (122 tables, starter roles with their landing pages); then
+`dgr:install` reports nothing pending, `dgr:create-owner` works and
+`dgr:diagnostics` shows no failed checks (only the expected warnings of a
+local test server: no cron yet, no SMTP/Sheets/AI, development mode).
+
+## 13. Gateway timeouts (504) and slow pages
+
+A 504 means the web server's gateway (LiteSpeed/Apache/Nginx in front of
+PHP) waited longer than its limit — often 60 s — for PHP to answer. What
+1.3.0 does inside the application (details in CHANGELOG 1.3.0):
+
+* Downloads (PDFs, Excel/CSV exports, stored files, backups) release the
+  PHP session lock at once, and Sheets sync, AI review and on-screen
+  backups release it around their work, so one slow request no longer
+  holds up the same user's other tabs.
+* Exports stream to disk (flat memory), long statements are paged, the
+  N+1 query screens were rewritten and dashboard counts use indexes.
+* "Sync now" works for at most `app.webWorkSeconds` (default 20) and an
+  on-screen AI review for at most `app.webAiSeconds` (default 45); cron
+  (`php spark dgr:cron`) continues long work in the background.
+* Requests slower than `app.slowRequestMs` (default 3000) are written to
+  `writable/logs/log-<date>.log` as `SLOW REQUEST <ms> ms GET /path …,
+  <n> SQL queries …, peak memory …`. *Admin › Diagnostics* counts them.
+
+**Checks that need the hosting panel or server administrator** (the
+application cannot see or change these; nothing here was changed on your
+server):
+
+1. **PHP version and OPcache** — PHP 8.2+ with OPcache on (Diagnostics
+   shows both). hPanel: *Advanced → PHP Configuration*.
+2. **PHP limits** — `max_execution_time` ≥ 60, `memory_limit` ≥ 256M
+   (Diagnostics shows both). The gateway timeout itself is set by the
+   host (LiteSpeed/hPanel); it cannot be raised from the app.
+3. **Concurrent PHP workers / entry processes** — shared plans allow a
+   limited number of simultaneous PHP processes; when they are all busy,
+   further requests queue and time out. hPanel → *Hosting → Resource
+   usage* shows "Entry processes" / "Max processes" hits. If they are
+   reached, upgrade the plan or reduce parallel work.
+4. **Database limits** — `max_user_connections` and slow queries on the
+   server. phpMyAdmin → *Status* or ask the host for the MySQL slow log.
+5. **Cron is running** — Diagnostics shows the last cron run. Without
+   cron, Sheets jobs, reminders and recurring invoices pile up and "Sync
+   now" has more to do.
+6. **`zlib.output_compression` off** — CodeIgniter refuses to run with it
+   on (Diagnostics shows it). The web server compresses pages itself.
+7. **Disk space and inodes** — a full `writable/` (sessions, logs,
+   backups) makes PHP wait on writes. Keep `dgr:backup --keep 14` and
+   delete old logs.
+
+When a 504 happens, note the time and the page, then look for
+`SLOW REQUEST` and `ERROR` lines around that time in
+`writable/logs/log-<date>.log`. If the page is not there at all, PHP did
+not finish (or never started) the request: check points 3–5 above.
+

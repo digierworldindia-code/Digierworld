@@ -366,7 +366,7 @@ Foreign keys: `employee_id` → `employees.id`, `leave_request_id` → `leave_re
 | Column | Type | Null | Default | Key | Notes |
 |---|---|---|---|---|---|
 | `id` | bigint unsigned | NO |  | PRI |  |
-| `occurred_at` | datetime(6) | NO | `CURRENT_TIMESTAMP(6)` |  |  |
+| `occurred_at` | datetime(6) | NO | `CURRENT_TIMESTAMP(6)` | MUL |  |
 | `user_id` | int unsigned | YES |  | MUL |  |
 | `actor_type` | enum('user','system','cron','ai_service') | NO | `user` |  |  |
 | `action` | varchar(80) | NO |  | MUL |  |
@@ -745,7 +745,7 @@ Foreign keys: `bank_account_id` → `bank_cash_accounts.id`, `stored_file_id` �
 |---|---|---|---|---|---|
 | `id` | bigint unsigned | NO |  | PRI |  |
 | `lead_id` | bigint unsigned | NO |  | MUL |  |
-| `called_at` | datetime | NO |  |  |  |
+| `called_at` | datetime | NO |  | MUL |  |
 | `direction` | enum('outbound','inbound') | NO | `outbound` |  |  |
 | `person_spoken` | varchar(150) | YES |  |  |  |
 | `duration_seconds` | int unsigned | YES |  |  |  |
@@ -1383,7 +1383,7 @@ Check constraints: `chk_fy_dates`
 | `due_at` | datetime | NO |  |  |  |
 | `title` | varchar(255) | NO |  |  |  |
 | `notes` | text | YES |  |  |  |
-| `status` | enum('pending','done','cancelled') | NO | `pending` |  |  |
+| `status` | enum('pending','done','cancelled') | NO | `pending` | MUL |  |
 | `source_call_id` | bigint unsigned | YES |  | MUL |  |
 | `completed_at` | datetime | YES |  |  |  |
 | `completed_by` | int unsigned | YES |  |  |  |
@@ -1739,7 +1739,7 @@ Foreign keys: `lead_id` → `leads.id`
 | `attribution` | json | YES |  |  | split credit: [{user_id, percent}] |
 | `contract_value` | decimal(15,2) | YES |  |  |  |
 | `converted_by` | int unsigned | YES |  |  |  |
-| `converted_at` | datetime | NO | `CURRENT_TIMESTAMP` |  |  |
+| `converted_at` | datetime | NO | `CURRENT_TIMESTAMP` | MUL |  |
 
 Foreign keys: `contact_id` → `contacts.id`, `document_id` → `billing_documents.id`, `lead_id` → `leads.id`
 
@@ -2329,6 +2329,7 @@ Foreign keys: `permission_id` → `permissions.id`, `role_id` → `roles.id`
 | `code` | varchar(60) | NO |  | UNI |  |
 | `name` | varchar(120) | NO |  |  |  |
 | `description` | varchar(500) | YES |  |  |  |
+| `landing_url` | varchar(120) | YES |  |  | page opened after sign-in ("" = owner dashboard) |
 | `is_super` | tinyint(1) | NO | `0` |  | implicitly holds every permission |
 | `is_system` | tinyint(1) | NO | `0` |  | starter role (still editable, not deletable if super) |
 | `is_active` | tinyint(1) | NO | `1` |  |  |

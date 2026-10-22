@@ -66,12 +66,13 @@ class AuditController extends BaseController
 
     public function verify()
     {
-        [$ok, $broken, $checked] = service('audit')->verify();
+        [$ok, $broken, $checked, $legacy] = service('audit')->verify();
         service('audit')->log('audit.verified', null, null, null, null, $ok ? "Chain verified ({$checked} rows)" : "Chain BROKEN at #{$broken}");
+        $note = $legacy > 0 ? " {$legacy} older entries (before 1.3.0, on MySQL) were checked for their place in the chain only: MySQL rewrote their JSON data when storing it." : '';
 
         return redirect()->to(site_url('admin/audit'))->with(
             $ok ? 'success' : 'error',
-            $ok ? "Audit chain intact: {$checked} entries verified (SHA-256 hash chain)." : "Audit chain verification FAILED at entry #{$broken}. Records may have been altered outside the application — investigate immediately."
+            $ok ? "Audit chain intact: {$checked} entries verified (SHA-256 hash chain).{$note}" : "Audit chain verification FAILED at entry #{$broken}. Records may have been altered outside the application — investigate immediately."
         );
     }
 }

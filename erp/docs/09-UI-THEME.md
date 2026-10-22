@@ -1,10 +1,12 @@
 # DGR Office — UI theme and frontend asset policy
 
-DGR Office has **one approved look**: a premium black theme with white text
-and a single gold accent. Every module (Dashboard, Billing, Finance, CRM, HR,
-Payroll, Reports, Settings, Administration, sign-in and error pages) uses the
-same design system. New modules must use it as it is. They must not add new
-colours, themes, CDNs or frontend libraries.
+DGR Office has **one approved design system in two modes**: Dark (black
+surfaces, white text) and Light (light-grey/white surfaces, near-black text),
+both with a single gold accent. Each user picks **Light, Dark or System**
+(follows the device) in the top bar. Every module (Dashboard, Billing,
+Finance, CRM, HR, Payroll, Reports, Settings, Administration, sign-in and
+error pages) uses the same design system. New modules must use it as it is.
+They must not add new colours, themes, CDNs or frontend libraries.
 
 Automated guards (`tests/unit/ThemeComplianceTest.php` and
 `tests/unit/VendorAssetsTest.php`) fail the build when a screen or asset
@@ -12,11 +14,27 @@ breaks these rules.
 
 ---
 
-## 1. Approved palette (do not change)
+## 1. Approved palettes (do not change)
 
 Colours are defined **only** in `public/assets/css/dgr-theme.css` as CSS
-custom properties. Views, `custom.css` and JavaScript never contain colour
-values. They use the tokens below or the components in §4.
+custom properties: the dark set on `:root, [data-bs-theme="dark"]` and the
+light set on `[data-bs-theme="light"]`. Views, `custom.css` and JavaScript
+never contain colour values. They use the tokens below or the components in §4.
+
+**Light mode** (same tokens, light values):
+
+| Token | Light value | Note |
+| --- | --- | --- |
+| `--dgr-bg` | `#F8F9FA` | Page background |
+| `--dgr-sidebar` / `--dgr-card` | `#FFFFFF` | Sidebar, cards |
+| `--dgr-text` / `--dgr-text-2` / `--dgr-text-3` | `#171717` / `#52525B` / `#67676F` | Text |
+| `--dgr-border` | `#E4E4E7` | Hairlines |
+| `--dgr-input-border` | `#8C8C95` | Form controls (3:1 against their fill) |
+| `--dgr-gold` | `#D4AF37` | Fills, lines, primary buttons (dark text on gold) |
+| `--dgr-gold-text` | `#866514` | Gold used as **text** (links, icons): `#D4AF37` on white is only 2.1:1 |
+| status | `#15803D` / `#A16207` / `#B91C1C` / `#1D4ED8` | success / warning / danger / info |
+
+**Dark mode:**
 
 | Token | Value | Use |
 | --- | --- | --- |
@@ -28,7 +46,9 @@ values. They use the tokens below or the components in §4.
 | `--dgr-gold` | `#D4AF37` | The only accent: primary buttons, links, active menu, focus ring |
 | `--dgr-inset` | `#141417` | Form inputs (sit slightly below the card) |
 | `--dgr-raised` | `#222228` | Hover rows, raised chips |
-| `--dgr-border` / `--dgr-border-strong` | `#2A2A31` / `#3A3A42` | Hairlines, input borders |
+| `--dgr-border` / `--dgr-border-strong` | `#303036` / `#3A3A42` | Hairlines, menu borders |
+| `--dgr-input-border` | `#68686F` | Form controls (3:1 against their fill) |
+| `--dgr-gold-text` | `#D4AF37` | Gold used as text (the accent itself on dark) |
 | `--dgr-text-3` | `#8B8B94` | Tertiary text (footers, hints) |
 | `--dgr-on-gold` | `#0B0B0D` | Text on gold buttons and badges |
 | `--dgr-success` / `--dgr-warning` / `--dgr-danger` / `--dgr-info` | `#4ADE80` / `#FBBF24` / `#F87171` / `#7DB4F5` | Status only (paid, overdue, failed, informational), never decoration |
@@ -39,16 +59,35 @@ contrast ratios and requires at least 4.5:1 (AA) for every text colour on every 
 appears on. The same test requires text on gold and every status colour on
 cards to reach 4.5:1.
 
-Bootstrap runs in its own dark colour mode: every page shell has
-`<html data-bs-theme="dark">`, and `dgr-theme.css` maps Bootstrap's `--bs-*`
-variables to the tokens above. Standard Bootstrap markup therefore renders in
-the DGR palette without extra classes. `color-scheme: dark` makes native date
-pickers, scrollbars and select menus dark too.
+Bootstrap follows the mode: `<html data-bs-theme="dark|light">`, and
+`dgr-theme.css` maps Bootstrap's `--bs-*` variables to the tokens above in
+both modes. Standard Bootstrap markup therefore renders in the DGR palette
+without extra classes. `color-scheme` makes native date pickers, scrollbars
+and select menus match the mode.
+
+**How the mode is chosen and applied**
+
+* The choice (light / dark / system) is saved in the user's profile
+  (`user_profiles.preferences.theme`, via `POST /profile/theme`) and in the
+  browser (`localStorage`), so it follows the user to other devices and the
+  sign-in page remembers the device's last choice. Default: **system**.
+* `public/assets/js/theme-init.js` is loaded in `<head>` right after the
+  stylesheets (a small blocking script, allowed by the CSP because it is a
+  file): it sets `data-bs-theme` before the page is painted, so there is no
+  flash of the wrong theme, and follows the operating system live when the
+  choice is *system*.
+* Switching dispatches `dgr:themechange`; charts (`dashboard.js`,
+  `crm-performance.js`) redraw with the new token colours.
+* `tests/unit/ThemeComplianceTest.php` checks both palettes' exact values
+  and WCAG AA contrast for every text token on every surface in both
+  modes; `tests/feature/ThemePreferenceTest.php` checks saving and
+  applying the choice.
 
 **Printed documents stay white.** Invoice, cash-memo, credit-note, receipt and
 payslip PDFs (`app/Views/pdf/`) are printed on paper and keep their own white
-templates; the logo is never recoloured. The `@media print` block in
-`dgr-theme.css` also prints any screen (reports, digests) black-on-white.
+templates in either mode; the logo is never recoloured. The `@media print`
+block in `dgr-theme.css` prints any screen (reports, digests)
+black-on-white in both modes.
 
 ## 2. Frontend files
 

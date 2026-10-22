@@ -8,7 +8,7 @@ narrowly-scoped AI CV review, HRM (attendance, leave), payroll and
 incentives — all behind an owner-editable, deny-by-default permission
 matrix with an audit trail.
 
-Stack: PHP 8.3 · CodeIgniter 4.7 · CodeIgniter Shield · MySQL 8 or
+Stack: PHP 8.2+ · CodeIgniter 4.7 · CodeIgniter Shield · MySQL 8 or
 MariaDB 10.6+ (InnoDB, utf8mb4) · Bootstrap 5.3 (bundled locally) · vanilla JS · Chart.js ·
 PhpSpreadsheet · Dompdf · google/apiclient (Sheets only) · smalot/pdfparser
 · brick/math · anthropic-ai/sdk (optional AI review).
@@ -31,7 +31,7 @@ PhpSpreadsheet · Dompdf · google/apiclient (Sheets only) · smalot/pdfparser
 
 ## Quick start on Hostinger
 
-1. **PHP 8.3** with the extensions listed in §1 (hPanel → *PHP
+1. **PHP 8.2 or 8.3** with the extensions listed in §1 (hPanel → *PHP
    Configuration*). Create a MySQL/MariaDB database and user (hPanel →
    *Databases*).
 2. Create the folder (e.g. `public_html/dgr`), upload this zip into it and
@@ -55,16 +55,20 @@ PhpSpreadsheet · Dompdf · google/apiclient (Sheets only) · smalot/pdfparser
 `writable/` folder (uploads, backups): extract the new zip into a new
 folder, copy `.env` and `writable/` from the old one into it, swap the
 folder names, then run `php spark dgr:install` (applies only new migrations,
-never deletes data) and `php spark dgr:diagnostics`. Details and the
-no-SSH variant: [docs/04-DEPLOYMENT.md](docs/04-DEPLOYMENT.md) §5a and §10.
+never deletes data; when there are changes it first makes a backup in
+`writable/backups` and verifies it, and stops if that fails) and
+`php spark dgr:diagnostics`. Details and the no-SSH variant:
+[docs/04-DEPLOYMENT.md](docs/04-DEPLOYMENT.md) §5a and §10. Pages timing
+out (504)? See §13 there.
 
 ## 1. Requirements
 
-* **PHP 8.3 or newer** with extensions: `intl`, `mbstring`, `json`,
+* **PHP 8.2 or newer** (8.2 and 8.3 tested) with extensions: `intl`, `mbstring`, `json`,
   `mysqli`, `curl`, `openssl`, `gd`, `zip`, `xml`, `dom`, `xmlwriter`,
   `fileinfo`, `iconv`, `ctype`. (`sodium` is not needed: encryption uses
   OpenSSL.)
-* PHP limits: `upload_max_filesize = 20M`, `post_max_size = 25M`, `memory_limit = 256M`.
+* PHP limits: `upload_max_filesize = 20M`, `post_max_size = 25M`, `memory_limit = 256M`,
+  `max_execution_time = 60` or more; OPcache on.
 * **MySQL 8.0.16+** or **MariaDB 10.6+** (InnoDB, `utf8mb4`). The full
   test suite passes on MySQL 8.0 and on MariaDB 11.8.
 * **Apache 2.4 with `mod_rewrite`** (XAMPP, cPanel) or **Nginx + PHP-FPM**.
@@ -154,13 +158,15 @@ database) before entering real data.
 
 ### Release files
 
-`dist/dgr-office-1.2.0.zip` (application + production `vendor/`),
-`dist/dgr-office-1.0.0-clean.sql` (empty database with base data for real
-use, [§12](docs/04-DEPLOYMENT.md)) and `dist/dgr-office-1.0.0-demo.sql`
-/ `.sql.gz` (evaluation-only demo database, [§11](docs/04-DEPLOYMENT.md)),
-each with a `.sha256` checksum. Releases 1.1.x and 1.2.0 did not change
-the database schema, so the 1.0.0 SQL files are the correct ones for
-1.2.0. What changed in each release: [CHANGELOG.md](CHANGELOG.md).
+`dist/dgr-office-1.3.0.zip` (application + production `vendor/`),
+`dist/dgr-office-1.3.0-clean.sql` (empty database with base data for a
+new installation, [§12](docs/04-DEPLOYMENT.md)) and
+`dist/dgr-office-1.0.0-demo.sql` / `.sql.gz` (evaluation-only demo
+database, [§11](docs/04-DEPLOYMENT.md); `dgr:install` brings it up to
+date), each with a `.sha256` checksum. **Existing installations upgrade
+with `php spark dgr:install`, never by importing a clean SQL file** (that
+would replace your data). What changed in each release:
+[CHANGELOG.md](CHANGELOG.md).
 Rebuild the archive any time with `scripts/build-release.sh <version>`.
 
 ## 5. Folder layout

@@ -26,6 +26,9 @@ verified manually · ⚠ deployment responsibility / recommendation.
 | 2.5 | Disabled accounts are logged out at the next request | `SessionGuardFilter` | ◐ |
 | 2.6 | Service accounts cannot log in interactively | `SessionGuardFilter` blocks `is_service_account`; AI tokens only work on `/api/ai/*` | ✔ |
 | 2.7 | Optional e-mail 2FA, remember-me, magic links | Off by default (`auth.*` in `.env`) | ⚠ enable 2FA for owners once SMTP works |
+| 2.8 | CSRF failures are explained, never looped | `App\Filters\CsrfFilter`: when the browser sent no session cookie (secure cookie on http, wrong address, blocked cookies) the sign-in page says why (`?session=missing`) and the server logs it (`LoginLandingTest`) | ✔ |
+| 2.9 | Secrets are not kept in the session after a failed form | `forget_secret_input()` drops passwords, bank account numbers, CIF and keys from the input kept to refill forms (`BankSetupTest`) | ✔ |
+| 2.10 | Landing page after sign-in respects permissions | `App\Libraries\Landing`: a role's landing page is used only if the user may open it; the role editor offers only real pages (`LoginLandingTest`) | ✔ |
 | 2.8 | CSRF protection on every form | Global `csrf` filter (except the token-authenticated AI API) | ✔ |
 | 2.9 | Signed-out requests | Every route needs a session except sign-in/out, the AI token API, `health`, `share/*` and `brand/logo` (the official logo shown on the sign-in page). `SignedOutRequestFilter` answers signed-out images and script calls with 401 so only real page visits become the post-sign-in destination (`SignInFlowTest`) | ✔ |
 
@@ -96,6 +99,16 @@ verified manually · ⚠ deployment responsibility / recommendation.
 | 7.5 | Prompt-injection neutralised, protected traits redacted, names/contacts removed | ✔ |
 | 7.6 | Replies validated (verbatim evidence, server-computed score, protected-trait replies discarded); failures shown as “Analysis unavailable” | ✔ |
 | 7.7 | No automated hiring decision or silent rejection; payroll AI read-only | ✔ |
+
+## 7a. Bank details (1.3.0 review)
+
+| # | Item | How | Status |
+| --- | --- | --- | --- |
+| 7a.1 | Only `settings.bank.edit` can change bank accounts | Route filter + test (`BankSetupTest::testOnlyAuthorisedUsersCanChangeBanks`) | ✔ |
+| 7a.2 | Account number and CIF encrypted, never put back into the form | Blank = keep; masked last 4 digits only; CIF never shown (`BankSetupTest`) | ✔ |
+| 7a.3 | Every change audited without secrets | `bank_account.created/updated` with `account_number(_enc)` and `cif(_enc)` redacted (`BankSetupTest`) | ✔ |
+| 7a.4 | CIF never printed | Snapshot never reads CIF; PDF audit test checks all document types (`DocumentPdfAuditTest`) | ✔ |
+| 7a.5 | Issued invoices keep the bank details they were issued with | Immutable snapshot; drafts and new invoices use the current details (`BankSetupTest`) | ✔ |
 
 ## 8. Residual risks and recommendations
 

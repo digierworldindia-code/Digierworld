@@ -9,11 +9,57 @@ use CodeIgniter\Database\MySQLi\Connection as BaseConnection;
  *  - aligns the session time zone with the application time zone, so
  *    DEFAULT CURRENT_TIMESTAMP columns and PHP date() values agree;
  *  - throws on any failed query inside a transaction (CodeIgniter's default
- *    is to swallow it and let transCommit() commit the remaining work).
+ *    is to swallow it and let transCommit() commit the remaining work);
+ *  - runs work registered with beforeCommit() just before the outermost
+ *    transaction commits (the audit log appends to its hash chain there, so
+ *    the chain lock is always the last lock a transaction takes and two
+ *    concurrent saves cannot deadlock on it). A rollback discards it.
  */
 class Connection extends BaseConnection
 {
     protected bool $transException = true;
+
+    /** @var list<callable(): void> */
+    private array $beforeCommit = [];
+
+    /** True while a transaction (any nesting level) is open on this connection. */
+    public function inTransaction(): bool
+    {
+        return $this->transDepth > 0;
+    }
+
+    /** Runs $work inside the open transaction right before it commits; discarded on rollback. */
+    public function beforeCommit(callable $work): void
+    {
+        $this->beforeCommit[] = $work;
+    }
+
+    public function transCommit(): bool
+    {
+        if ($this->transDepth === 1 && $this->beforeCommit !== []) {
+            try {
+                while (($work = array_shift($this->beforeCommit)) !== null) {
+                    $work();
+                }
+            } catch (\Throwable $e) {
+                $this->beforeCommit = [];
+                $this->transRollback();
+
+                throw $e;
+            }
+        }
+
+        return parent::transCommit();
+    }
+
+    public function transRollback(): bool
+    {
+        if ($this->transDepth <= 1) {
+            $this->beforeCommit = [];
+        }
+
+        return parent::transRollback();
+    }
 
     public function connect(bool $persistent = false)
     {

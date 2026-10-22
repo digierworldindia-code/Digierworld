@@ -22,7 +22,9 @@ class BackupsController extends BaseController
         $this->authorize('security.backup.manage');
         SessionLock::release(); // a large backup takes a while; the user's other pages keep working
         try {
-            $names = (new BackupService($this->db))->create((bool) $this->request->getPost('files'));
+            $service = new BackupService($this->db);
+            $names   = $service->create((bool) $this->request->getPost('files'));
+            $check   = $service->verify($names[0]);
         } catch (Throwable $e) {
             SessionLock::reopen();
 
@@ -31,7 +33,7 @@ class BackupsController extends BaseController
         SessionLock::reopen();
         service('audit')->log('backup.created', 'backup', null, null, ['files' => $names], 'Backup created');
 
-        return redirect()->to('admin/backups')->with('success', 'Backup created: ' . implode(', ', $names));
+        return redirect()->to('admin/backups')->with('success', 'Backup created and verified (' . $check['tables'] . ' tables, ' . number_format($check['rows']) . ' rows): ' . implode(', ', $names));
     }
 
     public function download($name)
