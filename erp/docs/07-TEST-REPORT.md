@@ -1,9 +1,16 @@
 # DGR Office — Test report
 
-**Run:** `vendor/bin/phpunit` · PHP 8.3.6 · PHPUnit 10.5.66 · on **MySQL 8.0.46** and again on **MariaDB 11.8.9**
-**Result:** **107 tests, 1104 assertions — all passed on both databases** (0 failures, 0
-errors, 0 skipped; also passes with PHP deprecations turned into errors) on 2026-10-22
-(release 1.2.0), branch `ccr-5922b9e2-4of5k8`.
+**Release 1.3.0** (2026-10-23, branch `ccr-5922b9e2-4of5k8`), `vendor/bin/phpunit`, PHPUnit 10.5.66:
+
+| Platform | Result |
+| --- | --- |
+| PHP 8.3.6 + MySQL 8.0.46 | **136 tests, 1,770 assertions — all passed** (0 failures, 0 errors, 0 skipped) |
+| PHP 8.3.6 + MariaDB 11.8.9 | **136 tests, 1,770 assertions — all passed** |
+| PHP 8.2.10 + MySQL 8.0.46 | **136 tests, 1,734 assertions — all passed** |
+
+(The PHP 8.2 container has no `pdfinfo`/`pdfimages`, so the PDF tests skip
+their page-size and embedded-image checks there; everything else is
+identical.) Release 1.2.0 had 107 tests; 1.3.0 adds 29.
 
 Tests run against a real MySQL or MariaDB test database (`database.tests.*`), go
 through the real routes, filters, controllers, services and views (CI4
@@ -12,6 +19,55 @@ XLSX files. External services are replaced by fakes only at the network
 edge: `FakeSheetsClient` (Google Sheets) and `FakeAiProvider` (Anthropic).
 
 ---
+
+## 0. Release 1.3.0 — regression tests 1–18 (requested list)
+
+"Test" = automated PHPUnit test (runs on every platform above). "Browser"
+= Chromium (Playwright) against a running copy of the app. "Load copy" =
+the app installed on a separate database loaded with 6,000 invoices,
+30,000 journal lines, 12,000 leads (8,000 calls), 28,000 audit entries and
+120 employees through the app's own services.
+
+| # | Workflow | Evidence (executed) | Result |
+| --- | --- | --- | --- |
+| 1 | Login → role dashboard → refresh → logout | `LoginLandingTest` (8 roles land on their page and can open it; page asked for before sign-in wins; forbidden landing never used; missing session cookie explained). Browser, load copy: Owner, Accountant → Dashboard; Billing operator → Billing dashboard; Telecaller → CRM My Day; HR manager → HR dashboard; Employee → My Workspace; each stays after reload, signs out to the sign-in page, and the page is refused afterwards; 0 JS errors | ✔ |
+| 2 | Create customer → GST invoice → finalize → download PDF | `RegressionWorkflowTest::testCustomerToFinalizedInvoicePdfThroughTheForms` (all through the forms; PDF text checked); `BillingUiPdfTest` | ✔ |
+| 3 | CGST + SGST invoice, tax breakdown | `BillingUiPdfTest::testIntraStateInvoiceThroughScreensAndPdfShowsOnlyCgstSgst` (900 + 900 on ₹10,000; no IGST printed) | ✔ |
+| 4 | IGST invoice, tax breakdown | `BillingUiPdfTest::testInterStateInvoicePdfShowsOnlyIgst` (1,800; no CGST/SGST printed) | ✔ |
+| 5 | Cash memo independent numbering | `BillingAccountingTest::testGstSequence121Then122AndCashMemoSeriesIsIndependent`; concurrency run below (tax invoice and cash-memo series each gap-free) | ✔ |
+| 6 | Add bank → edit → save → refresh → persistence | `BankSetupTest` (6 tests: prefill, reload, keep-on-blank number/CIF, default, deactivate/reactivate, validation, opening balance, permission). Old code fails 3 of them (database error on long values, default kept when deactivated, opening balance re-dated) | ✔ |
+| 7 | Invoice has correct bank details and signature | `BankSetupTest::testInvoicesPrintCurrentDetailsAndIssuedOnesKeepTheirs`; `DocumentPdfAuditTest` (logo + signature + stamp embedded on all signed types, bank account/IFSC printed, CIF never) | ✔ |
+| 8 | Light → Dark → System on all screens | Browser, load copy: top-bar switch gives `#F8F9FA` / `#0B0B0D` backgrounds, System follows the device, choice kept after reload without browser storage (saved to the profile); 20 screens × 2 themes × 3 widths with no console/CSP/HTTP errors; print is white in Dark. `ThemePreferenceTest`, `ThemeComplianceTest` (both palettes, WCAG AA) | ✔ |
+| 9 | CRM: add lead → follow-up → save | `RegressionWorkflowTest::testLeadAndFollowUpThroughTheForms`; `CrmAccessReminderTest`, `CrmLeadSyncTest` | ✔ |
+| 10 | Employee → attendance → leave → payroll | `HrPayrollTest` (5 tests); `HrBulkScreensTest` (leave balances / register for everyone equal the per-employee values) | ✔ |
+| 11 | Role restrictions and unauthorised URLs | `RbacAdminTest`, `CrmAccessReminderTest::testTelecallerSeesOnlyOwnLeads…` (list of forbidden URLs), `BillingUiPdfTest::testBillingOperatorSeesOnlyOwnDocuments…`, `LoginLandingTest` (area dashboards 403/404), `BankSetupTest::testOnlyAuthorisedUsersCanChangeBanks` | ✔ |
+| 12 | Excel report → download → verify contents | `ReportsGstTest::testRegistersGstWorkbooksAndLedgerAgree` (reads the generated workbooks); `XlsxWriterTest` (layout, types, formats, totals, filter, import round-trip, 240,000 cells in flat memory). Load copy: CRM, invoice, receipt and contact exports opened with openpyxl and LibreOffice | ✔ |
+| 13 | Mobile and desktop layout | Browser: 20 screens at 390, 768 and 1366 px in both themes: no page scrolls sideways (wide tables scroll inside their card); desktop menu hide/show kept after reload | ✔ |
+| 14 | Concurrent invoice creation | Load copy over HTTP, 4 separate signed-in sessions in parallel, twice: 32/32 drafts and 32/32 finalizations, no duplicate or missing tax-invoice / cash-memo numbers, 0 deadlocks, audit chain intact. (Before the fix: 5 of 32 drafts failed with a deadlock.) Also `BillingAccountingTest::testConcurrentFinalizationNeverDuplicatesNumbers` (6 parallel PHP processes) | ✔ |
+| 15 | Cash deposits do not double-count revenue | `BillingAccountingTest::testCashReceiptAgainstInvoiceDoesNotCreateSecondSaleAndDepositIsNotIncome`; `FinanceLedgerUiTest::testCashDepositMovesMoneyWithoutIncome…`; `ReportsGstTest::testProfitAndLossAndCashFlowExcludeTransfers` | ✔ |
+| 16 | Slow / failing external APIs, long operations | `CrmLeadSyncTest` (Google outage: CRM data saved, job failed with back-off, retried; "Sync now" with no time left does nothing and reports what is queued; ID column read once per run); `RecruitmentAiTest::testAiIsOffByDefaultAndFailureIsHonestlyUnavailable`. Load copy: while a 1.6 s export ran, another page of the same user answered in 0.01 s (0.62 s+ when blocked) | ✔ |
+| 17 | PHP 8.2 compatibility | Full suite on PHP 8.2.10 (table above); `composer check-platform-reqs` on 8.2: all OK (zipstream-php 3.1.2) | ✔ |
+| 18 | MySQL migrations and integrity | Upgrade of a copy of the supplied production dump (1.0.0 schema) with `dgr:install`: verified backup first, 3 migrations applied, row counts unchanged except `migrations` (+3) and `app_settings` (+2); the backup restored to exactly the pre-upgrade database; `CHECK TABLE` OK for 122 tables; 196 foreign keys, 0 orphan rows (also 0 on the load copy, plus 0 unbalanced journal entries). Clean 1.3.0 SQL imports into MySQL 8.0 and MariaDB 11.8. `BackupVerifyTest`, `AuditChainTest` | ✔ |
+
+### Performance on the load copy (every GET page timed)
+
+| Page | Before | After |
+| --- | --- | --- |
+| CRM export (12,000 leads) | 9.1 s, 256 MB | 1.6 s, 38 MB |
+| Invoice export (6,000 documents) | 3.7 s | 0.3 s |
+| Cash account statement | 3.2 MB page | 100 rows per page |
+| Leave balances (120 employees) | 1,816 SQL queries | fixed handful (< 100 ms) |
+| Attendance register | 136 queries | fixed handful (< 100 ms) |
+| Slowest remaining page | — | GST output report 0.8 s; all other pages < 0.5 s |
+
+### Not executed (honest status)
+
+* No test against the live Hostinger server: the settings a 504 depends on
+  there (gateway timeout, PHP workers, database limits) need the hosting
+  panel — see docs/04-DEPLOYMENT.md §13.
+* Google Sheets and Anthropic were exercised with fakes (outage, retry,
+  time budget), not with real credentials.
+* Browsers other than Chromium were not run.
 
 ## 1. Specification §18 — accounting and billing (must pass)
 
@@ -140,7 +196,7 @@ Apache 2.4 with `.htaccess` (`mod_rewrite`), PHP 8.3, **MariaDB 11.8.9**
 | Check | How | Result |
 | --- | --- | --- |
 | The three reported errors, on the delivered 1.1.0 zip (byte-identical to the one uploaded) with the uploaded clean SQL imported into MariaDB 11.8 | Data created on 1.1.0, then: logo file removed → document PDF; signed out → sign in; `.env` key blanked → save bank account | Reproduced exactly: `BusinessRuleException: File not found` in `FileStorage.php` line 102; sign-in landing on `/brand/logo` (404); `EncryptionException: Encrypter needs a starter key` (500) |
-| Clean SQL imports into MariaDB 11.8 | `mysql < dgr-office-1.0.0-clean.sql` | ✔ 122 tables, no errors |
+| Clean SQL imports into MariaDB 11.8 | `mysql < dgr-office-1.3.0-clean.sql` (1.3.0) | ✔ 122 tables, no errors |
 | Whole project inside `public_html/dgr` (root `.htaccess`) | Fresh install from the working tree; browser sign-in, refresh, sign-out, signed-out visit to a protected page then sign-in | ✔ lands on the dashboard; returns to the requested page; no console errors |
 | Only `public/` reachable in that layout | `GET /dgr/.env`, `.env.example`, `app/Config/App.php`, `writable/`, `vendor/autoload.php`, `composer.json`, `spark`, `tests/`, `README.md` | ✔ all 403/404; stylesheets served |
 | `public/` copied into `public_html/dgr2`, app outside the web root (`index.php` path edited) | Same browser flow, PDFs, Diagnostics | ✔ |
