@@ -11,7 +11,7 @@
                 <?= $active ? '<span class="badge badge-success">v' . (int) $active['version'] . ' active</span>' : '<span class="badge badge-neutral">not uploaded</span>' ?>
             </div>
             <div class="asset-preview my-3">
-                <?php if ($active): ?><img src="<?= site_url('settings/branding/' . $active['id'] . '/preview') ?>" alt="<?= esc($label) ?> preview"><?php else: ?><span class="small text-muted">No file</span><?php endif ?>
+                <?php if ($active && $active['on_disk']): ?><img src="<?= site_url('settings/branding/' . $active['id'] . '/preview') ?>" alt="<?= esc($label) ?> preview"><?php elseif ($active): ?><span class="small text-danger text-center px-2"><i class="bi bi-exclamation-triangle"></i> The file for this version is missing on the server (writable/uploads). Documents print without it. Upload it again below, or restore the uploads backup.</span><?php else: ?><span class="small text-muted">No file</span><?php endif ?>
             </div>
             <?php if ($active): ?>
                 <div class="small text-muted mb-2"><?= esc($active['original_name']) ?> · <?= (int) $active['width_px'] ?>×<?= (int) $active['height_px'] ?> px · <?= number_format($active['size_bytes'] / 1024, 1) ?> KB · sha256 <span class="mono"><?= esc(substr($active['sha256'], 0, 10)) ?>…</span></div>

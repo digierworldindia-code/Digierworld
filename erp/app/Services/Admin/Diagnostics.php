@@ -86,6 +86,21 @@ class Diagnostics
         }
         $uploadsPublic = str_starts_with(realpath(WRITEPATH) ?: '', realpath(FCPATH) ?: '#');
         $add('Filesystem', 'Private files outside web root', $uploadsPublic ? 'fail' : 'ok', $uploadsPublic ? 'writable/ is inside public web root!' : 'writable/ is outside public/');
+        // files the database lists but the disk no longer has (folder replaced on upgrade, uploads not restored, demo SQL from another install)
+        try {
+            $files   = service('files');
+            $missing = static fn (array $rows): array => array_values(array_filter($rows, static fn (array $f): bool => ! $files->isOnDisk($f)));
+            $brand   = $missing($this->db->table('branding_assets b')->select('b.asset_type, f.id, f.disk_path')->join('stored_files f', 'f.id = b.stored_file_id')
+                ->where('b.is_active', 1)->get()->getResultArray());
+            $add('Filesystem', 'Active logo/signature/stamp files', $brand === [] ? 'ok' : 'fail', $brand === [] ? 'present (or none uploaded)'
+                : 'missing on disk: ' . implode(', ', array_unique(array_column($brand, 'asset_type'))) . ' — documents print without them. Upload again in Settings › Branding Assets, or restore writable/uploads from the files backup');
+            $all  = $this->db->table('stored_files')->select('id, disk_path')->where('deleted_at', null)->get()->getResultArray();
+            $lost = count($missing($all));
+            $add('Filesystem', 'Uploaded and generated files', $lost === 0 ? 'ok' : 'warn', $lost === 0 ? count($all) . ' file(s), all present'
+                : "{$lost} of " . count($all) . ' missing on disk (they open as "not found") — restore writable/uploads from the files backup (dgr-…-files.zip)');
+        } catch (Throwable) {
+            // database checks above already report a connection problem
+        }
 
         // Cron
         $last = $this->db->table('cron_runs')->orderBy('id', 'DESC')->limit(1)->get()->getRowArray();

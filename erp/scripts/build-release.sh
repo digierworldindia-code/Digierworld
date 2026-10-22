@@ -2,12 +2,12 @@
 # Build a deployable release archive: the committed source tree plus the
 # production vendor/ folder resolved from composer.lock.
 #
-#   scripts/build-release.sh 1.1.0      → dist/dgr-office-1.1.0.zip (+ .sha256)
+#   scripts/build-release.sh 1.1.1      → dist/dgr-office-1.1.1.zip (+ .sha256)
 #
 # Never includes .env, uploads, backups, logs or dev dependencies.
 set -euo pipefail
 
-VERSION="${1:?usage: scripts/build-release.sh <version, e.g. 1.1.0>}"
+VERSION="${1:?usage: scripts/build-release.sh <version, e.g. 1.1.1>}"
 [[ "$VERSION" =~ ^[0-9A-Za-z.+-]+$ ]] || { echo "Invalid version: $VERSION" >&2; exit 1; }
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"

@@ -123,14 +123,14 @@ database) before entering real data.
 
 ### Release files
 
-`dist/dgr-office-1.1.0.zip` (application + production `vendor/`),
+`dist/dgr-office-1.1.1.zip` (application + production `vendor/`),
 `dist/dgr-office-1.0.0-clean.sql` (empty database with base data for real
 use, [§12](docs/04-DEPLOYMENT.md)) and `dist/dgr-office-1.0.0-demo.sql`
 / `.sql.gz` (evaluation-only demo database, [§11](docs/04-DEPLOYMENT.md)),
-each with a `.sha256` checksum. Release 1.1.0 changed only the user
-interface (black theme, self-hosted verified assets, strict CSP); the
-database schema is unchanged, so the 1.0.0 SQL files are the correct ones
-for 1.1.0.
+each with a `.sha256` checksum. Releases 1.1.0 (black theme, self-hosted
+verified assets, strict CSP) and 1.1.1 (graceful handling of uploads
+missing from `writable/uploads`) did not change the database schema, so
+the 1.0.0 SQL files are the correct ones for 1.1.1.
 Rebuild the archive any time with `scripts/build-release.sh <version>`.
 
 ## 5. Folder layout

@@ -17,7 +17,8 @@ $addr = trim(implode(', ', array_filter([$c['reg_address_line1'] ?? '', $c['reg_
         ? '<strong>' . esc($c['legal_name']) . '</strong>' . ($c['trade_name'] ? ' (' . esc($c['trade_name']) . ')' : '') . '<br>GSTIN <span class="mono">' . esc($c['gstin'] ?? '—') . '</span> · PAN <span class="mono">' . esc($c['pan'] ?? '—') . '</span><br>' . esc($state['name'] ?? '') . ' (' . esc($c['state_code'] ?? '') . ')<br><span class="text-muted">' . esc($addr) . '</span>'
         : '<span class="text-danger">Not entered.</span> Tax documents cannot be finalized until the legal name and state are saved.') ?>
 <?= $stepCard(2, 'branding', 'Brand assets', 'settings/branding', ! empty($steps['branding']),
-    ($logo ? '<div class="u-mnh-60px asset-preview mb-2"><img class="u-mxh-50px" src="' . site_url('settings/branding/' . $logo['id'] . '/preview') . '" alt="Logo"></div>' : '<span class="text-danger">No logo uploaded.</span><br>')
+    ($logo && $logoState === 'ok' ? '<div class="u-mnh-60px asset-preview mb-2"><img class="u-mxh-50px" src="' . site_url('settings/branding/' . $logo['id'] . '/preview') . '" alt="Logo"></div>'
+        : ($logo ? '<span class="text-danger">The logo file is missing on the server — upload it again.</span><br>' : '<span class="text-danger">No logo uploaded.</span><br>'))
     . 'Signature: ' . ($signature ? 'v' . (int) $signature['version'] : '—') . ' · Stamp: ' . ($stamp ? 'v' . (int) $stamp['version'] : '—')) ?>
 <?php
 $bankBody = '';

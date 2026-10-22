@@ -287,11 +287,40 @@ as in-app notifications; email 2FA and magic links stay off.
 `.env` and `writable/`, run `php spark dgr:install` (applies new
 migrations only), `php spark cache:clear`, then `dgr:diagnostics`.
 
+`writable/uploads/` holds every uploaded logo, signature, stamp, CV,
+statement and generated payslip; the database only records where they
+are. **Never delete or replace the old folder before copying
+`writable/` out of it.** With only a hosting *File Manager* (Hostinger,
+cPanel):
+
+1. Upload the new zip next to the old folder and extract it (it creates
+   `dgr-office/`; rename it, e.g. `dgr-office-new`).
+2. Copy `.env` from the old folder into the new one, and copy the old
+   `writable/` folder over the new, empty `writable/` (replace).
+3. Rename the old folder (e.g. `dgr-office-old`) and the new one to the
+   old name. If you copied `public/` into `public_html` (§5 step 4), copy
+   the new `public/` contents there again, except `index.php` if you
+   edited it.
+4. Run `php spark dgr:install` and `php spark dgr:diagnostics` (§5 step 5).
+   Keep `dgr-office-old` until Diagnostics shows **Active
+   logo/signature/stamp files** and **Uploaded and generated files** as OK.
+
+**Logo missing, `…/brand/logo` returns 404, or Diagnostics reports missing
+files:** the database lists uploads whose files are not on this server
+(folder replaced on an upgrade, database moved without `writable/uploads`,
+or the demo SQL from §11). Copy `writable/uploads/` back from the old
+folder or unzip the latest `…-files.zip` backup into `writable/uploads/`.
+If neither exists, upload the logo, signature and stamp again in
+*Settings › Branding Assets*. From 1.1.1 the app shows the company name
+instead of a broken logo, flags the missing file on the Dashboard,
+Branding Assets and Setup Wizard pages, and still produces PDFs, without
+the missing image.
+
 **Build a release archive** (on a machine with Composer):
 
 ```bash
 cd erp
-scripts/build-release.sh 1.1.0        # → dist/dgr-office-1.1.0.zip + .sha256
+scripts/build-release.sh 1.1.1        # → dist/dgr-office-1.1.1.zip + .sha256
 ```
 
 The script exports the committed tree (`git archive`), runs

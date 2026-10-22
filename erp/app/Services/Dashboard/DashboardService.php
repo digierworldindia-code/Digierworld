@@ -59,11 +59,12 @@ class DashboardService
         if (! $this->authz->can('settings.company.edit')) {
             return [];
         }
-        $c = $this->db->table('company_settings')->where('id', 1)->get()->getRowArray() ?? [];
+        $c    = $this->db->table('company_settings')->where('id', 1)->get()->getRowArray() ?? [];
+        $logo = brand_logo_state();
 
         return [
             ['label' => 'Legal business identity (name, GSTIN, PAN, address, state)', 'done' => ! empty($c['legal_name']) && ! empty($c['state_code']), 'url' => 'settings/company'],
-            ['label' => 'Upload official logo (kept unchanged)', 'done' => $this->db->table('branding_assets')->where(['asset_type' => 'logo', 'is_active' => 1])->countAllResults() > 0, 'url' => 'settings/branding'],
+            ['label' => $logo === 'missing' ? 'Official logo file is missing on the server — upload it again' : 'Upload official logo (kept unchanged)', 'done' => $logo === 'ok', 'url' => 'settings/branding'],
             ['label' => 'Bank / UPI payment profile', 'done' => $this->db->table('bank_cash_accounts')->where('account_kind', 'bank')->countAllResults() > 0, 'url' => 'settings/banks'],
             ['label' => 'Document series & last-used invoice number', 'done' => ! empty(($c['setup_steps'] ?? null) ? (json_decode($c['setup_steps'], true)['sequences'] ?? false) : false), 'url' => 'settings/sequences'],
             ['label' => 'Accountant review of tax rates & service SAC codes', 'done' => $this->db->table('tax_rates')->where('review_status', 'accountant_reviewed')->countAllResults() > 0, 'url' => 'settings/tax'],

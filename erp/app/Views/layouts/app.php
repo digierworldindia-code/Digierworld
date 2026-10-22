@@ -9,7 +9,7 @@ $menu    = \App\Libraries\MenuBuilder::build();
 $uid     = current_user_id();
 $unread  = $uid ? service('notifier')->unreadCount($uid) : 0;
 $company = db_connect()->table('company_settings')->select('trade_name, legal_name')->where('id', 1)->get()->getRowArray() ?? [];
-$hasLogo = db_connect()->table('branding_assets')->where(['asset_type' => 'logo', 'is_active' => 1])->countAllResults() > 0;
+$hasLogo = brand_logo_state() === 'ok';
 $brandName = $company['trade_name'] ?? '' ?: ($company['legal_name'] ?? '' ?: 'DIGIE R WORLD');
 $quick = [];
 if (can(['billing.invoice.create_draft'])) { $quick[] = ['Tax Invoice', 'billing/documents/new?type=tax_invoice', 'file-earmark-text']; }

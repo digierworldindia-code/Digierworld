@@ -94,27 +94,35 @@ class FileStorage
         return $this->db->table('stored_files')->where('id', $id)->where('deleted_at', null)->get()->getRowArray();
     }
 
-    public function path(array $file): string
+    /** Absolute path of a stored file inside private storage, or null when it is not there. */
+    private function resolve(array $file): ?string
     {
         $full = realpath(self::root() . str_replace('/', DIRECTORY_SEPARATOR, $file['disk_path']));
         $root = realpath(self::root());
-        if ($full === false || $root === false || ! str_starts_with($full, $root)) {
-            throw new BusinessRuleException('File not found.');
+
+        return $full === false || $root === false || ! str_starts_with($full, $root . DIRECTORY_SEPARATOR) || ! is_file($full) ? null : $full;
+    }
+
+    public function path(array $file): string
+    {
+        return $this->resolve($file) ?? throw new BusinessRuleException('File not found.');
+    }
+
+    /** False when the database lists a file whose contents are not on disk (uploads not restored, folder replaced on upgrade, demo SQL from another install). */
+    public function isOnDisk(array $file): bool
+    {
+        return $this->resolve($file) !== null;
+    }
+
+    /** Like path(), but null (and a log warning) when the recorded file is not on disk. */
+    public function existingPath(array $file): ?string
+    {
+        $full = $this->resolve($file);
+        if ($full === null) {
+            log_message('warning', 'Stored file {id} ({path}) is missing on disk; restore writable/uploads from the files backup.', ['id' => $file['id'], 'path' => $file['disk_path']]);
         }
 
         return $full;
-    }
-
-    /** Like path(), but null when the recorded file is not on disk (e.g. uploads not restored, demo SQL from another install). */
-    public function existingPath(array $file): ?string
-    {
-        try {
-            return $this->path($file);
-        } catch (BusinessRuleException) {
-            log_message('warning', 'Stored file {id} ({path}) is missing on disk; restore writable/uploads from the files backup.', ['id' => $file['id'], 'path' => $file['disk_path']]);
-
-            return null;
-        }
     }
 
     public function contents(int $id): ?string
@@ -130,10 +138,12 @@ class FileStorage
             return null;
         }
         $file = $this->find($id);
-        if ($file === null) {
+        $path = $file === null ? null : $this->existingPath($file);
+        if ($path === null) {
+            // a PDF is still produced, without the missing image; Diagnostics and Settings › Branding report the missing file
             return null;
         }
 
-        return 'data:' . $file['mime_type'] . ';base64,' . base64_encode((string) file_get_contents($this->path($file)));
+        return 'data:' . $file['mime_type'] . ';base64,' . base64_encode((string) file_get_contents($path));
     }
 }

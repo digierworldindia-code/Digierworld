@@ -68,9 +68,10 @@ class SnapshotBuilder
         $settings = json_decode((string) ($tpl['settings'] ?? '{}'), true) ?: [];
 
         $asset = function (string $type) use ($doc): ?array {
-            $a = $this->db->table('branding_assets b')->select('b.*, f.sha256')->join('stored_files f', 'f.id = b.stored_file_id')
+            $a = $this->db->table('branding_assets b')->select('b.*, f.sha256, f.disk_path')->join('stored_files f', 'f.id = b.stored_file_id')
                 ->where(['b.asset_type' => $type, 'b.is_active' => 1])->get()->getRowArray();
-            if ($a === null) {
+            // a file lost from writable/uploads is left out, so the snapshot records exactly what the document shows
+            if ($a === null || ! service('files')->isOnDisk($a)) {
                 return null;
             }
             $enabled = json_decode((string) $a['enabled_doc_types'], true) ?: [];

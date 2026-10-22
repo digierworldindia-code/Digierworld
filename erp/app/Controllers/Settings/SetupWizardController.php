@@ -25,6 +25,7 @@ class SetupWizardController extends BaseController
             'steps'       => $steps,
             'state'       => $c['state_code'] ? $this->db->table('states')->where('code', $c['state_code'])->get()->getRowArray() : null,
             'logo'        => $this->db->table('branding_assets')->where(['asset_type' => 'logo', 'is_active' => 1])->get()->getRowArray(),
+            'logoState'   => brand_logo_state(),
             'signature'   => $this->db->table('branding_assets')->where(['asset_type' => 'signature', 'is_active' => 1])->get()->getRowArray(),
             'stamp'       => $this->db->table('branding_assets')->where(['asset_type' => 'stamp', 'is_active' => 1])->get()->getRowArray(),
             'banks'       => $this->db->table('bank_cash_accounts')->where('account_kind !=', 'cash')->where('is_active', 1)->orderBy('is_default_on_invoice', 'DESC')->get()->getResultArray(),

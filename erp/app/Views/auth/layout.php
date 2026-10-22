@@ -1,10 +1,5 @@
 <?php
-$hasLogo = false;
-try {
-    $hasLogo = db_connect()->table('branding_assets')->where(['asset_type' => 'logo', 'is_active' => 1])->countAllResults() > 0;
-} catch (\Throwable) {
-    $hasLogo = false;
-}
+$hasLogo = brand_logo_state() === 'ok';
 ?>
 <!doctype html>
 <html lang="en-IN" data-bs-theme="dark">

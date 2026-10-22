@@ -25,10 +25,11 @@ class BrandingController extends BaseController
     public function index()
     {
         $assets = [];
-        foreach ($this->db->table('branding_assets b')->select('b.*, f.original_name, f.size_bytes, f.sha256, f.mime_type, p.full_name')
+        foreach ($this->db->table('branding_assets b')->select('b.*, f.original_name, f.size_bytes, f.sha256, f.mime_type, f.disk_path, p.full_name')
             ->join('stored_files f', 'f.id = b.stored_file_id')
             ->join('user_profiles p', 'p.user_id = b.created_by', 'left')
             ->orderBy('b.version', 'DESC')->get()->getResultArray() as $a) {
+            $a['on_disk'] = service('files')->isOnDisk($a);
             $assets[$a['asset_type']][] = $a;
         }
 

@@ -551,8 +551,9 @@ class BillingDocumentService
         if (! $authz->can('billing.apply_signature', $userId)) {
             return false;
         }
-        $hasAsset = $this->db->table('branding_assets')->whereIn('asset_type', ['signature', 'sign_stamp'])->where('is_active', 1)->countAllResults() > 0;
-        if (! $hasAsset) {
+        $files = $this->db->table('branding_assets b')->select('f.id, f.disk_path')->join('stored_files f', 'f.id = b.stored_file_id')
+            ->whereIn('b.asset_type', ['signature', 'sign_stamp'])->where('b.is_active', 1)->get()->getResultArray();
+        if (array_filter($files, static fn ($f) => service('files')->isOnDisk($f)) === []) {
             return false;
         }
         $roleIds = array_column($this->db->table('user_roles')->select('role_id')->where('user_id', $userId)

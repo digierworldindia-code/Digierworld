@@ -26,6 +26,29 @@ if (! function_exists('asset')) {
     }
 }
 
+if (! function_exists('brand_logo_state')) {
+    /**
+     * 'ok' when an active logo is uploaded and its file is on disk, 'missing'
+     * when the database lists one whose file is gone (writable/uploads lost
+     * on an upgrade or restore), 'none' when no logo was uploaded. Layouts
+     * show the logo only for 'ok', so a lost file never shows a broken image.
+     */
+    function brand_logo_state(): string
+    {
+        try {
+            $file = db_connect()->table('branding_assets b')->select('f.id, f.disk_path')->join('stored_files f', 'f.id = b.stored_file_id')
+                ->where(['b.asset_type' => 'logo', 'b.is_active' => 1])->orderBy('b.version', 'DESC')->get()->getRowArray();
+        } catch (\Throwable) {
+            return 'none';
+        }
+        if ($file === null) {
+            return 'none';
+        }
+
+        return service('files')->isOnDisk($file) ? 'ok' : 'missing';
+    }
+}
+
 if (! function_exists('can')) {
     /**
      * True if the logged-in user holds ANY of the given permissions.

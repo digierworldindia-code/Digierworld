@@ -171,7 +171,7 @@ $gstCols = match ($d['gst_type']) { 'cgst_sgst' => ['cgst' => 'CGST', 'sgst' => 
         <?php endif ?>
         <?php if ($canSign): ?>
             <div class="form-check"><input class="form-check-input" type="checkbox" name="apply_signature" value="1" id="apply_signature"><label class="form-check-label" for="apply_signature">Apply authorised signature/stamp (logged)</label></div>
-        <?php else: ?><div class="text-muted">Signature will not be applied (not permitted by the signature policy for you or no signature uploaded).</div><?php endif ?>
+        <?php else: ?><div class="text-muted">Signature will not be applied (not permitted by the signature policy for you, or no signature file on the server — see Settings › Branding Assets).</div><?php endif ?>
         <?php if (in_array($d['doc_type'], ['cash_memo', 'tax_invoice', 'bill_of_supply'], true) && $cashAccounts !== []): ?>
             <hr><div class="form-check"><input class="form-check-input" type="checkbox" name="paid_at_counter" value="1" id="paid_at_counter"><label class="form-check-label" for="paid_at_counter">Customer paid in full now (records one receipt)</label></div>
             <div class="row g-2 mt-1"><div class="col-6"><select class="form-select form-select-sm" name="paid_mode" aria-label="Mode"><option value="cash">Cash</option><option value="upi">UPI</option><option value="card">Card</option><option value="bank_transfer">Bank transfer</option></select></div>
