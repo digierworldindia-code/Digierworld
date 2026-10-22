@@ -100,7 +100,7 @@ abstract class DgrTestCase extends CIUnitTestCase
     protected function brandAsset(string $type, int $ownerId, array $docTypes = ['tax_invoice']): int
     {
         $db  = db_connect();
-        $fid = service('files')->storeContents((string) file_get_contents(ROOTPATH . '../assets/images/logo.png'), $type . '.png', 'image/png', $type);
+        $fid = service('files')->storeContents(self::testPng(), $type . '.png', 'image/png', $type);
         $db->table('branding_assets')->where(['asset_type' => $type, 'is_active' => 1])->update(['is_active' => 0, 'replaced_at' => date('Y-m-d H:i:s')]);
         $db->table('branding_assets')->insert([
             'asset_type' => $type, 'version' => (int) ($db->table('branding_assets')->selectMax('version', 'v')->where('asset_type', $type)->get()->getRow()->v ?? 0) + 1,
@@ -109,6 +109,18 @@ abstract class DgrTestCase extends CIUnitTestCase
         ]);
 
         return $fid;
+    }
+
+    /** A small real PNG (tests must not depend on files outside the project folder). */
+    protected static function testPng(int $w = 120, int $h = 40): string
+    {
+        $im = imagecreatetruecolor($w, $h);
+        imagefill($im, 0, 0, imagecolorallocate($im, 212, 175, 55));
+        imagestring($im, 3, 8, 12, 'TEST', imagecolorallocate($im, 11, 11, 13));
+        ob_start();
+        imagepng($im);
+
+        return (string) ob_get_clean();
     }
 
     protected function cashAccountId(): int

@@ -2,6 +2,7 @@
 
 namespace App\Controllers\Admin;
 
+use App\Libraries\Landing;
 use App\Controllers\BaseController;
 use Config\Permissions;
 
@@ -57,7 +58,20 @@ class RolesController extends BaseController
             'selected'    => array_flip($selected),
             'modules'     => config(Permissions::class)->modules,
             'userCount'   => $role ? $this->db->table('user_roles')->where('role_id', $role['id'])->countAllResults() : 0,
+            'landings'    => Landing::options(),
         ]);
+    }
+
+    /** Posted landing page, if it is one of the offered options (null = automatic). */
+    private function postedLanding(): ?string
+    {
+        $value = $this->request->getPost('landing_url');
+        if ($value === null || $value === 'auto') {
+            return null;
+        }
+        $value = trim((string) $value, '/');
+
+        return array_key_exists($value, Landing::options()) ? $value : null;
     }
 
     public function create()
@@ -77,7 +91,7 @@ class RolesController extends BaseController
         $this->db->transBegin();
         try {
             $this->db->table('roles')->insert([
-                'code' => $code, 'name' => $name, 'description' => $this->post('description'), 'is_super' => 0, 'is_system' => 0,
+                'code' => $code, 'name' => $name, 'description' => $this->post('description'), 'landing_url' => $this->postedLanding(), 'is_super' => 0, 'is_system' => 0,
                 'is_active' => 1, 'created_by' => $this->userId,
             ]);
             $id = (int) $this->db->insertID();
@@ -117,7 +131,7 @@ class RolesController extends BaseController
         try {
             $this->db->table('roles')->where('id', $role['id'])->update([
                 'name' => $name, 'description' => $this->post('description'), 'is_active' => $active, 'updated_by' => $this->userId,
-            ]);
+            ] + ($this->request->getPost('landing_url') !== null ? ['landing_url' => $this->postedLanding()] : []));
             $this->syncPerms((int) $role['id'], $perms);
             service('audit')->log('role.permissions_changed', 'role', (int) $role['id'], ['perms' => $before], ['perms' => $perms], sprintf(
                 'Role %s: +%d / -%d permissions',

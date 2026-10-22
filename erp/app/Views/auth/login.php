@@ -5,6 +5,19 @@
 <?= $this->section('main') ?>
 <h1 class="text-center mb-3">Sign in</h1>
 
+<?php $cookieOnHttp = config('Cookie')->secure && ! service('request')->isSecure(); ?>
+<?php if ($cookieOnHttp || service('request')->getGet('session') === 'missing') : ?>
+    <div class="alert alert-warning py-2 small" role="alert">
+        <strong>Sign-in could not keep your session.</strong>
+        <?php if ($cookieOnHttp) : ?>
+            This page was opened over <span class="mono">http://</span> but <span class="mono">cookie.secure = true</span> in .env, so the browser
+            will not send the session cookie back. Open the <span class="mono">https://</span> address, or set cookie.secure = false until SSL works.
+        <?php else : ?>
+            Your browser did not send the session cookie back. Usually the site was opened at a different address than
+            <span class="mono">app.baseURL</span> in .env (http/https, www, or the folder), or cookies are blocked for this site.
+        <?php endif ?>
+    </div>
+<?php endif ?>
 <?php if (session('error') !== null) : ?>
     <div class="alert alert-danger py-2 small" role="alert"><?= esc(session('error')) ?></div>
 <?php elseif (session('errors') !== null) : ?>

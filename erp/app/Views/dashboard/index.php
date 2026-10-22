@@ -8,7 +8,7 @@ $kpi = static function (string $label, string $value, string $tip, string $sub =
 $f = $widgets['finance'] ?? null;
 ?>
 <?= $this->section('pageActions') ?>
-<form method="get" class="d-flex flex-wrap gap-2 align-items-center" action="<?= site_url('/') ?>">
+<form method="get" class="d-flex flex-wrap gap-2 align-items-center" action="<?= site_url($path ?? '/') ?>">
     <select name="period" class="u-w-auto form-select form-select-sm" data-autosubmit aria-label="Period">
         <?php foreach (['this_month' => 'This month', 'last_month' => 'Last month', 'this_fy' => 'This FY', 'last_fy' => 'Last FY', 'custom' => 'Custom range'] as $k => $v): ?>
             <option value="<?= $k ?>" <?= $period === $k ? 'selected' : '' ?>><?= $v ?></option>
@@ -42,6 +42,40 @@ $f = $widgets['finance'] ?? null;
         </div>
     </div>
 </div>
+<?php endif ?>
+
+<?php if (($shortcuts ?? []) !== []): ?>
+<div class="card-section-title">Go to</div>
+<div class="row g-2 mb-3">
+    <?php foreach ($shortcuts as $item): ?>
+    <div class="col-6 col-md-4 col-xl-3"><a class="card h-100 text-decoration-none text-reset" href="<?= esc($item['href']) ?>"><div class="card-body py-2 d-flex align-items-center gap-2"><i class="bi bi-<?= esc($item['icon']) ?> text-gold"></i><span><?= esc($item['label']) ?></span></div></a></div>
+    <?php endforeach ?>
+</div>
+<?php endif ?>
+
+<?php if (($area ?? null) === 'billing'): ?>
+<div class="card-section-title">Recent documents</div>
+<div class="table-card mb-3"><div class="table-responsive"><table class="table table-hover align-middle mb-0">
+    <thead><tr><th>Number</th><th>Type</th><th>Date</th><th>Customer</th><th class="text-end">Total</th><th class="text-end">Balance</th><th>Status</th></tr></thead>
+    <tbody>
+    <?php foreach ($recent as $d): ?>
+        <tr>
+            <td><a class="mono" href="<?= site_url('billing/documents/' . $d['id']) ?>"><?= esc($d['document_number'] ?? $d['draft_ref'] ?? ('#' . $d['id'])) ?></a></td>
+            <td><?= esc(doc_type_label($d['doc_type'])) ?></td>
+            <td class="text-nowrap"><?= dmy($d['issue_date']) ?></td>
+            <td><?= esc((string) $d['bill_to_name']) ?></td>
+            <td class="num"><?= inr($d['grand_total']) ?></td>
+            <td class="num"><?= $d['status'] === 'finalized' ? inr($d['balance_due']) : '—' ?></td>
+            <td><?= status_badge($d['status']) ?><?= $d['status'] === 'finalized' && $d['payment_status'] ? ' ' . status_badge($d['payment_status']) : '' ?></td>
+        </tr>
+    <?php endforeach ?>
+    <?php if ($recent === []): ?><tr><td colspan="7" class="text-muted">No documents yet.</td></tr><?php endif ?>
+    </tbody>
+</table></div></div>
+<?php endif ?>
+
+<?php if (($area ?? null) !== null && $widgets === [] && ($shortcuts ?? []) === []): ?>
+<div class="card"><div class="card-body empty-state"><i class="bi bi-inbox"></i>Nothing to show here for your role yet.</div></div>
 <?php endif ?>
 
 <?php if ($f !== null): ?>

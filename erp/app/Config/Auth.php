@@ -455,10 +455,14 @@ class Auth extends ShieldAuth
         $this->allowMagicLinkLogins = filter_var(env('auth.allowMagicLinkLogins', false), FILTER_VALIDATE_BOOL);
     }
 
+    /**
+     * After sign-in: the page the user asked for before signing in, else the
+     * landing page of their role (owner, billing, CRM or HR dashboard, or
+     * another page they may open; see Config\Landing).
+     */
     public function loginRedirect(): string
     {
-        $session = session();
-        $url     = $session->getTempdata('beforeLoginUrl') ?? setting('Auth.redirects')['login'];
+        $url = session()->getTempdata('beforeLoginUrl') ?? site_url(\App\Libraries\Landing::forCurrentUser());
 
         return $this->getUrl($url);
     }

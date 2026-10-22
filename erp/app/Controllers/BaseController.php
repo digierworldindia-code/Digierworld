@@ -67,6 +67,26 @@ abstract class BaseController extends Controller
         return $this->response->setStatusCode($status)->setJSON($payload);
     }
 
+    /**
+     * Sends PDF bytes. Anything already echoed during this request (a stray
+     * notice, whitespace from an include) would be sent in front of the PDF
+     * and make it unreadable, so it is dropped here and logged for fixing.
+     */
+    protected function pdfResponse(string $bytes, string $filename, bool $download = false): ResponseInterface
+    {
+        if (ob_get_level() > 0 && ($stray = (string) ob_get_contents()) !== '') {
+            ob_clean();
+            log_message('error', 'Output before a PDF ({file}) was discarded: {out}', ['file' => $filename, 'out' => mb_substr(trim(strip_tags($stray)), 0, 300)]);
+        }
+        $filename = preg_replace('/[^A-Za-z0-9_.\-]+/', '_', $filename);
+
+        return $this->response->setHeader('Content-Type', 'application/pdf')
+            ->setHeader('Content-Disposition', ($download ? 'attachment' : 'inline') . '; filename="' . $filename . '"')
+            ->setHeader('Cache-Control', 'private, no-store')
+            ->setHeader('X-Content-Type-Options', 'nosniff')
+            ->setBody($bytes);
+    }
+
     protected function wantsJson(): bool
     {
         return $this->request->isAJAX() || str_contains($this->request->getHeaderLine('Accept'), 'application/json');

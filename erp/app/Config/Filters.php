@@ -9,7 +9,6 @@ use App\Filters\SessionGuardFilter;
 use App\Filters\SignedOutRequestFilter;
 use CodeIgniter\Config\Filters as BaseFilters;
 use CodeIgniter\Filters\Cors;
-use CodeIgniter\Filters\CSRF;
 use CodeIgniter\Filters\DebugToolbar;
 use CodeIgniter\Filters\ForceHTTPS;
 use CodeIgniter\Filters\Honeypot;
@@ -25,7 +24,7 @@ class Filters extends BaseFilters
      * App aliases: perm (DB-backed RBAC), guard, signedout, dgrheaders, aitoken.
      */
     public array $aliases = [
-        'csrf'          => CSRF::class,
+        'csrf'          => \App\Filters\CsrfFilter::class, // CodeIgniter's check + a clear message when the session cookie is missing
         'toolbar'       => DebugToolbar::class,
         'honeypot'      => Honeypot::class,
         'invalidchars'  => InvalidChars::class,

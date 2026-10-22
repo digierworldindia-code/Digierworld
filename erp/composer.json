@@ -1,10 +1,10 @@
 {
     "name": "digierworld/dgr-office",
-    "description": "DGR Office \u2014 Business ERP for DIGIE R WORLD (GST billing, cash memo, CRM, Google Sheets, HRM, payroll, scoped AI)",
+    "description": "DGR Office — Business ERP for DIGIE R WORLD (GST billing, cash memo, CRM, Google Sheets, HRM, payroll, scoped AI)",
     "license": "proprietary",
     "type": "project",
     "require": {
-        "php": "^8.3",
+        "php": "^8.2",
         "anthropic-ai/sdk": "^0.59",
         "brick/math": "^1.0",
         "codeigniter4/framework": "^4.7",
@@ -36,7 +36,10 @@
     "config": {
         "optimize-autoloader": true,
         "preferred-install": "dist",
-        "sort-packages": true
+        "sort-packages": true,
+        "platform": {
+            "php": "8.2.0"
+        }
     },
     "scripts": {
         "test": "phpunit",

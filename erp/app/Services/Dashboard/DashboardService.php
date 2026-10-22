@@ -53,6 +53,21 @@ class DashboardService
         };
     }
 
+    /**
+     * Latest billing documents the user may see (billing dashboard), with the
+     * same record scope as the documents list.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function recentDocuments(int $limit): array
+    {
+        $b = $this->db->table('billing_documents d')
+            ->select('d.id, d.doc_type, d.status, d.draft_ref, d.document_number, d.issue_date, d.bill_to_name, d.grand_total, d.balance_due, d.payment_status');
+        service('billingAccess')->applyScope($b, 'd');
+
+        return $b->orderBy('d.id', 'DESC')->limit($limit)->get()->getResultArray();
+    }
+
     /** @return list<array{label: string, done: bool, url: string}> */
     public function setupChecklist(): array
     {

@@ -42,7 +42,7 @@ class PermissionSeeder extends Seeder
                 'is_super'    => $isSuper ? 1 : 0,
                 'is_system'   => 1,
                 'is_active'   => 1,
-            ]);
+            ] + ($this->db->fieldExists('landing_url', 'roles') ? ['landing_url' => config('Landing')->starterDefaults[$code] ?? null] : []));
             $roleId = (int) $this->db->insertID();
             if ($isSuper) {
                 continue;

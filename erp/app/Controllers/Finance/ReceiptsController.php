@@ -230,9 +230,7 @@ class ReceiptsController extends BaseController
         service('audit')->log('receipt.pdf_viewed', 'payment_receipt', (int) $r['id'], null, null, 'Voucher PDF ' . $r['receipt_number']);
         $name = preg_replace('/[^A-Za-z0-9_\-]+/', '_', ($r['receipt_type'] === 'refund' ? 'Refund_' : 'Receipt_') . $r['receipt_number']) . '.pdf';
 
-        return $this->response->setHeader('Content-Type', 'application/pdf')
-            ->setHeader('Content-Disposition', ($this->request->getGet('download') ? 'attachment' : 'inline') . '; filename="' . $name . '"')
-            ->setHeader('Cache-Control', 'private, no-store')->setBody($bytes);
+        return $this->pdfResponse($bytes, $name, (bool) $this->request->getGet('download'));
     }
 
     public function apply($id)

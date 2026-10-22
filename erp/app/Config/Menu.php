@@ -16,6 +16,7 @@ class Menu extends BaseConfig
             ['label' => 'Dashboard', 'url' => '/', 'icon' => 'speedometer2', 'perms' => ['dashboard.view']],
         ]],
         ['label' => 'Billing', 'icon' => 'receipt', 'items' => [
+            ['label' => 'Billing Dashboard', 'url' => 'dashboard/billing', 'icon' => 'speedometer', 'perms' => ['billing.invoice.view_own', 'billing.invoice.view_all', 'billing.cash_memo.view_own', 'billing.cash_memo.view_all', 'billing.estimate.view_own', 'billing.estimate.view_all', 'billing.note.view_all']],
             ['label' => 'Create Document', 'url' => 'billing/documents/new', 'icon' => 'plus-square', 'perms' => ['billing.invoice.create_draft', 'billing.cash_memo.create_draft', 'billing.estimate.create_draft', 'billing.note.create_draft']],
             ['label' => 'Invoices', 'url' => 'billing/documents?type=tax_invoice', 'icon' => 'file-earmark-text', 'perms' => ['billing.invoice.view_own', 'billing.invoice.view_all']],
             ['label' => 'Cash Memos', 'url' => 'billing/documents?type=cash_memo', 'icon' => 'cash-coin', 'perms' => ['billing.cash_memo.view_own', 'billing.cash_memo.view_all']],
@@ -51,6 +52,7 @@ class Menu extends BaseConfig
             ['label' => 'Google Sheets Sync', 'url' => 'crm/sync', 'icon' => 'cloud-arrow-up', 'perms' => ['crm.sheets.view', 'crm.sheets.manage']],
         ]],
         ['label' => 'HR', 'icon' => 'person-badge', 'items' => [
+            ['label' => 'HR Dashboard', 'url' => 'dashboard/hr', 'icon' => 'speedometer', 'perms' => ['dashboard.hr_kpis', 'dashboard.payroll_kpis', 'hr.employee.view_basic', 'hr.employee.view_all', 'hr.attendance.view_all', 'hr.leave.view_all', 'hr.leave.approve', 'hr.candidate.view', 'hr.candidate.view_all', 'hr.payroll.view']],
             ['label' => 'Vacancies / JDs', 'url' => 'hr/vacancies', 'icon' => 'briefcase', 'perms' => ['hr.vacancy.view']],
             ['label' => 'Applicants', 'url' => 'hr/candidates', 'icon' => 'person-plus', 'perms' => ['hr.candidate.view', 'hr.candidate.view_all']],
             ['label' => 'Shortlisting Board', 'url' => 'hr/candidates/board', 'icon' => 'kanban', 'perms' => ['hr.candidate.view', 'hr.candidate.view_all']],

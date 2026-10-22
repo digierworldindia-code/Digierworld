@@ -19,6 +19,8 @@ $routes->get('health', 'HealthController::index');
 // ---- Overview / self-service ----
 $routes->get('/', 'DashboardController::index'); // signed-in users only (global session filter); without dashboard.view it opens the user's first module
 $routes->get('dashboard/data', 'DashboardController::data', ['filter' => 'perm:dashboard.view']);
+$routes->get('dashboard/billing', 'DashboardController::area/billing'); // permission checked in the controller (Config\Landing)
+$routes->get('dashboard/hr', 'DashboardController::area/hr');
 $routes->get('brand/logo', 'BrandController::logo');
 $routes->get('profile', 'ProfileController::index');
 $routes->get('profile/password', 'ProfileController::password');

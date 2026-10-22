@@ -162,8 +162,7 @@ class PayrollController extends HrBase
         $this->authorize(['hr.payslip.view_all']);
         $item = $this->db->table('payroll_items')->where('id', $this->idOr404($id))->get()->getRowArray() ?? $this->notFound();
 
-        return $this->response->setHeader('Content-Type', 'application/pdf')->setHeader('Cache-Control', 'private, no-store')
-            ->setHeader('Content-Disposition', 'inline; filename="payslip-preview.pdf"')->setBody(service('payslips')->render((int) $item['id']));
+        return $this->pdfResponse(service('payslips')->render((int) $item['id']), 'payslip-preview.pdf');
     }
 
     public function register($id)

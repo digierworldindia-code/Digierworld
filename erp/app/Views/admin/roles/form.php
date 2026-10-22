@@ -13,6 +13,16 @@
             <div class="mb-3 small text-muted">Code: <span class="mono"><?= esc($role['code']) ?></span> · <?= $userCount ?> user(s)</div>
             <?php endif ?>
             <div class="mb-3"><label class="form-label" for="description">Description</label><textarea class="form-control" id="description" name="description" rows="3"><?= esc(old('description') ?? ($role['description'] ?? '')) ?></textarea></div>
+            <?php if (! $isSuper): $land = old('landing_url') ?? ($role['landing_url'] ?? 'auto'); ?>
+            <div class="mb-3"><label class="form-label" for="landing_url">Landing page after sign-in</label>
+                <select class="form-select" id="landing_url" name="landing_url">
+                    <option value="auto" <?= $land === 'auto' ? 'selected' : '' ?>>Automatic (dashboard, or the first page the role may open)</option>
+                    <?php foreach ($landings as $path => $opt): ?><option value="<?= esc($path === '' ? '/' : $path) ?>" <?= $land !== 'auto' && (string) $land === $path ? 'selected' : '' ?>><?= esc($opt['label']) ?></option><?php endforeach ?>
+                </select>
+                <div class="form-text">Users with this role open this page after signing in (only if their permissions allow it; otherwise the automatic choice is used).</div></div>
+            <?php else: ?>
+            <div class="mb-3 small text-muted">Landing page: Owner dashboard.</div>
+            <?php endif ?>
             <?php if ($role && ! $isSuper): ?>
             <div class="form-check form-switch mb-3"><input class="form-check-input" type="checkbox" id="is_active" name="is_active" value="1" <?= $role['is_active'] ? 'checked' : '' ?>><label class="form-check-label" for="is_active">Active</label></div>
             <?php endif ?>

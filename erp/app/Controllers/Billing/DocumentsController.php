@@ -352,10 +352,7 @@ class DocumentsController extends BaseController
             service('audit')->log('billing.pdf_' . ($this->request->getGet('download') ? 'downloaded' : 'viewed'), 'billing_document', (int) $doc['id'], null, null, 'PDF ' . ($doc['document_number'] ?? ''));
         }
 
-        return $this->response->setHeader('Content-Type', 'application/pdf')
-            ->setHeader('Content-Disposition', ($this->request->getGet('download') ? 'attachment' : 'inline') . '; filename="' . $name . '"')
-            ->setHeader('Cache-Control', 'private, no-store')
-            ->setBody($bytes);
+        return $this->pdfResponse($bytes, $name, (bool) $this->request->getGet('download'));
     }
 
     public function cancel($id)

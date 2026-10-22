@@ -11,6 +11,7 @@
  * @var array<string, string> $treatmentLabels
  */
 use App\Libraries\Dec;
+use App\Libraries\PdfText;
 
 $h        = $s['header'];
 $t        = $s['totals'];
@@ -42,6 +43,7 @@ $money   = static fn ($v) => inr((string) $v, false);
 $rate    = static fn ($v) => Dec::rateLabel((string) $v) . '%';
 $typeLine = ['cgst_sgst' => 'CGST + SGST (intra-state supply)', 'cgst_utgst' => 'CGST + UTGST (intra-Union Territory supply)', 'igst' => 'IGST (inter-state supply)', 'none' => 'No GST charged'][$gstType] ?? '—';
 $reverse = ! empty($h['reverse_charge']) || in_array('reverse_charge', array_column($s['lines'], 'tax_treatment'), true);
+$numericCols = 5 + ($hasDisc ? 1 : 0) + count($taxCols) * 2 + ($hasCess ? 1 : 0); // SAC, qty, rate, [disc], taxable, [tax], [cess], amount
 $posLabel = ($h['place_of_supply_name'] ?? '') . (isset($h['place_of_supply_state_code']) && $h['place_of_supply_state_code'] ? ' (' . $h['place_of_supply_state_code'] . ')' : '');
 ?>
 <!doctype html>
@@ -65,13 +67,16 @@ $posLabel = ($h['place_of_supply_name'] ?? '') . (isset($h['place_of_supply_stat
     table.items th { background: <?= $layout === 'minimal' ? '#f2f2f2' : ($layout === 'premium' ? '#111' : '#e9e9e9') ?>; color: <?= $layout === 'premium' ? '#fff' : '#111' ?>; font-size: <?= $fs - 1.5 ?>pt; padding: 4px 3px; border: 1px solid <?= $layout === 'minimal' ? '#ccc' : '#333' ?>; }
     table.items td { padding: 4px 3px; border: 1px solid <?= $layout === 'minimal' ? '#ddd' : '#555' ?>; font-size: <?= $fs - 0.5 ?>pt; }
     table.items tr { page-break-inside: avoid; }
+    table.items tr.cont-next td { border-bottom: none; }
+    table.items tr.cont td { border-top: none; padding-top: 0; }
+    .text { overflow-wrap: anywhere; }
     table.sum td { padding: 2px 4px; }
     table.sum tr.grand td { font-weight: bold; font-size: <?= $fs + 2 ?>pt; border-top: 2px solid #111; padding-top: 4px; }
     table.taxsum th, table.taxsum td { border: 1px solid #999; padding: 2px 4px; font-size: <?= $fs - 1.5 ?>pt; }
     table.taxsum th { background: #f2f2f2; }
     .accent-bar { height: 4px; background: <?= $accent ?>; margin-bottom: 6px; }
     .watermark { position: fixed; top: 38%; left: 0; width: 100%; text-align: center; font-size: 46pt; color: rgba(200, 0, 0, .13); transform: rotate(-28deg); font-weight: bold; }
-    .sig img { max-height: 70px; }
+    .sig img { max-height: 70px; max-width: 100%; }
     .nowrap { white-space: nowrap; }
 </style></head>
 <body>
@@ -119,7 +124,7 @@ $logoHtml = ! empty($images['logo'])
 
 <table>
     <tr>
-        <td style="width:58%" class="box">
+        <td style="width:58%" class="box text">
             <div class="label"><?= in_array($docType, ['credit_note', 'debit_note'], true) ? 'Issued to' : 'Bill to' ?></div>
             <div class="bold"><?= esc($cus['name']) ?></div>
             <div><?= nl2br(esc((string) $cus['address'])) ?></div>
@@ -158,10 +163,10 @@ $logoHtml = ! empty($images['logo'])
     </tr>
     </thead>
     <tbody>
-    <?php foreach ($s['lines'] as $l): ?>
-        <tr>
+    <?php foreach ($s['lines'] as $l): $desc = PdfText::chunks((string) ($l['description'] ?? '')); ?>
+        <tr<?= count($desc) > 1 ? ' class="cont-next"' : '' ?>>
             <td class="center"><?= (int) $l['line_no'] ?></td>
-            <td><span class="bold"><?= esc($l['item_name']) ?></span><?php if (! empty($l['description'])): ?><br><span class="small"><?= nl2br(esc($l['description'])) ?></span><?php endif ?>
+            <td class="text"><span class="bold"><?= esc($l['item_name']) ?></span><?php if ($desc !== []): ?><br><span class="small"><?= nl2br(esc($desc[0])) ?></span><?php endif ?>
                 <?php if (($l['tax_treatment'] ?? 'regular') !== 'regular'): ?><br><span class="small muted"><?= esc($treatmentLabels[$l['tax_treatment']] ?? $l['tax_treatment']) ?></span><?php endif ?></td>
             <td class="center"><?= esc((string) ($l['sac_code'] ?? '')) ?></td>
             <td class="right"><?= esc(rtrim(rtrim((string) $l['qty'], '0'), '.')) ?> <?= esc((string) ($l['unit'] ?? '')) ?></td>
@@ -175,6 +180,11 @@ $logoHtml = ! empty($images['logo'])
             <?php if ($hasCess): ?><td class="right"><?= $money($l['cess_amount']) ?></td><?php endif ?>
             <td class="right bold"><?= $money($l['line_total']) ?></td>
         </tr>
+        <?php foreach (array_slice($desc, 1) as $i => $piece): // the rest of a long description, one row per piece so pages can break between them ?>
+        <tr class="cont<?= $i < count($desc) - 2 ? ' cont-next' : '' ?>">
+            <td></td><td class="text"><span class="small"><?= nl2br(esc($piece)) ?></span></td><?= str_repeat('<td></td>', $numericCols) ?>
+        </tr>
+        <?php endforeach ?>
     <?php endforeach ?>
     </tbody>
 </table>
@@ -214,9 +224,19 @@ $logoHtml = ! empty($images['logo'])
     </tr>
 </table>
 
+<?php
+// notes and terms sit beside the signature; long ones go below it as plain text, which (unlike a table cell) can continue on the next page
+$termsHtml = '';
+if (($set['show_terms'] ?? true) && (! empty($h['terms']) || ! empty($h['notes']))) {
+    $termsHtml = (! empty($h['notes']) ? '<div class="label">Notes</div><div class="small">' . nl2br(esc((string) $h['notes'])) . '</div>' : '')
+        . (! empty($h['terms']) ? '<div class="label" style="margin-top:4px">Terms &amp; conditions</div><div class="small">' . nl2br(esc((string) $h['terms'])) . '</div>' : '');
+}
+$termsText  = (string) ($h['notes'] ?? '') . "\n" . (string) ($h['terms'] ?? '');
+$termsBelow = mb_strlen($termsText) > 700 || substr_count($termsText, "\n") > 12;
+?>
 <table style="margin-top:10px">
     <tr>
-        <td style="width:58%">
+        <td style="width:58%" class="text">
             <?php if (($set['show_bank'] ?? true) && ! empty($s['bank']) && ! in_array($docType, ['credit_note'], true)): $b = $s['bank']; ?>
                 <div class="box">
                     <div class="label">Payment details</div>
@@ -229,18 +249,13 @@ $logoHtml = ! empty($images['logo'])
                     </td><?php if (! empty($images['upi_qr'])): ?><td style="width:28mm" class="right"><img src="<?= $images['upi_qr'] ?>" style="width:<?= min(30, (float) ($s['branding']['upi_qr']['width_mm'] ?? 26)) ?>mm" alt="UPI QR"></td><?php endif ?></tr></table>
                 </div>
             <?php endif ?>
-            <?php if (($set['show_terms'] ?? true) && (! empty($h['terms']) || ! empty($h['notes']))): ?>
-                <div style="margin-top:6px">
-                    <?php if (! empty($h['notes'])): ?><div class="label">Notes</div><div class="small"><?= nl2br(esc((string) $h['notes'])) ?></div><?php endif ?>
-                    <?php if (! empty($h['terms'])): ?><div class="label" style="margin-top:4px">Terms &amp; conditions</div><div class="small"><?= nl2br(esc((string) $h['terms'])) ?></div><?php endif ?>
-                </div>
-            <?php endif ?>
+            <?php if ($termsHtml !== '' && ! $termsBelow): ?><div style="margin-top:6px" class="text"><?= $termsHtml ?></div><?php endif ?>
         </td>
         <td style="width:4%"></td>
         <td style="width:38%" class="center sig">
             <div class="small">For <span class="bold"><?= esc($sup['legal_name'] ?: '') ?></span></div>
             <?php if (! empty($h['signed']) && (! empty($images['sign_stamp']) || ! empty($images['signature']) || ! empty($images['stamp']))): ?>
-                <div style="height:78px; margin-top:4px">
+                <div style="min-height:78px; margin-top:4px">
                     <?php if (! empty($images['sign_stamp'])): ?><img src="<?= $images['sign_stamp'] ?>" style="width:<?= (float) ($s['branding']['sign_stamp']['width_mm'] ?? 40) ?>mm" alt="signature and stamp">
                     <?php else: ?>
                         <?php if (! empty($images['stamp'])): ?><img src="<?= $images['stamp'] ?>" style="width:<?= (float) ($s['branding']['stamp']['width_mm'] ?? 26) ?>mm" alt="stamp"><?php endif ?>
@@ -257,6 +272,7 @@ $logoHtml = ! empty($images['logo'])
     </tr>
 </table>
 
+<?php if ($termsHtml !== '' && $termsBelow): ?><div style="margin-top:8px" class="text"><?= $termsHtml ?></div><?php endif ?>
 <?php if (! empty($sup['disclaimer'])): ?><div class="small muted" style="margin-top:8px"><?= esc($sup['disclaimer']) ?></div><?php endif ?>
 <?php if (! empty($set['footer_note'])): ?><div class="small muted center" style="margin-top:6px"><?= esc($set['footer_note']) ?></div><?php endif ?>
 </body></html>

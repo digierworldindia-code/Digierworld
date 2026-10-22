@@ -103,7 +103,6 @@ class TemplatesController extends BaseController
         $snap = (new SnapshotBuilder($this->db))->build($doc, $calc['lines'], $calc['summary'], (bool) $this->request->getGet('signed'));
         $pdf  = service('documentPdf')->renderSnapshot($snap, 'draft', 'original', []);
 
-        return $this->response->setHeader('Content-Type', 'application/pdf')->setHeader('Content-Disposition', 'inline; filename="Template_preview_' . $tpl['code'] . '.pdf"')
-            ->setHeader('Cache-Control', 'private, no-store')->setBody($pdf);
+        return $this->pdfResponse($pdf, 'Template_preview_' . $tpl['code'] . '.pdf');
     }
 }
