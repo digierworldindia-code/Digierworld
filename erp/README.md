@@ -23,7 +23,8 @@ PhpSpreadsheet · Dompdf · google/apiclient (Sheets only) · smalot/pdfparser
 | [docs/06-AI-BOUNDARY.md](docs/06-AI-BOUNDARY.md) | What the AI can and cannot see or do, provider set-up, service tokens |
 | [docs/07-TEST-REPORT.md](docs/07-TEST-REPORT.md) | Automated and manual test results, evidence files, known limitations |
 | [docs/08-SECURITY-CHECKLIST.md](docs/08-SECURITY-CHECKLIST.md) | Security review checklist with how each item is enforced |
-| [docs/09-UI-THEME.md](docs/09-UI-THEME.md) | Approved black · white · gold theme, component reference, self-hosted asset policy, CSP, library upgrades |
+| [docs/09-UI-THEME.md](docs/09-UI-THEME.md) | Light / Dark / System theme (black · white · gold), component reference, self-hosted asset policy, CSP, library upgrades |
+| [docs/10-RELEASE-1.3.0.md](docs/10-RELEASE-1.3.0.md) | 1.3.0 release report: root causes, database changes, modified files, test results, upgrade steps |
 | [docs/samples/](docs/samples/) | Sample import files (clients/vendors, CRM leads, bank statement) |
 | [docs/evidence/](docs/evidence/) | PDFs/XLSX and the exact AI request produced by the acceptance tests |
 
