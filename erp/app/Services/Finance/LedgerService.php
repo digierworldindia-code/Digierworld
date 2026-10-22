@@ -157,8 +157,9 @@ class LedgerService
     {
         $acc     = $this->db->table('bank_cash_accounts')->where('id', $bankCashAccountId)->get()->getRowArray() ?? throw new BusinessRuleException('Unknown bank/cash account.');
         $amount  = Dec::round($acc['opening_balance'] ?? '0');
-        $date    = $acc['opening_date'] ?: date('Y-m-d');
         $current = $this->db->table('journal_entries')->where(['source_type' => 'opening_balance', 'source_id' => $bankCashAccountId, 'reversed_by_id' => null, 'reversal_of_id' => null])->get()->getRowArray();
+        // without a date the existing entry keeps its own (re-dating it to today would move the opening balance)
+        $date    = $acc['opening_date'] ?: ($current['entry_date'] ?? date('Y-m-d'));
         if ($current !== null) {
             $posted = $this->db->table('journal_lines')->select('COALESCE(SUM(debit - credit),0) n', false)->where(['journal_entry_id' => $current['id'], 'ledger_account_id' => $acc['ledger_account_id']])->get()->getRow()->n;
             if (Dec::cmp($posted, $amount) === 0 && $current['entry_date'] === $date) {

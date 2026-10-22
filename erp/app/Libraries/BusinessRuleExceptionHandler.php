@@ -29,7 +29,9 @@ class BusinessRuleExceptionHandler implements ExceptionHandlerInterface
             return;
         }
         if ($request instanceof IncomingRequest && $request->getMethod() === 'POST') {
-            redirect()->back()->withInput()->with('error', $message)->with('errors', $errors)->send();
+            $redirect = redirect()->back()->withInput()->with('error', $message)->with('errors', $errors);
+            forget_secret_input();
+            $redirect->send();
 
             return;
         }

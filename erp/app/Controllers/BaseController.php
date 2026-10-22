@@ -95,9 +95,12 @@ abstract class BaseController extends Controller
     /** @param array<string, string> $errors */
     protected function backWithErrors(array $errors, ?string $message = null): RedirectResponse
     {
-        return redirect()->back()->withInput()
+        $res = redirect()->back()->withInput()
             ->with('errors', $errors)
             ->with('error', $message ?? 'Please correct the highlighted fields.');
+        forget_secret_input();
+
+        return $res;
     }
 
     protected function backWithRuleError(BusinessRuleException $e): RedirectResponse|ResponseInterface
@@ -106,7 +109,10 @@ abstract class BaseController extends Controller
             return $this->json(['ok' => false, 'message' => $e->getMessage(), 'errors' => $e->errors()], 422);
         }
 
-        return redirect()->back()->withInput()->with('errors', $e->errors())->with('error', $e->getMessage());
+        $res = redirect()->back()->withInput()->with('errors', $e->errors())->with('error', $e->getMessage());
+        forget_secret_input();
+
+        return $res;
     }
 
     /** 404 that does not reveal whether the record exists outside the caller's scope. */

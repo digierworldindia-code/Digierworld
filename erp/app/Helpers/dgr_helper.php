@@ -367,3 +367,21 @@ if (! function_exists('dr_cr')) {
         return inr(\App\Libraries\Dec::abs($b)) . (\App\Libraries\Dec::isPositive($b) ? ' Dr' : ' Cr');
     }
 }
+
+if (! function_exists('forget_secret_input')) {
+    /**
+     * After redirect()->withInput(): drops passwords, bank account numbers,
+     * CIF and keys from the input kept in the session for refilling the
+     * form (those fields are never refilled anyway).
+     */
+    function forget_secret_input(): void
+    {
+        $old = session()->getFlashdata('_ci_old_input');
+        if (! is_array($old) || ! isset($old['post']) || ! is_array($old['post'])) {
+            return;
+        }
+        $secret = ['password', 'password_confirm', 'pass_confirm', 'admin_password', 'account_number', 'cif', 'api_key', 'secret', 'client_secret', 'private_key', 'token', 'smtp_pass'];
+        $old['post'] = array_diff_key($old['post'], array_flip($secret));
+        session()->setFlashdata('_ci_old_input', $old);
+    }
+}

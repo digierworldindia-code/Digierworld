@@ -3,6 +3,7 @@
 namespace App\Controllers\Settings;
 
 use App\Controllers\BaseController;
+use App\Libraries\Dec;
 use App\Services\Settings\SettingsStore;
 
 /**
@@ -13,6 +14,12 @@ use App\Services\Settings\SettingsStore;
  */
 class BanksController extends BaseController
 {
+    /** @var array<string, array{0: int, 1: string}> field => [max length, label] */
+    private const MAX_LENGTHS = [
+        'display_name' => [120, 'Display name'], 'bank_name' => [120, 'Bank name'], 'beneficiary_name' => [150, 'Beneficiary name'],
+        'branch' => [120, 'Branch'], 'upi_id' => [100, 'UPI ID'], 'classification_note' => [255, 'Classification'], 'cif' => [40, 'CIF'],
+    ];
+
     public function index()
     {
         $rows = $this->db->table('bank_cash_accounts b')->select('b.*, l.code AS ledger_code')
@@ -89,6 +96,24 @@ class BanksController extends BaseController
         if ($ownership === 'owner_personal' && trim((string) $this->request->getPost('classification_note')) === '') {
             $errors['classification_note'] = 'Record how your accountant has classified business receipts into this personal account (e.g. owner clearing / capital).';
         }
+        // column sizes: longer values would be rejected by the database
+        foreach (self::MAX_LENGTHS as $field => [$max, $label]) {
+            if (! isset($errors[$field]) && mb_strlen(trim((string) $this->request->getPost($field))) > $max) {
+                $errors[$field] = "{$label} can be at most {$max} characters.";
+            }
+        }
+        $priority = trim((string) $this->request->getPost('display_priority'));
+        if ($priority !== '' && (! ctype_digit($priority) || (int) $priority > 9999)) {
+            $errors['display_priority'] = 'Display priority is a whole number from 0 to 9999.';
+        }
+        $opening = str_replace([',', ' ', '₹'], '', trim((string) $this->request->getPost('opening_balance')));
+        if ($opening !== '' && (! preg_match('/^-?\d{1,13}(\.\d{1,2})?$/', $opening))) {
+            $errors['opening_balance'] = 'Enter the opening balance as an amount, e.g. 50000 or 50,000.00.';
+        }
+        $openingDate = trim((string) $this->request->getPost('opening_date'));
+        if ($openingDate !== '' && ymd($openingDate) === null) {
+            $errors['opening_date'] = 'Enter a valid date.';
+        }
         if ($errors !== []) {
             return $this->backWithErrors($errors);
         }
@@ -106,15 +131,22 @@ class BanksController extends BaseController
             'branch'                => $this->post('branch'),
             'account_type'          => in_array($this->post('account_type'), ['current', 'savings', 'od', 'cc', 'wallet', 'other'], true) ? $this->post('account_type') : null,
             'upi_id'                => $upi ?: null,
-            'display_priority'      => (int) ($this->post('display_priority') ?? 100),
+            'display_priority'      => $priority === '' ? 100 : (int) $priority,
             'show_on_invoice'       => $showOnInvoice,
             'is_default_on_invoice' => $isDefault && $showOnInvoice ? 1 : 0,
-            'opening_balance'       => number_format((float) str_replace(',', '', (string) ($this->post('opening_balance') ?? '0')), 2, '.', ''),
-            'opening_date'          => ymd((string) $this->post('opening_date')),
+            'opening_balance'       => Dec::round($opening === '' ? '0' : $opening),
+            'opening_date'          => ymd($openingDate),
             'requires_review'       => $ownership === 'owner_personal' ? 1 : ($this->request->getPost('requires_review') ? 1 : 0),
             'is_active'             => $before === null ? 1 : ($this->request->getPost('is_active') ? 1 : 0),
             'updated_by'            => $this->userId,
         ];
+        if (! $data['is_active']) {
+            $data['is_default_on_invoice'] = 0; // an inactive account is never offered on new invoices
+        }
+        if ($data['opening_date'] === null && ! Dec::isZero($data['opening_balance'])) {
+            // an opening balance needs a fixed date; otherwise each later save would move it to "today"
+            $data['opening_date'] = $before['opening_date'] ?? date('Y-m-d');
+        }
         if ($acctNo !== '') {
             $data['account_number_enc'] = SettingsStore::encrypt($acctNo);
             $data['account_last4']      = substr($acctNo, -4);
