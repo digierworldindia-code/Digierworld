@@ -3,6 +3,7 @@
 namespace App\Controllers\Finance;
 
 use App\Controllers\BaseController;
+use App\Libraries\StatementPage;
 use App\Libraries\Dec;
 
 /** Bank / cash / UPI accounts with book balances and account statements. */
@@ -36,7 +37,8 @@ class AccountsController extends BaseController
     {
         $acc  = $this->find($this->idOr404($id));
         [$from, $to] = $this->range();
-        $data = $this->statement($acc, $from, $to);
+        [$page, $perPage] = $this->paging(100);
+        $data = StatementPage::build($this->db, (int) $acc['ledger_account_id'], $from, $to, null, $page, $perPage);
 
         return $this->render('finance/accounts/show', $data + [
             'pageTitle' => $acc['display_name'], 'breadcrumbs' => [['Finance'], ['Bank & cash accounts', 'finance/accounts'], [$acc['display_name']]],

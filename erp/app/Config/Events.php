@@ -23,6 +23,9 @@ use CodeIgniter\HotReloader\HotReloader;
  *      Events::on('create', [$myInstance, 'myMethod']);
  */
 
+// count SQL queries for the slow-request log (app/Filters/SlowRequestFilter.php)
+Events::on('DBQuery', [\App\Filters\SlowRequestFilter::class, 'countQuery']);
+
 Events::on('pre_system', static function (): void {
     if (ENVIRONMENT !== 'testing') {
         $value = ini_get('zlib.output_compression');

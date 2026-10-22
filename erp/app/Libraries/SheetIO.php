@@ -2,17 +2,10 @@
 
 namespace App\Libraries;
 
-use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 use PhpOffice\PhpSpreadsheet\IOFactory;
-use PhpOffice\PhpSpreadsheet\Spreadsheet;
-use PhpOffice\PhpSpreadsheet\Style\Alignment;
-use PhpOffice\PhpSpreadsheet\Style\Border;
-use PhpOffice\PhpSpreadsheet\Style\Fill;
-use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
-use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 /**
- * Native .xlsx/.csv reading and writing (PhpSpreadsheet).
+ * Native .xlsx/.csv reading (PhpSpreadsheet) and writing (XlsxWriter, CSV).
  *
  * Sheet definition for write():
  *  ['title' => 'Invoices', 'columns' => [['key' => 'number', 'label' => 'No.', 'type' => 'text|money|int|date|percent'], …],
@@ -93,109 +86,7 @@ final class SheetIO
      */
     public static function xlsx(array $sheets, array $meta = []): string
     {
-        $book = new Spreadsheet();
-        $book->getProperties()->setCreator('DGR Office')->setTitle($meta['Report'] ?? 'Export');
-        $book->removeSheetByIndex(0);
-
-        if ($meta !== []) {
-            $about = $book->createSheet();
-            $about->setTitle('About');
-            $r = 1;
-            foreach ($meta as $k => $v) {
-                $about->setCellValue('A' . $r, $k);
-                $about->setCellValueExplicit('B' . $r, (string) $v, \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
-                $about->getStyle('A' . $r)->getFont()->setBold(true);
-                $r++;
-            }
-            $about->getColumnDimension('A')->setWidth(28);
-            $about->getColumnDimension('B')->setWidth(90);
-        }
-
-        foreach ($sheets as $def) {
-            $ws = $book->createSheet();
-            $ws->setTitle(mb_substr(preg_replace('#[\\\\/?*\[\]:]#', ' ', (string) $def['title']), 0, 31));
-            $cols = $def['columns'];
-            foreach ($cols as $i => $c) {
-                $cell = Coordinate::stringFromColumnIndex($i + 1) . '1';
-                $ws->setCellValue($cell, $c['label']);
-            }
-            $last = Coordinate::stringFromColumnIndex(count($cols));
-            $ws->getStyle("A1:{$last}1")->applyFromArray([
-                'font'      => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
-                'fill'      => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '1B1B1B']],
-                'alignment' => ['vertical' => Alignment::VERTICAL_CENTER, 'wrapText' => true],
-            ]);
-            $ws->getRowDimension(1)->setRowHeight(28);
-            $r = 2;
-            foreach ($def['rows'] as $row) {
-                foreach ($cols as $i => $c) {
-                    $cell = Coordinate::stringFromColumnIndex($i + 1) . $r;
-                    $v    = $row[$c['key']] ?? null;
-                    $type = $c['type'] ?? 'text';
-                    if ($v === null || $v === '') {
-                        continue;
-                    }
-                    match ($type) {
-                        'money', 'percent', 'number' => $ws->setCellValueExplicit($cell, (float) $v, \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_NUMERIC),
-                        'int'   => $ws->setCellValueExplicit($cell, (int) $v, \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_NUMERIC),
-                        'date'  => $ws->setCellValue($cell, \PhpOffice\PhpSpreadsheet\Shared\Date::PHPToExcel(strtotime((string) $v) ?: 0)),
-                        default => $ws->setCellValueExplicit($cell, (string) $v, \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING),
-                    };
-                }
-                $r++;
-            }
-            $lastRow = $r - 1;
-            if (! empty($def['totals']) && $lastRow >= 2) {
-                $ws->setCellValue('A' . $r, 'TOTAL');
-                foreach ($cols as $i => $c) {
-                    if (in_array($c['key'], $def['totals'], true)) {
-                        $colL = Coordinate::stringFromColumnIndex($i + 1);
-                        $ws->setCellValue($colL . $r, "=SUBTOTAL(9,{$colL}2:{$colL}{$lastRow})");
-                    }
-                }
-                $ws->getStyle("A{$r}:{$last}{$r}")->applyFromArray([
-                    'font'    => ['bold' => true],
-                    'borders' => ['top' => ['borderStyle' => Border::BORDER_MEDIUM]],
-                    'fill'    => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'F4EEE3']],
-                ]);
-            }
-            foreach ($cols as $i => $c) {
-                $colL = Coordinate::stringFromColumnIndex($i + 1);
-                $fmt  = match ($c['type'] ?? 'text') {
-                    'money'   => '#,##,##0.00;[Red]-#,##,##0.00',
-                    'percent' => '0.00',
-                    'number'  => '#,##0.000',
-                    'int'     => '0',
-                    'date'    => 'dd-mm-yyyy',
-                    default   => null,
-                };
-                if ($fmt !== null) {
-                    $ws->getStyle("{$colL}2:{$colL}" . max(2, $r))->getNumberFormat()->setFormatCode($fmt);
-                }
-                $ws->getColumnDimension($colL)->setWidth($c['width'] ?? match ($c['type'] ?? 'text') {
-                    'money' => 15, 'date' => 12, 'int' => 8, 'percent' => 8, default => 22,
-                });
-            }
-            $ws->freezePane('A2');
-            if ($lastRow >= 2) {
-                $ws->setAutoFilter("A1:{$last}{$lastRow}");
-            }
-            if (! empty($def['notes'])) {
-                $n = $r + 2;
-                foreach ($def['notes'] as $note) {
-                    $ws->setCellValue('A' . $n++, $note);
-                }
-            }
-        }
-        $book->setActiveSheetIndex(0);
-
-        $tmp = tempnam(WRITEPATH . 'tmp', 'xlsx');
-        (new Xlsx($book))->save($tmp);
-        $bytes = (string) file_get_contents($tmp);
-        @unlink($tmp);
-        $book->disconnectWorksheets();
-
-        return $bytes;
+        return XlsxWriter::build($sheets, $meta); // streamed row by row; see XlsxWriter
     }
 
     /**

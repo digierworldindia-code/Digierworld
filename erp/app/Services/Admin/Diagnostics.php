@@ -26,7 +26,7 @@ class Diagnostics
         };
 
         // PHP
-        $add('PHP', 'PHP version', version_compare(PHP_VERSION, '8.3.0', '>=') ? 'ok' : (version_compare(PHP_VERSION, '8.2.0', '>=') ? 'warn' : 'fail'), PHP_VERSION . ' (8.3+ recommended)');
+        $add('PHP', 'PHP version', version_compare(PHP_VERSION, '8.2.0', '>=') ? 'ok' : 'fail', PHP_VERSION . ' (8.2 or newer required)');
         // required by the application or its locked dependencies (composer.lock)
         foreach (['intl', 'mbstring', 'json', 'mysqli', 'curl', 'openssl', 'gd', 'zip', 'xml', 'dom', 'xmlwriter', 'fileinfo', 'iconv', 'ctype'] as $ext) {
             $add('PHP', "ext-{$ext}", extension_loaded($ext) ? 'ok' : 'fail', extension_loaded($ext) ? 'loaded' : 'missing — enable it in the hosting panel (PHP extensions)');
@@ -36,6 +36,15 @@ class Diagnostics
         $add('PHP', 'memory_limit', $this->bytes((string) ini_get('memory_limit')) >= 256 * 1048576 || ini_get('memory_limit') === '-1' ? 'ok' : 'warn', (string) ini_get('memory_limit') . ' (256M+ recommended for PDF/XLSX)');
         $add('PHP', 'upload_max_filesize', (string) ini_get('upload_max_filesize'), (string) ini_get('upload_max_filesize'));
         $out[array_key_last($out)][2] = $this->bytes((string) ini_get('upload_max_filesize')) >= 8 * 1048576 ? 'ok' : 'warn';
+        // gateway timeouts (504): how long PHP may run, and whether compiled code is cached
+        $met = (int) ini_get('max_execution_time');
+        $add('PHP', 'max_execution_time', $met === 0 || $met >= 60 ? 'ok' : 'warn', ($met === 0 ? 'no limit' : $met . ' s') . ' — the web server\'s own gateway timeout (often 60 s) applies as well; long jobs run from cron (php spark dgr:cron)');
+        $opcache = extension_loaded('Zend OPcache') && filter_var(ini_get('opcache.enable'), FILTER_VALIDATE_BOOLEAN);
+        $add('PHP', 'OPcache', $opcache ? 'ok' : 'warn', $opcache ? 'enabled' : 'not enabled for web requests — enable it in the hosting panel for much faster pages');
+        $zlib = filter_var(ini_get('zlib.output_compression'), FILTER_VALIDATE_BOOLEAN) || (int) ini_get('zlib.output_compression') > 0;
+        $add('PHP', 'zlib.output_compression', $zlib ? 'fail' : 'ok', $zlib ? 'on — CodeIgniter refuses to run with it; switch it off (the web server compresses pages itself)' : 'off');
+        $slow = $this->slowRequestsToday();
+        $add('PHP', 'Slow requests today', $slow === 0 ? 'ok' : 'warn', $slow === 0 ? 'none over ' . (int) env('app.slowRequestMs', 3000) . ' ms' : $slow . ' over ' . (int) env('app.slowRequestMs', 3000) . ' ms — see "SLOW REQUEST" lines in writable/logs/log-' . date('Y-m-d') . '.log');
 
         // Composer / vendor
         $vendorOk = is_file(ROOTPATH . 'vendor/autoload.php');
@@ -187,6 +196,25 @@ class Diagnostics
         $add('Billing readiness', 'Tax rates reviewed by accountant', $this->db->table('tax_rates')->where('review_status', 'accountant_reviewed')->countAllResults() > 0 ? 'ok' : 'warn', 'Seeded rates are suggestions until marked reviewed in Settings › Tax');
 
         return $out;
+    }
+
+    /** "SLOW REQUEST" lines in today's log (written by app/Filters/SlowRequestFilter.php). */
+    private function slowRequestsToday(): int
+    {
+        $log = rtrim(WRITEPATH, '/\\') . '/logs/log-' . date('Y-m-d') . '.log';
+        if (! is_file($log) || filesize($log) > 50 * 1048576) {
+            return 0;
+        }
+        $n  = 0;
+        $fh = fopen($log, 'rb');
+        while ($fh !== false && ($line = fgets($fh)) !== false) {
+            $n += str_contains($line, 'SLOW REQUEST') ? 1 : 0;
+        }
+        if ($fh !== false) {
+            fclose($fh);
+        }
+
+        return $n;
     }
 
     private function bytes(string $v): int

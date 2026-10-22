@@ -249,21 +249,23 @@ class DashboardService
             $users = [$uid];
         }
         $in    = static fn (string $col) => $users === null ? '1=1' : ($col . ' IN (' . implode(',', array_map('intval', $users ?: [0])) . ')');
-        $today = date('Y-m-d');
         $now   = date('Y-m-d H:i:s');
         $q     = fn (string $sql, array $b = []) => (int) ($this->db->query($sql, $b)->getRowArray()['v'] ?? 0);
+        // date ranges as [start, next day) so the column's index can be used (DATE(column) = … cannot)
+        $day   = [date('Y-m-d 00:00:00'), date('Y-m-d 00:00:00', strtotime('+1 day'))];
+        $span  = [$from . ' 00:00:00', date('Y-m-d 00:00:00', strtotime($to . ' +1 day'))];
 
         return [
             'scope_label'       => $users === null ? 'All teams' : (count($users) > 1 ? 'My team' : 'Mine'),
-            'calls_today'       => $q('SELECT COUNT(*) v FROM call_logs WHERE ' . $in('caller_id') . ' AND DATE(called_at) = ?', [$today]),
-            'connected_today'   => $q('SELECT COUNT(*) v FROM call_logs WHERE is_connected = 1 AND ' . $in('caller_id') . ' AND DATE(called_at) = ?', [$today]),
-            'due_today'         => $q("SELECT COUNT(*) v FROM followups WHERE status='pending' AND " . $in('owner_id') . ' AND DATE(due_at) = ?', [$today]),
+            'calls_today'       => $q('SELECT COUNT(*) v FROM call_logs WHERE ' . $in('caller_id') . ' AND called_at >= ? AND called_at < ?', $day),
+            'connected_today'   => $q('SELECT COUNT(*) v FROM call_logs WHERE is_connected = 1 AND ' . $in('caller_id') . ' AND called_at >= ? AND called_at < ?', $day),
+            'due_today'         => $q("SELECT COUNT(*) v FROM followups WHERE status='pending' AND " . $in('owner_id') . ' AND due_at >= ? AND due_at < ?', $day),
             'overdue'           => $q("SELECT COUNT(*) v FROM followups WHERE status='pending' AND " . $in('owner_id') . ' AND due_at < ?', [$now]),
-            'visits_today'      => $q("SELECT COUNT(*) v FROM visits WHERE status='scheduled' AND " . $in('visitor_id') . ' AND DATE(scheduled_at) = ?', [$today]),
-            'meetings_today'    => $q("SELECT COUNT(*) v FROM meetings WHERE status='scheduled' AND " . $in('organizer_id') . ' AND DATE(meeting_at) = ?', [$today]),
-            'new_leads'         => $q('SELECT COUNT(*) v FROM leads WHERE deleted_at IS NULL AND ' . $in('assigned_to') . ' AND DATE(created_at) BETWEEN ? AND ?', [$from, $to]),
-            'conversions'       => $q('SELECT COUNT(*) v FROM lead_conversion_links lc JOIN leads l ON l.id = lc.lead_id WHERE ' . $in('l.assigned_to') . ' AND DATE(lc.converted_at) BETWEEN ? AND ?', [$from, $to]),
-            'calls_period'      => $q('SELECT COUNT(*) v FROM call_logs WHERE ' . $in('caller_id') . ' AND DATE(called_at) BETWEEN ? AND ?', [$from, $to]),
+            'visits_today'      => $q("SELECT COUNT(*) v FROM visits WHERE status='scheduled' AND " . $in('visitor_id') . ' AND scheduled_at >= ? AND scheduled_at < ?', $day),
+            'meetings_today'    => $q("SELECT COUNT(*) v FROM meetings WHERE status='scheduled' AND " . $in('organizer_id') . ' AND meeting_at >= ? AND meeting_at < ?', $day),
+            'new_leads'         => $q('SELECT COUNT(*) v FROM leads WHERE deleted_at IS NULL AND ' . $in('assigned_to') . ' AND created_at >= ? AND created_at < ?', $span),
+            'conversions'       => $q('SELECT COUNT(*) v FROM lead_conversion_links lc JOIN leads l ON l.id = lc.lead_id WHERE ' . $in('l.assigned_to') . ' AND lc.converted_at >= ? AND lc.converted_at < ?', $span),
+            'calls_period'      => $q('SELECT COUNT(*) v FROM call_logs WHERE ' . $in('caller_id') . ' AND called_at >= ? AND called_at < ?', $span),
             'owner_visits_open' => $q("SELECT COUNT(*) v FROM visits WHERE status='scheduled' AND visitor_id = ?", [$uid]),
         ];
     }

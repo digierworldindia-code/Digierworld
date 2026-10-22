@@ -36,7 +36,7 @@
 .wizard-step { display: flex; align-items: center; gap: .5rem; padding: .45rem .8rem; border-radius: 30px; background: var(--dgr-card); border: 1px solid var(--dgr-border); font-size: .82rem; color: var(--dgr-text-2); text-decoration: none; }
 .wizard-step:hover { color: var(--dgr-text); border-color: var(--dgr-border-strong); }
 .wizard-step .num { width: 22px; height: 22px; border-radius: 50%; background: var(--dgr-raised); color: var(--dgr-text); display: inline-flex; align-items: center; justify-content: center; font-size: .72rem; font-weight: 700; }
-.wizard-step.done { border-color: rgba(74, 222, 128, .35); color: var(--dgr-text); }
+.wizard-step.done { border-color: color-mix(in srgb, var(--dgr-success) 35%, transparent); color: var(--dgr-text); }
 .wizard-step.done .num { background: var(--dgr-success); color: var(--dgr-on-success); }
 .wizard-step.active { border-color: var(--dgr-gold); background: var(--dgr-gold-soft); color: var(--dgr-text); }
 .wizard-step.active .num { background: var(--dgr-gold); color: var(--dgr-on-gold); }

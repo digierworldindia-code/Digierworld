@@ -49,6 +49,29 @@
             return t;
         },
 
+        /**
+         * Marks a button as working (spinner, disabled look, aria-busy) and
+         * returns a function that restores it. busy(btn, false) restores now.
+         */
+        busy(btn, on = true) {
+            if (!btn || btn.tagName === 'FORM') { return () => {}; }
+            const restore = () => {
+                btn.removeAttribute('aria-busy');
+                btn.classList.remove('is-busy');
+                btn.querySelectorAll('.dgr-spinner').forEach((s) => s.remove());
+            };
+            if (!on) { restore(); return restore; }
+            if (btn.getAttribute('aria-busy') !== 'true') {
+                btn.setAttribute('aria-busy', 'true');
+                btn.classList.add('is-busy');
+                const spin = document.createElement('span');
+                spin.className = 'spinner-border spinner-border-sm me-1 dgr-spinner';
+                spin.setAttribute('aria-hidden', 'true');
+                btn.prepend(spin);
+            }
+            return restore;
+        },
+
         toast(message, type = 'success') {
             const wrap = document.querySelector('[data-toasts]');
             if (!wrap) { return; }
@@ -112,11 +135,20 @@
             }
             return;
         }
-        // prevent double submission
+        // prevent double submission, and show that the request is on its way
         if (form.dataset.submitting) { ev.preventDefault(); return; }
         if (!form.hasAttribute('data-allow-resubmit')) {
             form.dataset.submitting = '1';
-            setTimeout(() => { delete form.dataset.submitting; }, 4000);
+            const busy = DGR.busy(submitter || form.querySelector('[type="submit"], button:not([type])'));
+            setTimeout(() => { delete form.dataset.submitting; busy(); }, 4000);
+        }
+    });
+
+    // pages restored from the back/forward cache must not keep "busy" buttons
+    window.addEventListener('pageshow', (ev) => {
+        if (ev.persisted) {
+            document.querySelectorAll('form[data-submitting]').forEach((f) => { delete f.dataset.submitting; });
+            document.querySelectorAll('[aria-busy="true"]').forEach((b) => DGR.busy(b, false));
         }
     });
 

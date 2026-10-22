@@ -54,8 +54,13 @@ class AttendanceController extends HrBase
             $marks[$a['employee_id']][$a['att_date']] = $a;
         }
         $summaries = [];
+        $until     = min($to, date('Y-m-d'));
+        $byEmp     = [];
+        foreach (service('attendance')->rows(array_map(static fn ($e) => (int) $e['id'], $emps), $from, $until) as $row) {
+            $byEmp[(int) $row['employee_id']][] = $row;
+        }
         foreach ($emps as $e) {
-            $summaries[$e['id']] = service('attendance')->summary($e, $from, min($to, date('Y-m-d')));
+            $summaries[$e['id']] = service('attendance')->summary($e, $from, $until, $byEmp[(int) $e['id']] ?? []);
         }
         $cal = service('hrCalendar');
         $kinds = [];

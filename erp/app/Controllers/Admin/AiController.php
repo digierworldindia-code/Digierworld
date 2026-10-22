@@ -34,7 +34,7 @@ class AiController extends BaseController
         return $this->render('admin/ai', [
             'pageTitle' => 'AI Permissions', 'breadcrumbs' => [['Administration'], ['AI Permissions']],
             'provider' => ['name' => AiConfig::PROVIDERS[$cfg->provider()] ?? 'None', 'model' => $cfg->model(), 'hasKey' => $cfg->hasKey(), 'configured' => $cfg->isConfigured(),
-                'timeout' => $cfg->timeout(), 'retries' => $cfg->maxRetries(), 'effort' => $cfg->effort(), 'baseUrl' => $cfg->baseUrl()],
+                'timeout' => $cfg->configuredTimeout(), 'retries' => $cfg->configuredMaxRetries(), 'effort' => $cfg->effort(), 'baseUrl' => $cfg->baseUrl()],
             'caps' => $caps, 'meta' => config('Permissions')->aiCapabilities, 'usage' => $usage,
             'tokens' => $this->db->table('ai_service_tokens t')->select('t.*, p.full_name AS creator')->join('user_profiles p', 'p.user_id = t.created_by', 'left')->orderBy('t.id', 'DESC')->limit(30)->get()->getResultArray(),
             'logs' => $logs->orderBy('l.id', 'DESC')->limit(100)->get()->getResultArray(), 'f' => $f,

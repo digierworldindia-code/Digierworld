@@ -109,6 +109,49 @@ class LeaveService
         return $rows;
     }
 
+    /**
+     * balances() for many employees with a fixed number of queries (the
+     * balances screen used to run ~15 queries per employee).
+     *
+     * @param list<int> $employeeIds
+     *
+     * @return array<int, list<array<string, mixed>>> employee id => balances() rows
+     */
+    public function balancesFor(array $employeeIds, ?string $date = null): array
+    {
+        $employeeIds = array_values(array_unique(array_map('intval', $employeeIds)));
+        if ($employeeIds === []) {
+            return [];
+        }
+        $date ??= date('Y-m-d');
+        $fy    = service('fy')->forDate($date);
+        $types = count($this->types());
+        $have  = array_column($this->db->table('leave_balances')->select('employee_id, COUNT(*) n')->where('financial_year_id', $fy['id'])
+            ->whereIn('employee_id', $employeeIds)->groupBy('employee_id')->get()->getResultArray(), 'n', 'employee_id');
+        foreach ($employeeIds as $id) {
+            if ((int) ($have[$id] ?? 0) < $types) {
+                $this->ensureBalances($id, $date); // only employees still missing a balance row (new joiners, new leave types)
+            }
+        }
+        $pending = [];
+        foreach ($this->db->query("SELECT employee_id, leave_type_id, COALESCE(SUM(days),0) d FROM leave_requests WHERE status = 'pending' AND from_date BETWEEN ? AND ? AND employee_id IN ? GROUP BY employee_id, leave_type_id",
+            [$fy['start_date'], $fy['end_date'], $employeeIds])->getResultArray() as $p) {
+            $pending[(int) $p['employee_id']][(int) $p['leave_type_id']] = (string) $p['d'];
+        }
+        $out = array_fill_keys($employeeIds, []);
+        $rows = $this->db->table('leave_balances lb')->select('lb.*, lt.code, lt.name, lt.is_paid, lt.annual_quota')
+            ->join('leave_types lt', 'lt.id = lb.leave_type_id')->where('lb.financial_year_id', $fy['id'])->whereIn('lb.employee_id', $employeeIds)
+            ->where('lt.is_active', 1)->orderBy('lb.employee_id')->orderBy('lt.code')->get()->getResultArray();
+        foreach ($rows as $r) {
+            $r['pending']   = $pending[(int) $r['employee_id']][(int) $r['leave_type_id']] ?? '0';
+            $r['available'] = Dec::sub(Dec::add(Dec::add($r['entitled'], $r['carried']), $r['adjusted']), $r['used']);
+            $r['limited']   = (int) $r['is_paid'] === 1;
+            $out[(int) $r['employee_id']][] = $r;
+        }
+
+        return $out;
+    }
+
     /** Working days in a leave (holidays and weekly offs are not counted). */
     public function countDays(string $from, string $to, string $halfDay = 'none'): string
     {

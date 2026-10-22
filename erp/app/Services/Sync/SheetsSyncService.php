@@ -22,6 +22,9 @@ class SheetsSyncService
     private ?SheetsClient $client = null;
     private ?string $clientError = null;
 
+    /** @var array<string, list<string>> column A per worksheet title, read once per process() run */
+    private array $columnCache = [];
+
     public function __construct(private readonly BaseConnection $db, ?SheetsClient $client = null)
     {
         $this->client = $client;
@@ -124,14 +127,19 @@ class SheetsSyncService
      * Process due jobs. Safe to run from cron every few minutes and from
      * the "Sync now" button concurrently (jobs are claimed atomically).
      *
-     * @return array{processed: int, succeeded: int, failed: int, message: string}
+     * From a web request pass $budgetSeconds: work stops claiming new jobs
+     * once that time is used up (the rest stays queued for cron or the next
+     * click), so the page answers before the gateway times out.
+     *
+     * @return array{processed: int, succeeded: int, failed: int, remaining: int, message: string}
      */
-    public function process(int $limit = 100, string $trigger = 'cron'): array
+    public function process(int $limit = 100, string $trigger = 'cron', ?float $budgetSeconds = null): array
     {
+        $started = microtime(true);
         $runId = null;
         $this->db->table('google_sync_runs')->insert(['started_at' => date('Y-m-d H:i:s'), 'trigger_source' => $trigger, 'processed' => 0, 'succeeded' => 0, 'failed' => 0]);
         $runId = (int) $this->db->insertID();
-        $stats = ['processed' => 0, 'succeeded' => 0, 'failed' => 0, 'message' => ''];
+        $stats = ['processed' => 0, 'succeeded' => 0, 'failed' => 0, 'remaining' => 0, 'message' => ''];
 
         $client = $this->client();
         if ($client === null) {
@@ -142,44 +150,56 @@ class SheetsSyncService
         }
         $settings = $this->settings();
         $worker   = gethostname() . ':' . getmypid() . ':' . bin2hex(random_bytes(3));
-        // Claim due jobs atomically
-        $this->db->query(
-            "UPDATE google_sync_jobs SET status = 'processing', locked_at = NOW(), locked_by = ?
-              WHERE status IN ('pending','failed') AND next_attempt_at <= NOW() ORDER BY id LIMIT " . max(1, min(500, $limit)),
-            [$worker]
-        );
-        $jobs = $this->db->table('google_sync_jobs')->where(['status' => 'processing', 'locked_by' => $worker])->orderBy('id')->get()->getResultArray();
-        $builder = new SheetsRowBuilder($this->db);
-        $ensured = [];
+        $builder  = new SheetsRowBuilder($this->db);
+        $ensured  = [];
+        $this->columnCache = [];
+        $limit    = max(1, min(500, $limit));
 
-        foreach ($jobs as $job) {
-            $stats['processed']++;
-            $ws    = $job['worksheet'];
-            $title = (string) $settings['worksheets'][$ws];
-            $cols  = SheetsRowBuilder::columns($ws, $settings['field_map'][$ws] ?? null);
-            try {
-                if (! isset($ensured[$title])) {
-                    $client->ensureSheet($title, SheetsRowBuilder::headers($ws, $cols));
-                    $ensured[$title] = true;
-                }
-                $row = $builder->row($ws, (int) $job['entity_id'], $cols);
-                if ($row === null) {
-                    // Record vanished (hard delete); nothing to write.
-                    $this->complete((int) $job['id'], $worker, null);
+        // Claim due jobs atomically, a small batch at a time
+        while ($stats['processed'] < $limit && ($budgetSeconds === null || microtime(true) - $started < $budgetSeconds)) {
+            $this->db->query(
+                "UPDATE google_sync_jobs SET status = 'processing', locked_at = NOW(), locked_by = ?
+                  WHERE status IN ('pending','failed') AND next_attempt_at <= NOW() ORDER BY id LIMIT " . min(25, $limit - $stats['processed']),
+                [$worker]
+            );
+            $jobs = $this->db->table('google_sync_jobs')->where(['status' => 'processing', 'locked_by' => $worker])->orderBy('id')->get()->getResultArray();
+            if ($jobs === []) {
+                break;
+            }
+
+            foreach ($jobs as $job) {
+                $stats['processed']++;
+                $ws    = $job['worksheet'];
+                $title = (string) $settings['worksheets'][$ws];
+                $cols  = SheetsRowBuilder::columns($ws, $settings['field_map'][$ws] ?? null);
+                try {
+                    if (! isset($ensured[$title])) {
+                        $client->ensureSheet($title, SheetsRowBuilder::headers($ws, $cols));
+                        $ensured[$title] = true;
+                    }
+                    $row = $builder->row($ws, (int) $job['entity_id'], $cols);
+                    if ($row === null) {
+                        // Record vanished (hard delete); nothing to write.
+                        $this->complete((int) $job['id'], $worker, null);
+                        $stats['succeeded']++;
+
+                        continue;
+                    }
+                    $sheetRow = $this->upsert($client, $title, $ws, $job, $row);
+                    $this->complete((int) $job['id'], $worker, $sheetRow);
                     $stats['succeeded']++;
-
-                    continue;
+                } catch (Throwable $e) {
+                    $stats['failed']++;
+                    $this->fail($job, $worker, $e);
                 }
-                $sheetRow = $this->upsert($client, $title, $ws, $job, $row);
-                $this->complete((int) $job['id'], $worker, $sheetRow);
-                $stats['succeeded']++;
-            } catch (Throwable $e) {
-                $stats['failed']++;
-                $this->fail($job, $worker, $e);
             }
         }
 
+        $stats['remaining'] = $this->db->table('google_sync_jobs')->whereIn('status', ['pending', 'failed'])->where('next_attempt_at <= NOW()', null, false)->countAllResults();
         $stats['message'] = $stats['processed'] === 0 ? 'Nothing to sync.' : "{$stats['succeeded']} synced, {$stats['failed']} failed.";
+        if ($stats['remaining'] > 0 && $stats['processed'] > 0) {
+            $stats['message'] .= " {$stats['remaining']} still queued (the scheduled job continues, or press Sync now again).";
+        }
         $this->finishRun($runId, $stats);
         $upd = ['last_run_at' => date('Y-m-d H:i:s')];
         if ($stats['succeeded'] > 0) {
@@ -197,8 +217,9 @@ class SheetsSyncService
         $id  = $row[0];
         $hash = hash('sha256', json_encode(array_slice($row, 0, -1) ?: $row));
         $target = null;
+        // column A (the record IDs) is read once per run and per worksheet, not once per record
+        $colA = $this->columnCache[$title] ??= $client->columnA($title);
         if ($map !== null) {
-            $colA = $client->columnA($title);
             if (($colA[(int) $map['sheet_row'] - 1] ?? null) === $id) {
                 $target = (int) $map['sheet_row'];
             } else {
@@ -207,13 +228,17 @@ class SheetsSyncService
                 $target = $pos === false ? null : $pos + 1;
             }
         } else {
-            $pos    = array_search($id, $client->columnA($title), true);
+            $pos    = array_search($id, $colA, true);
             $target = $pos === false || $pos === 0 ? null : $pos + 1;
         }
         if ($target !== null) {
             $client->updateRow($title, $target, $row);
         } else {
             $target = $client->appendRow($title, $row);
+            for ($i = count($this->columnCache[$title]); $i < $target - 1; $i++) {
+                $this->columnCache[$title][$i] = '';
+            }
+            $this->columnCache[$title][$target - 1] = $id;
         }
         $this->db->query(
             'INSERT INTO google_sync_row_map (worksheet, entity_type, entity_id, sheet_row, last_synced_hash, last_synced_at) VALUES (?, ?, ?, ?, ?, NOW())

@@ -90,8 +90,10 @@ class LeavesController extends HrBase
         $this->authorize('hr.leave.view_all');
         $types = service('leaves')->types();
         $out   = [];
-        foreach (service('employees')->picker() as $e) {
-            $out[] = ['emp' => $e, 'bal' => array_column(service('leaves')->balances((int) $e['id']), null, 'leave_type_id')];
+        $emps  = service('employees')->picker();
+        $all   = service('leaves')->balancesFor(array_map(static fn ($e) => (int) $e['id'], $emps));
+        foreach ($emps as $e) {
+            $out[] = ['emp' => $e, 'bal' => array_column($all[(int) $e['id']] ?? [], null, 'leave_type_id')];
         }
 
         return $this->render('hr/leaves/balances', [

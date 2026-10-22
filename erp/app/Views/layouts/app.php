@@ -23,7 +23,7 @@ if (can(['crm.task.create'])) { $quick[] = ['Task', 'crm/tasks#new', 'list-check
 if (can(['hr.candidate.create'])) { $quick[] = ['Applicant', 'hr/candidates/new', 'person-badge']; }
 ?>
 <!doctype html>
-<html lang="en-IN" data-bs-theme="dark">
+<html lang="en-IN" data-bs-theme="<?= theme_pref() === 'light' ? 'light' : 'dark' ?>" data-theme-pref="<?= theme_pref() ?>">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -32,8 +32,9 @@ if (can(['hr.candidate.create'])) { $quick[] = ['Applicant', 'hr/candidates/new'
     <meta name="csrf-field" content="<?= csrf_token() ?>">
     <meta name="base-url" content="<?= esc(rtrim(site_url('/'), '/')) ?>">
     <title><?= esc($pageTitle) ?> · DGR Office</title>
-    <meta name="color-scheme" content="dark">
+    <meta name="color-scheme" content="<?= theme_pref() === 'light' ? 'light' : 'dark' ?>">
     <meta name="theme-color" content="#0B0B0D">
+    <meta name="theme-save-url" content="<?= site_url('profile/theme') ?>">
     <link rel="icon" href="<?= asset('img/favicon.png') ?>">
     <?= view('partials/theme_head') ?>
     <?= $this->renderSection('head') ?>
@@ -50,7 +51,7 @@ if (can(['hr.candidate.create'])) { $quick[] = ['Applicant', 'hr/candidates/new'
                     <span class="brand-text"><?= esc($brandName) ?></span>
                 <?php endif ?>
             </a>
-            <button type="button" class="btn-close btn-close-white d-lg-none ms-auto" data-bs-dismiss="offcanvas" data-bs-target="#sidebar" aria-label="Close menu"></button>
+            <button type="button" class="btn-close d-lg-none ms-auto" data-bs-dismiss="offcanvas" data-bs-target="#sidebar" aria-label="Close menu"></button>
         </div>
         <div class="sidebar-search px-3 pb-2">
             <input type="search" class="form-control form-control-sm" placeholder="Filter menu…" data-menu-filter aria-label="Filter menu">
@@ -83,11 +84,13 @@ if (can(['hr.candidate.create'])) { $quick[] = ['Applicant', 'hr/candidates/new'
     <div class="app-main">
         <header class="app-topbar">
             <button class="btn btn-icon d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebar" aria-controls="sidebar" aria-label="Open menu"><i class="bi bi-list"></i></button>
-            <form class="topbar-search" action="<?= site_url('search') ?>" method="get" role="search">
+            <button class="btn btn-icon d-none d-lg-inline-flex" type="button" data-sidebar-collapse aria-controls="sidebar" aria-expanded="true" aria-label="Hide or show the menu" title="Hide / show menu"><i class="bi bi-layout-sidebar"></i></button>
+            <form class="topbar-search d-none d-sm-block" action="<?= site_url('search') ?>" method="get" role="search">
                 <i class="bi bi-search"></i>
                 <input type="search" name="q" class="form-control" placeholder="Search clients, invoices, leads, applicants…" value="<?= esc((string) service('request')->getGet('q')) ?>" aria-label="Global search" data-global-search autocomplete="off">
                 <div class="search-suggest dropdown-menu" data-search-suggest></div>
             </form>
+            <a class="btn btn-icon d-sm-none" href="<?= site_url('search') ?>" aria-label="Search"><i class="bi bi-search"></i></a>
             <div class="topbar-actions">
                 <?php if ($quick !== []): ?>
                 <div class="dropdown">
@@ -99,6 +102,16 @@ if (can(['hr.candidate.create'])) { $quick[] = ['Applicant', 'hr/candidates/new'
                     </ul>
                 </div>
                 <?php endif ?>
+                <div class="dropdown">
+                    <button class="btn btn-icon" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Theme" title="Theme: Light, Dark or System">
+                        <i class="bi bi-circle-half" data-theme-icon aria-hidden="true"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow-sm" role="menu" aria-label="Theme">
+                        <li><button type="button" class="dropdown-item" role="menuitemradio" aria-checked="false" data-theme-choice="light"><i class="bi bi-sun me-2" aria-hidden="true"></i>Light</button></li>
+                        <li><button type="button" class="dropdown-item" role="menuitemradio" aria-checked="false" data-theme-choice="dark"><i class="bi bi-moon-stars me-2" aria-hidden="true"></i>Dark</button></li>
+                        <li><button type="button" class="dropdown-item" role="menuitemradio" aria-checked="false" data-theme-choice="system"><i class="bi bi-circle-half me-2" aria-hidden="true"></i>System <span class="text-muted small">(device setting)</span></button></li>
+                    </ul>
+                </div>
                 <div class="dropdown">
                     <button class="btn btn-icon position-relative" type="button" data-bs-toggle="dropdown" aria-label="Notifications" data-notif-toggle>
                         <i class="bi bi-bell"></i>

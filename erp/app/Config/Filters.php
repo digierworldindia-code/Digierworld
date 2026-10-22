@@ -38,6 +38,8 @@ class Filters extends BaseFilters
         'signedout'     => SignedOutRequestFilter::class,
         'dgrheaders'    => SecurityHeadersFilter::class,
         'aitoken'       => AiTokenFilter::class,
+        'unlock'        => \App\Filters\SessionUnlockFilter::class, // downloads release the session lock (no 504 chains)
+        'slowlog'       => \App\Filters\SlowRequestFilter::class,   // logs requests slower than app.slowRequestMs
     ];
 
     public array $required = [
@@ -65,6 +67,7 @@ class Filters extends BaseFilters
         ],
         'after' => [
             'dgrheaders',
+            'slowlog',
         ],
     ];
 
@@ -72,5 +75,7 @@ class Filters extends BaseFilters
 
     public array $filters = [
         'auth-rates' => ['before' => ['login', 'login/*', 'auth/a/*']],
+        // read-only downloads: PDFs, exports, stored files, backups, payroll register, payslip preview
+        'unlock' => ['before' => ['*/pdf', '*/export', '*/*/export', 'files/*', 'admin/backups/*', 'hr/payroll/*/register', 'hr/payroll/items/*/preview', 'me/payslips/*']],
     ];
 }

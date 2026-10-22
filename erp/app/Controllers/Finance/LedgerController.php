@@ -5,6 +5,7 @@ namespace App\Controllers\Finance;
 use App\Controllers\BaseController;
 use App\Exceptions\BusinessRuleException;
 use App\Libraries\Dec;
+use App\Libraries\StatementPage;
 
 /** Journal, chart of accounts, account ledgers, trial balance and manual journals. */
 class LedgerController extends BaseController
@@ -79,23 +80,12 @@ class LedgerController extends BaseController
         }
         [$from, $to] = $this->range();
         $contact = (int) $this->request->getGet('contact');
-        $opening = service('ledger')->balance((int) $acc['id'], date('Y-m-d', strtotime($from . ' -1 day')), $contact ?: null);
-        $lines   = $this->db->table('journal_lines jl')
-            ->select('jl.debit, jl.credit, jl.memo, je.id AS entry_id, je.entry_no, je.entry_date, je.narration, je.reference, je.source_type, je.source_id, c.name AS contact_name')
-            ->join('journal_entries je', 'je.id = jl.journal_entry_id')->join('contacts c', 'c.id = jl.contact_id', 'left')
-            ->where('jl.ledger_account_id', $acc['id'])->where('je.entry_date >=', $from)->where('je.entry_date <=', $to)
-            ->when($contact > 0, static fn ($b) => $b->where('jl.contact_id', $contact))
-            ->orderBy('je.entry_date')->orderBy('je.id')->get()->getResultArray();
-        $run = $opening;
-        foreach ($lines as &$l) {
-            $run = Dec::add($run, Dec::sub($l['debit'], $l['credit']));
-            $l['running'] = $run;
-        }
-        unset($l);
+        [$page, $perPage] = $this->paging(100);
+        $st = StatementPage::build($this->db, (int) $acc['id'], $from, $to, $contact ?: null, $page, $perPage);
 
-        return $this->render('finance/ledger/account', [
+        return $this->render('finance/ledger/account', $st + [
             'pageTitle' => $acc['code'] . ' ' . $acc['name'], 'breadcrumbs' => [['Finance'], ['Chart of accounts', 'finance/ledger/accounts'], [$acc['name']]],
-            'acc' => $acc, 'lines' => $lines, 'opening' => $opening, 'closing' => $run, 'from' => $from, 'to' => $to,
+            'acc' => $acc, 'from' => $from, 'to' => $to,
             'contact' => $contact ? $this->db->table('contacts')->select('id, name')->where('id', $contact)->get()->getRowArray() : null,
         ]);
     }

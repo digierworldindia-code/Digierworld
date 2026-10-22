@@ -3,6 +3,7 @@
 namespace App\Controllers\Hr;
 
 use App\Exceptions\BusinessRuleException;
+use App\Libraries\SessionLock;
 use App\Services\Hr\RecruitmentService;
 
 /**
@@ -288,11 +289,15 @@ class CandidatesController extends HrBase
         $this->authorize('hr.candidate.score');
         $c      = $this->candidate($this->idOr404($id));
         $engine = $this->request->getPost('engine') === 'rules' ? 'rules' : 'ai';
+        SessionLock::release(); // an AI review can take tens of seconds; the user's other tabs keep working
         try {
             $evalId = service('cvEvaluation')->evaluate((int) $c['id'], $engine);
         } catch (BusinessRuleException $e) {
+            SessionLock::reopen();
+
             return $this->backWithRuleError($e);
         }
+        SessionLock::reopen();
         $e = $this->db->table('ai_cv_evaluations')->select('status, error_message')->where('id', $evalId)->get()->getRowArray();
 
         return redirect()->to('hr/candidates/' . $c['id'] . '#evaluations')->with($e['status'] === 'completed' ? 'success' : 'error',

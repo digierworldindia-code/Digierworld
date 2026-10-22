@@ -2,6 +2,7 @@
 
 namespace App\Controllers\Crm;
 
+use App\Libraries\SessionLock;
 use App\Services\Sync\SheetsRowBuilder;
 use Throwable;
 
@@ -69,6 +70,7 @@ class SyncController extends CrmBase
 
     public function test()
     {
+        SessionLock::release(); // several Google calls; must not block the user's other pages
         $svc = service('sheetsSync');
         $client = $svc->client();
         if ($client === null) {
@@ -92,7 +94,7 @@ class SyncController extends CrmBase
 
     public function run()
     {
-        $r = service('sheetsSync')->process(300, 'manual');
+        $r = $this->processWithinBudget();
 
         return redirect()->back()->with($r['failed'] > 0 || str_starts_with($r['message'], 'Not connected') ? 'error' : 'success', 'Sync: ' . $r['message']);
     }
@@ -100,9 +102,26 @@ class SyncController extends CrmBase
     public function retry()
     {
         $n = service('sheetsSync')->retryFailed();
-        $r = service('sheetsSync')->process(300, 'manual');
+        $r = $this->processWithinBudget();
 
         return redirect()->back()->with($r['failed'] > 0 ? 'error' : 'success', $n . ' failed job(s) re-queued. ' . $r['message']);
+    }
+
+    /**
+     * "Sync now" works for at most app.webWorkSeconds (default 20) and
+     * without holding the session lock, so neither this page nor the user's
+     * other tabs run into a gateway timeout; cron continues with the rest.
+     *
+     * @return array{processed: int, succeeded: int, failed: int, remaining: int, message: string}
+     */
+    private function processWithinBudget(): array
+    {
+        SessionLock::release();
+        try {
+            return service('sheetsSync')->process(300, 'manual', (float) max(5, (int) env('app.webWorkSeconds', 20)));
+        } finally {
+            SessionLock::reopen();
+        }
     }
 
     public function queueAll()

@@ -385,3 +385,23 @@ if (! function_exists('forget_secret_input')) {
         session()->setFlashdata('_ci_old_input', $old);
     }
 }
+
+if (! function_exists('theme_pref')) {
+    /** The signed-in user's theme choice: light, dark or system (default). */
+    function theme_pref(): string
+    {
+        static $cache = [];
+        $uid = current_user_id();
+        if ($uid === null) {
+            return 'system';
+        }
+        $key = $uid . ':' . spl_object_id(service('request')); // read once per request
+        if (! isset($cache[$key])) {
+            $json        = db_connect()->table('user_profiles')->select('preferences')->where('user_id', $uid)->get()->getRow()->preferences ?? null;
+            $theme       = is_string($json) ? (json_decode($json, true)['theme'] ?? null) : null;
+            $cache = [$key => in_array($theme, ['light', 'dark', 'system'], true) ? $theme : 'system'];
+        }
+
+        return $cache[$key];
+    }
+}

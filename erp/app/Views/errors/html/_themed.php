@@ -24,6 +24,7 @@ $home = function_exists('site_url') ? site_url('/') : '/';
     <title><?= htmlspecialchars($errTitle, ENT_QUOTES) ?> · DGR Office</title>
     <link rel="stylesheet" href="<?= htmlspecialchars($assetUrl('vendor/bootstrap/bootstrap.min.css'), ENT_QUOTES) ?>">
     <link rel="stylesheet" href="<?= htmlspecialchars($assetUrl('css/dgr-theme.css'), ENT_QUOTES) ?>">
+    <script src="<?= htmlspecialchars($assetUrl('js/theme-init.js'), ENT_QUOTES) ?>"></script>
 </head>
 <body>
 <main class="auth-wrap">

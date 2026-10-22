@@ -1,22 +1,26 @@
-/* Dashboard charts — data comes from the permission-gated /dashboard/data endpoint. */
+/* Dashboard charts — data comes from the permission-gated /dashboard/data endpoint; redrawn in the new colours when the theme changes. */
 (function () {
     'use strict';
     const wrap = document.querySelector('[data-dashboard-charts]');
     if (!wrap || typeof Chart === 'undefined') { return; }
 
-    const theme = DGR.chartTheme();
-    const gold = theme.gold, ink = theme.series[1], grey = theme.series[2];
-    const palette = theme.series;
     const inrTick = (v) => '₹' + Number(v).toLocaleString('en-IN', { maximumFractionDigits: 0 });
     const tooltipInr = { callbacks: { label: (c) => `${c.dataset.label || c.label}: ₹${Number(c.parsed.y ?? c.parsed).toLocaleString('en-IN', { minimumFractionDigits: 2 })}` } };
 
     const empty = (id) => { const el = document.getElementById(id); if (el) { el.replaceWith(Object.assign(document.createElement('div'), { className: 'empty-state py-4', innerHTML: '<i class="bi bi-bar-chart"></i>No data for this period yet.' })); } };
     const hasData = (arr) => Array.isArray(arr) && arr.some((v) => Number(v) !== 0);
 
-    DGR.api(wrap.dataset.endpoint).then(({ charts }) => {
+    let drawn = [];
+    const draw = (charts) => {
+        drawn.forEach((c) => c.destroy());
+        drawn = [];
+        const theme = DGR.chartTheme();
+        const gold = theme.gold, ink = theme.series[1], grey = theme.series[2];
+        const palette = theme.series;
+        const make = (canvas, config) => { drawn.push(new Chart(canvas, config)); };
         const b = charts.billed_vs_collected;
         if (b && (hasData(b.billed) || hasData(b.collected))) {
-            new Chart(document.getElementById('chBilled'), {
+            make(document.getElementById('chBilled'), {
                 type: 'bar',
                 data: { labels: b.labels, datasets: [
                     { label: 'Billed (net of credit notes)', data: b.billed, backgroundColor: ink },
@@ -28,11 +32,11 @@
 
         const doughnut = (id, set) => {
             if (!set || !hasData(set.values)) { empty(id); return; }
-            new Chart(document.getElementById(id), { type: 'doughnut', data: { labels: set.labels, datasets: [{ data: set.values, backgroundColor: palette }] }, options: { plugins: { legend: { position: 'bottom' } } } });
+            make(document.getElementById(id), { type: 'doughnut', data: { labels: set.labels, datasets: [{ data: set.values, backgroundColor: palette }] }, options: { plugins: { legend: { position: 'bottom' } } } });
         };
         const hbar = (id, set, color) => {
             if (!set || !hasData(set.values)) { empty(id); return; }
-            new Chart(document.getElementById(id), { type: 'bar', data: { labels: set.labels, datasets: [{ label: '₹', data: set.values, backgroundColor: color }] }, options: { indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { ticks: { callback: inrTick } } } } });
+            make(document.getElementById(id), { type: 'bar', data: { labels: set.labels, datasets: [{ label: '₹', data: set.values, backgroundColor: color }] }, options: { indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { ticks: { callback: inrTick } } } } });
         };
         doughnut('chGst', charts.gst_split);
         doughnut('chModes', charts.payment_modes);
@@ -42,7 +46,7 @@
 
         const y = charts.yoy;
         if (y && (hasData(y.current) || hasData(y.previous))) {
-            new Chart(document.getElementById('chYoy'), {
+            make(document.getElementById('chYoy'), {
                 type: 'line',
                 data: { labels: y.labels, datasets: [
                     { label: y.current_label, data: y.current, borderColor: gold, backgroundColor: gold, tension: .25 },
@@ -51,5 +55,10 @@
                 options: { scales: { y: { ticks: { callback: inrTick } } }, plugins: { tooltip: tooltipInr } },
             });
         } else { empty('chYoy'); }
+    };
+
+    DGR.api(wrap.dataset.endpoint).then(({ charts }) => {
+        draw(charts);
+        document.addEventListener('dgr:themechange', () => draw(charts));
     }).catch(() => { wrap.querySelectorAll('canvas').forEach((c) => empty(c.id)); });
 })();

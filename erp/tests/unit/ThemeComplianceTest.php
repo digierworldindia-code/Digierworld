@@ -5,10 +5,10 @@ namespace Tests\Unit;
 use CodeIgniter\Test\CIUnitTestCase;
 
 /**
- * Guards the approved black · white · gold theme and the frontend asset
- * policy so later modules cannot drift: no light-only Bootstrap utilities,
- * no inline styles or colours in screens, no CDN or jQuery, readable
- * contrast for every text token.
+ * Guards the approved Dark and Light palettes (black · white · gold) and
+ * the frontend asset policy so later modules cannot drift: no light-only
+ * Bootstrap utilities, no inline styles or colours in screens, no CDN or
+ * jQuery, readable contrast for every text token in both themes.
  */
 final class ThemeComplianceTest extends CIUnitTestCase
 {
@@ -33,6 +33,19 @@ final class ThemeComplianceTest extends CIUnitTestCase
         preg_match_all('/--(dgr-[a-z0-9-]+):\s*(#[0-9A-Fa-f]{6})\b/', $css, $m);
 
         return array_combine($m[1], $m[2]);
+    }
+
+    /** Tokens of one theme block: the dark defaults, or the light block layered on top of them. */
+    private static function theme(string $css, string $mode): array
+    {
+        $block = static function (string $start) use ($css): string {
+            $pos = strpos($css, $start);
+
+            return $pos === false ? '' : substr($css, $pos, strpos($css, "\n}", $pos) - $pos);
+        };
+        $dark = self::tokens($block(":root,\n[data-bs-theme=\"dark\"] {"));
+
+        return $mode === 'dark' ? $dark : self::tokens($block('[data-bs-theme="light"] {')) + $dark;
     }
 
     private static function contrast(string $a, string $b): float
@@ -71,8 +84,12 @@ final class ThemeComplianceTest extends CIUnitTestCase
     public function testEveryPageShellIsDarkAndLoadsOnlyLocalAssets(): void
     {
         foreach (['layouts/app.php', 'auth/layout.php', 'errors/html/_themed.php'] as $shell) {
-            $this->assertStringContainsString('data-bs-theme="dark"', (string) file_get_contents(APPPATH . 'Views/' . $shell), $shell);
+            $src = (string) file_get_contents(APPPATH . 'Views/' . $shell);
+            $this->assertMatchesRegularExpression('/<html[^>]+data-bs-theme="/', $src, $shell . ' starts in a defined theme');
+            $this->assertTrue(str_contains($src, 'theme-init.js') || str_contains($src, "view('partials/theme_head')"), $shell . ' applies the chosen theme before the first paint');
         }
+        $this->assertStringContainsString('theme-init.js', (string) file_get_contents(APPPATH . 'Views/partials/theme_head.php'));
+        $this->assertStringContainsString('data-theme-choice="system"', (string) file_get_contents(APPPATH . 'Views/layouts/app.php'), 'the top bar offers Light / Dark / System');
         $problems = [];
         foreach ($this->screenViews() as $file => $src) {
             if (preg_match('#<(script|link)[^>]+(src|href)\s*=\s*["\'](https?:)?//#i', $src)) {
@@ -97,27 +114,43 @@ final class ThemeComplianceTest extends CIUnitTestCase
         $this->assertSame([], $problems, implode("\n", $problems));
     }
 
-    public function testApprovedPaletteIsDefinedOnceAndReadable(): void
+    public function testApprovedPalettesAreDefinedOnceAndReadable(): void
     {
-        $css = (string) file_get_contents(FCPATH . 'assets/css/dgr-theme.css');
-        $t   = self::tokens($css);
-        $this->assertSame(
-            ['dgr-bg' => '#0B0B0D', 'dgr-sidebar' => '#111114', 'dgr-card' => '#1A1A1E', 'dgr-text' => '#FFFFFF', 'dgr-text-2' => '#A1A1AA', 'dgr-gold' => '#D4AF37'],
-            array_intersect_key($t, array_flip(['dgr-bg', 'dgr-sidebar', 'dgr-card', 'dgr-text', 'dgr-text-2', 'dgr-gold'])),
-            'The approved black theme palette must not change.'
+        $css  = (string) file_get_contents(FCPATH . 'assets/css/dgr-theme.css');
+        $core = ['dgr-bg', 'dgr-sidebar', 'dgr-card', 'dgr-text', 'dgr-text-2', 'dgr-border', 'dgr-gold'];
+        $this->assertEquals(
+            ['dgr-bg' => '#0B0B0D', 'dgr-sidebar' => '#111114', 'dgr-card' => '#1A1A1E', 'dgr-text' => '#FFFFFF', 'dgr-text-2' => '#A1A1AA', 'dgr-border' => '#303036', 'dgr-gold' => '#D4AF37'],
+            array_intersect_key(self::theme($css, 'dark'), array_flip($core)),
+            'The approved dark palette must not change.'
+        );
+        $this->assertEquals(
+            ['dgr-bg' => '#F8F9FA', 'dgr-sidebar' => '#FFFFFF', 'dgr-card' => '#FFFFFF', 'dgr-text' => '#171717', 'dgr-text-2' => '#52525B', 'dgr-border' => '#E4E4E7', 'dgr-gold' => '#D4AF37'],
+            array_intersect_key(self::theme($css, 'light'), array_flip($core)),
+            'The approved light palette must not change.'
         );
         $custom = (string) preg_replace(['/\/\*.*?\*\//s', '/url\("data:[^"]*"\)/'], '', (string) file_get_contents(FCPATH . 'assets/css/custom.css'));
         $this->assertDoesNotMatchRegularExpression('/#[0-9a-fA-F]{3,8}\b/', $custom, 'custom.css must use dgr-theme.css tokens, not colours');
 
-        // WCAG AA (4.5:1) for every text colour on every surface it is used on
-        foreach (['dgr-text', 'dgr-text-2', 'dgr-gold', 'dgr-text-3'] as $fg) {
-            foreach (['dgr-bg', 'dgr-sidebar', 'dgr-card', 'dgr-inset', 'dgr-raised'] as $bg) {
-                $this->assertGreaterThanOrEqual(4.5, self::contrast($t[$fg], $t[$bg]), "{$fg} on {$bg}");
+        foreach (['dark', 'light'] as $mode) {
+            $t = self::theme($css, $mode);
+            // WCAG AA (4.5:1) for every text colour on every surface it is used on
+            foreach (['dgr-text', 'dgr-text-2', 'dgr-gold-text', 'dgr-text-3'] as $fg) {
+                foreach (['dgr-bg', 'dgr-sidebar', 'dgr-card', 'dgr-inset', 'dgr-raised'] as $bg) {
+                    $this->assertGreaterThanOrEqual(4.5, self::contrast($t[$fg], $t[$bg]), "{$mode}: {$fg} on {$bg}");
+                }
+            }
+            $this->assertGreaterThanOrEqual(4.5, self::contrast($t['dgr-on-gold'], $t['dgr-gold']), "{$mode}: text on gold buttons");
+            foreach (['dgr-success', 'dgr-warning', 'dgr-danger', 'dgr-info'] as $status) {
+                $this->assertGreaterThanOrEqual(4.5, self::contrast($t[$status], $t['dgr-card']), "{$mode}: {$status} on cards");
+            }
+            $this->assertGreaterThanOrEqual(4.5, self::contrast($t['dgr-on-success'], $t['dgr-success']), "{$mode}: text on success buttons");
+            // form controls are recognisable (WCAG 1.4.11: 3:1 for UI component boundaries)
+            foreach (['dgr-inset', 'dgr-card'] as $bg) {
+                $this->assertGreaterThanOrEqual(3.0, self::contrast($t['dgr-input-border'], $t[$bg]), "{$mode}: input borders on {$bg}");
             }
         }
-        $this->assertGreaterThanOrEqual(4.5, self::contrast($t['dgr-on-gold'], $t['dgr-gold']), 'text on gold buttons');
-        foreach (['dgr-success', 'dgr-warning', 'dgr-danger', 'dgr-info'] as $status) {
-            $this->assertGreaterThanOrEqual(4.5, self::contrast($t[$status], $t['dgr-card']), "{$status} on cards");
-        }
+
+        // print is always white paper with black text, whatever the screen theme
+        $this->assertMatchesRegularExpression('/@media print \{\s*:root, \[data-bs-theme="dark"\], \[data-bs-theme="light"\] \{ color-scheme: light; --dgr-text: #000;/', $css);
     }
 }

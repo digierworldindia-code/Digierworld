@@ -29,6 +29,19 @@ class ProfileController extends BaseController
         ]);
     }
 
+    /** Saves the Light / Dark / System choice from the top bar (JSON). */
+    public function theme()
+    {
+        $body  = $this->request->getJSON(true) ?? [];
+        $theme = (string) ($body['theme'] ?? $this->request->getPost('theme'));
+        if (! in_array($theme, ['light', 'dark', 'system'], true)) {
+            return $this->json(['ok' => false, 'message' => 'Choose light, dark or system.'], 422);
+        }
+        $this->db->query("UPDATE user_profiles SET preferences = JSON_SET(COALESCE(preferences, '{}'), '$.theme', ?) WHERE user_id = ?", [$theme, (int) $this->userId]);
+
+        return $this->json(['ok' => true, 'theme' => $theme]);
+    }
+
     public function password()
     {
         return $this->render('profile/password', ['pageTitle' => 'Change password', 'breadcrumbs' => [['My profile', 'profile'], ['Change password']]]);

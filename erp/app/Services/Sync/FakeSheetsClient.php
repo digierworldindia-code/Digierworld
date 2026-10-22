@@ -13,6 +13,7 @@ final class FakeSheetsClient implements SheetsClient
     /** @var array<string, list<list<string>>> */
     public array $tabs = [];
     public int $calls = 0;
+    public int $columnReads = 0;
     private int $failures = 0;
 
     public function failNext(int $times = 1): void
@@ -39,6 +40,7 @@ final class FakeSheetsClient implements SheetsClient
 
     public function columnA(string $title): array
     {
+        $this->columnReads++;
         $this->maybeFail();
 
         return array_map(static fn ($r) => (string) ($r[0] ?? ''), $this->tabs[$title] ?? []);

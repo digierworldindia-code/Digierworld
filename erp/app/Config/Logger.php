@@ -39,7 +39,7 @@ class Logger extends BaseConfig
      *
      * @var int|list<int>
      */
-    public $threshold = (ENVIRONMENT === 'production') ? 4 : 9;
+    public $threshold = (ENVIRONMENT === 'production') ? 5 : 9; // production: errors and warnings (slow requests, sign-in cookie problems); PHP deprecations are not reported in production
 
     /**
      * --------------------------------------------------------------------------

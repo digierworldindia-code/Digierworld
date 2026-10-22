@@ -178,13 +178,33 @@ class AttendanceService
      *
      * @return array<string, float|int|list<string>>
      */
-    public function summary(array $employee, string $from, string $to): array
+    /**
+     * Attendance rows (with whether the linked leave is paid) for these
+     * employees and dates, in one query.
+     *
+     * @param list<int> $employeeIds
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function rows(array $employeeIds, string $from, string $to): array
+    {
+        if ($employeeIds === []) {
+            return [];
+        }
+
+        return $this->db->table('attendance a')->select('a.*, lt.is_paid AS leave_paid')
+            ->join('leave_requests lr', 'lr.id = a.leave_request_id', 'left')->join('leave_types lt', 'lt.id = lr.leave_type_id', 'left')
+            ->whereIn('a.employee_id', $employeeIds)->where('a.att_date >=', $from)->where('a.att_date <=', $to)->get()->getResultArray();
+    }
+
+    /**
+     * @param list<array<string, mixed>>|null $preloaded this employee's attendance rows for the range (with leave_paid), when the caller loaded many at once
+     */
+    public function summary(array $employee, string $from, string $to, ?array $preloaded = null): array
     {
         $s    = ['days' => 0, 'outside' => 0, 'present' => 0.0, 'half_day' => 0, 'absent' => 0.0, 'paid_leave' => 0.0, 'unpaid_leave' => 0.0,
             'holiday' => 0, 'week_off' => 0, 'worked_holiday' => 0, 'unmarked' => 0, 'unmarked_dates' => [], 'overtime_minutes' => 0, 'working_days' => 0, 'leave_without_request' => 0];
-        $rows = array_column($this->db->table('attendance a')->select('a.*, lt.is_paid AS leave_paid')
-            ->join('leave_requests lr', 'lr.id = a.leave_request_id', 'left')->join('leave_types lt', 'lt.id = lr.leave_type_id', 'left')
-            ->where('a.employee_id', $employee['id'])->where('a.att_date >=', $from)->where('a.att_date <=', $to)->get()->getResultArray(), null, 'att_date');
+        $rows = array_column($preloaded ?? $this->rows([(int) $employee['id']], $from, $to), null, 'att_date');
         foreach (HrCalendar::dates($from, $to) as $d) {
             $s['days']++;
             if (! EmployeeService::employedOn($employee, $d)) {

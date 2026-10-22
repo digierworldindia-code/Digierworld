@@ -77,39 +77,103 @@ class BackupService
         $w("SET NAMES utf8mb4;\nSET FOREIGN_KEY_CHECKS = 0;\nSET UNIQUE_CHECKS = 0;\nSET SQL_MODE = 'NO_AUTO_VALUE_ON_ZERO';\nSET time_zone = '+00:00';\n\n");
         $tables = array_map(static fn ($r) => array_values($r)[0], $this->db->query("SHOW FULL TABLES WHERE Table_type = 'BASE TABLE'")->getResultArray());
         $conn   = $this->db->connID;
-        // session time zone to UTC so DATETIME/TIMESTAMP values are dumped unchanged
+        $counts = [];
+        // session time zone to UTC so DATETIME/TIMESTAMP values are dumped unchanged; one consistent
+        // snapshot so rows written by other users during the backup cannot leave it half-updated
         $this->db->query("SET time_zone = '+00:00'");
+        $this->db->query('SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ');
+        $this->db->query('START TRANSACTION WITH CONSISTENT SNAPSHOT');
         try {
             foreach ($tables as $t) {
                 $create = $this->db->query('SHOW CREATE TABLE `' . str_replace('`', '``', $t) . '`')->getRowArray()['Create Table'];
                 $w("DROP TABLE IF EXISTS `{$t}`;\n{$create};\n");
-                $offset = 0;
-                do {
-                    $res  = $conn->query('SELECT * FROM `' . str_replace('`', '``', $t) . '` LIMIT 500 OFFSET ' . $offset, MYSQLI_USE_RESULT);
-                    $rows = 0;
-                    $vals = [];
-                    while ($row = $res->fetch_row()) {
-                        $rows++;
-                        $vals[] = '(' . implode(',', array_map(static fn ($v) => $v === null ? 'NULL' : "'" . $conn->real_escape_string((string) $v) . "'", $row)) . ')';
-                    }
-                    $res->free();
-                    if ($vals !== []) {
+                // one streamed (unbuffered) read per table, written in batches of 500 rows: memory stays
+                // flat and big tables are not re-scanned the way LIMIT/OFFSET paging would
+                $res  = $conn->query('SELECT * FROM `' . str_replace('`', '``', $t) . '`', MYSQLI_USE_RESULT);
+                $rows = 0;
+                $vals = [];
+                while ($row = $res->fetch_row()) {
+                    $rows++;
+                    $vals[] = '(' . implode(',', array_map(static fn ($v) => $v === null ? 'NULL' : "'" . $conn->real_escape_string((string) $v) . "'", $row)) . ')';
+                    if (count($vals) === 500) {
                         $w("INSERT INTO `{$t}` VALUES\n" . implode(",\n", $vals) . ";\n");
+                        $vals = [];
                     }
-                    $offset += 500;
-                } while ($rows === 500);
+                }
+                $res->free();
+                if ($vals !== []) {
+                    $w("INSERT INTO `{$t}` VALUES\n" . implode(",\n", $vals) . ";\n");
+                }
+                $counts[$t] = $rows;
                 $w("\n");
             }
+            $this->db->query('COMMIT');
+        } catch (\Throwable $e) {
+            $this->db->query('ROLLBACK');
+            gzclose($gz);
+            @unlink($tmp);
+
+            throw $e;
         } finally {
             $offset = (new \DateTimeImmutable('now', new \DateTimeZone(config('App')->appTimezone)))->format('P');
             $this->db->query("SET time_zone = '" . $offset . "'");
         }
+        $w('-- rows: ' . json_encode($counts) . "\n");
         $w("SET FOREIGN_KEY_CHECKS = 1;\nSET UNIQUE_CHECKS = 1;\n-- end of backup\n");
         gzclose($gz);
         rename($tmp, self::dir() . $name);
         @chmod(self::dir() . $name, 0640);
 
         return $name;
+    }
+
+    /**
+     * Reads a database backup back from start to end and checks it: the gzip
+     * stream is intact, the file ends with its end marker, every table has
+     * its CREATE TABLE, and each table has exactly as many rows as were read
+     * from the database.
+     *
+     * @return array{tables: int, rows: int}
+     */
+    public function verify(string $name): array
+    {
+        $gz = gzopen($this->path($name), 'rb');
+        if ($gz === false) {
+            throw new RuntimeException('Cannot open backup ' . $name . '.');
+        }
+        $created  = [];
+        $found    = [];
+        $expected = null;
+        $ended    = false;
+        $current  = null;
+        while (($line = gzgets($gz)) !== false) {
+            if (str_starts_with($line, 'CREATE TABLE `')) {
+                $created[] = substr($line, 14, strpos($line, '`', 14) - 14);
+            } elseif (str_starts_with($line, 'INSERT INTO `')) {
+                $current = substr($line, 13, strpos($line, '`', 13) - 13);
+            } elseif ($current !== null && str_starts_with($line, '(')) {
+                $found[$current] = ($found[$current] ?? 0) + 1;
+            } elseif (str_starts_with($line, '-- rows: ')) {
+                $expected = json_decode(substr($line, 9), true);
+            } elseif (str_starts_with($line, '-- end of backup')) {
+                $ended = true;
+            }
+        }
+        $intact = gzeof($gz);
+        gzclose($gz);
+        if (! $intact || ! $ended || ! is_array($expected)) {
+            throw new RuntimeException('Backup ' . $name . ' is incomplete (it does not end with its end marker).');
+        }
+        if (array_diff(array_keys($expected), $created) !== []) {
+            throw new RuntimeException('Backup ' . $name . ' is missing table definitions: ' . implode(', ', array_diff(array_keys($expected), $created)) . '.');
+        }
+        foreach ($expected as $table => $rows) {
+            if ((int) ($found[$table] ?? 0) !== (int) $rows) {
+                throw new RuntimeException("Backup {$name}: table {$table} has " . (int) ($found[$table] ?? 0) . " rows, expected {$rows}.");
+            }
+        }
+
+        return ['tables' => count($expected), 'rows' => (int) array_sum($expected)];
     }
 
     private function zipUploads(string $name): string

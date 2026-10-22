@@ -24,6 +24,7 @@ $routes->get('dashboard/hr', 'DashboardController::area/hr');
 $routes->get('brand/logo', 'BrandController::logo');
 $routes->get('profile', 'ProfileController::index');
 $routes->get('profile/password', 'ProfileController::password');
+$routes->post('profile/theme', 'ProfileController::theme');
 $routes->post('profile/password', 'ProfileController::updatePassword');
 $routes->post('profile/sessions/(:num)/revoke', 'ProfileController::revokeSession/$1');
 $routes->get('calendar', 'CalendarController::index', ['filter' => 'perm:calendar.view']);

@@ -109,6 +109,27 @@ final class CrmLeadSyncTest extends DgrTestCase
         $this->assertSame('Gupta Sweets Final', $mine[0][2]);
     }
 
+    public function testSyncReadsTheIdColumnOncePerRunAndStopsWhenItsTimeIsUp(): void
+    {
+        $this->loginAs($this->makeUser('super_admin'));
+        for ($i = 0; $i < 30; $i++) {
+            service('leads')->create(['company_name' => 'Bulk Lead ' . $i, 'mobile' => $this->mobile(), 'city' => 'Alwar']);
+        }
+        $queued = db_connect()->table('google_sync_jobs')->where('status', 'pending')->countAllResults();
+
+        // a "Sync now" click with no time left claims nothing and says what is still queued
+        $r = (new SheetsSyncService(db_connect(), $this->sheet))->process(300, 'manual', 0.0);
+        $this->assertSame(0, $r['processed']);
+        $this->assertSame($queued, $r['remaining']);
+
+        $r = $this->sync();
+        $this->assertSame($queued, $r['processed'], 'all jobs, claimed in batches');
+        $this->assertSame(0, $r['remaining']);
+        $this->assertCount(30, $this->sheet->rows('Leads'));
+        $this->assertGreaterThan(0, $this->sheet->columnReads);
+        $this->assertLessThanOrEqual(count($this->sheet->tabs), $this->sheet->columnReads, 'column A is read once per worksheet, not once per record');
+    }
+
     public function testDndLeadsAreMaskedInSheetsAndCallsAreBlocked(): void
     {
         $this->loginAs($this->makeUser('super_admin'));

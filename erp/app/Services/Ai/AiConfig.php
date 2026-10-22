@@ -58,12 +58,34 @@ class AiConfig
         return $this->apiKey() !== '';
     }
 
+    /**
+     * Seconds per attempt. In a web request the whole call must finish
+     * before the hosting gateway gives up (often 60 s, then a 504), so it is
+     * capped at app.webAiSeconds (default 45) there; command-line runs use
+     * the configured value.
+     */
     public function timeout(): int
+    {
+        $configured = max(10, min(300, (int) ($this->settings->integration('ai', 'timeout') ?: env('ai.timeoutSeconds', 90))));
+
+        return is_cli() ? $configured : min($configured, max(10, (int) env('app.webAiSeconds', 45)));
+    }
+
+    /** Retries after a failed attempt; none in a web request (see timeout()). */
+    public function maxRetries(): int
+    {
+        $configured = max(0, min(4, (int) ($this->settings->integration('ai', 'max_retries') ?? env('ai.maxRetries', 2))));
+
+        return is_cli() ? $configured : 0;
+    }
+
+    /** The values stored in settings (for the admin screen), without the web-request cap. */
+    public function configuredTimeout(): int
     {
         return max(10, min(300, (int) ($this->settings->integration('ai', 'timeout') ?: env('ai.timeoutSeconds', 90))));
     }
 
-    public function maxRetries(): int
+    public function configuredMaxRetries(): int
     {
         return max(0, min(4, (int) ($this->settings->integration('ai', 'max_retries') ?? env('ai.maxRetries', 2))));
     }
