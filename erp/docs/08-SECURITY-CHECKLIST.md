@@ -27,6 +27,7 @@ verified manually · ⚠ deployment responsibility / recommendation.
 | 2.6 | Service accounts cannot log in interactively | `SessionGuardFilter` blocks `is_service_account`; AI tokens only work on `/api/ai/*` | ✔ |
 | 2.7 | Optional e-mail 2FA, remember-me, magic links | Off by default (`auth.*` in `.env`) | ⚠ enable 2FA for owners once SMTP works |
 | 2.8 | CSRF protection on every form | Global `csrf` filter (except the token-authenticated AI API) | ✔ |
+| 2.9 | Signed-out requests | Every route needs a session except sign-in/out, the AI token API, `health`, `share/*` and `brand/logo` (the official logo shown on the sign-in page). `SignedOutRequestFilter` answers signed-out images and script calls with 401 so only real page visits become the post-sign-in destination (`SignInFlowTest`) | ✔ |
 
 ## 3. Authorization (deny by default)
 

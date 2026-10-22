@@ -314,7 +314,9 @@ If neither exists, upload the logo, signature and stamp again in
 *Settings › Branding Assets*. From 1.1.1 the app shows the company name
 instead of a broken logo, flags the missing file on the Dashboard,
 Branding Assets and Setup Wizard pages, and still produces PDFs, without
-the missing image.
+the missing image. (Releases up to 1.1.0 also sent users to
+`…/brand/logo` right after signing in whenever a logo was uploaded,
+because the sign-in page's logo needed a session. Fixed in 1.1.1.)
 
 **Build a release archive** (on a machine with Composer):
 

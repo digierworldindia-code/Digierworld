@@ -96,6 +96,21 @@ abstract class DgrTestCase extends CIUnitTestCase
         db_connect()->table('document_sequences')->where(['doc_type' => $docType, 'financial_year_id' => $fy['id']])->update(['next_number' => $next]);
     }
 
+    /** Upload the official logo file as the new active version of a branding asset; returns its stored_files id. */
+    protected function brandAsset(string $type, int $ownerId, array $docTypes = ['tax_invoice']): int
+    {
+        $db  = db_connect();
+        $fid = service('files')->storeContents((string) file_get_contents(ROOTPATH . '../assets/images/logo.png'), $type . '.png', 'image/png', $type);
+        $db->table('branding_assets')->where(['asset_type' => $type, 'is_active' => 1])->update(['is_active' => 0, 'replaced_at' => date('Y-m-d H:i:s')]);
+        $db->table('branding_assets')->insert([
+            'asset_type' => $type, 'version' => (int) ($db->table('branding_assets')->selectMax('version', 'v')->where('asset_type', $type)->get()->getRow()->v ?? 0) + 1,
+            'stored_file_id' => $fid, 'position_preset' => $type === 'logo' ? 'top_left' : 'bottom_right', 'display_width_mm' => 40,
+            'enabled_doc_types' => json_encode($docTypes), 'is_active' => 1, 'created_by' => $ownerId,
+        ]);
+
+        return $fid;
+    }
+
     protected function cashAccountId(): int
     {
         return (int) db_connect()->table('bank_cash_accounts')->where('code', 'CASH')->get()->getRow()->id;

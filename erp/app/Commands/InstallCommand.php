@@ -36,7 +36,11 @@ class InstallCommand extends BaseCommand
         $seeder->call('App\Database\Seeds\DatabaseSeeder');
         CLI::write('Base data seeded.', 'green');
         CLI::newLine();
-        CLI::write('Next: create the owner account →  php spark dgr:create-owner --email you@example.com --name "Owner Name"', 'cyan');
+        if (service('users')->activeSuperAdminCount() === 0) {
+            CLI::write('Next: create the owner account →  php spark dgr:create-owner --email you@example.com --name "Owner Name"', 'cyan');
+        } else {
+            CLI::write('Next: check the installation →  php spark dgr:diagnostics', 'cyan');
+        }
 
         return EXIT_SUCCESS;
     }

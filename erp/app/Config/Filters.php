@@ -6,6 +6,7 @@ use App\Filters\AiTokenFilter;
 use App\Filters\PermissionFilter;
 use App\Filters\SecurityHeadersFilter;
 use App\Filters\SessionGuardFilter;
+use App\Filters\SignedOutRequestFilter;
 use CodeIgniter\Config\Filters as BaseFilters;
 use CodeIgniter\Filters\Cors;
 use CodeIgniter\Filters\CSRF;
@@ -21,7 +22,7 @@ class Filters extends BaseFilters
 {
     /**
      * Shield registers: session, tokens, chain, auth-rates, group, permission, force-reset.
-     * App aliases: perm (DB-backed RBAC), guard, dgrheaders, aitoken.
+     * App aliases: perm (DB-backed RBAC), guard, signedout, dgrheaders, aitoken.
      */
     public array $aliases = [
         'csrf'          => CSRF::class,
@@ -35,6 +36,7 @@ class Filters extends BaseFilters
         'performance'   => PerformanceMetrics::class,
         'perm'          => PermissionFilter::class,
         'guard'         => SessionGuardFilter::class,
+        'signedout'     => SignedOutRequestFilter::class,
         'dgrheaders'    => SecurityHeadersFilter::class,
         'aitoken'       => AiTokenFilter::class,
     ];
@@ -51,13 +53,14 @@ class Filters extends BaseFilters
         ],
     ];
 
-    /** Routes reachable without an interactive session. */
-    private const PUBLIC = ['login', 'login/*', 'logout', 'auth/a/*', 'api/ai/*', 'health', 'share/*'];
+    /** Routes reachable without an interactive session (brand/logo: the official logo shown on the sign-in page). */
+    private const PUBLIC = ['login', 'login/*', 'logout', 'auth/a/*', 'api/ai/*', 'health', 'share/*', 'brand/logo'];
 
     public array $globals = [
         'before' => [
             'invalidchars',
             'csrf'    => ['except' => ['api/ai/*']],
+            'signedout' => ['except' => self::PUBLIC],
             'session' => ['except' => self::PUBLIC],
             'guard'   => ['except' => self::PUBLIC],
         ],

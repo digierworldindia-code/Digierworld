@@ -14,17 +14,6 @@ use Tests\Support\DgrTestCase;
  */
 final class MissingUploadsTest extends DgrTestCase
 {
-    private function brand(string $type, int $ownerId): int
-    {
-        $fid = service('files')->storeContents((string) file_get_contents(ROOTPATH . '../assets/images/logo.png'), $type . '.png', 'image/png', $type);
-        db_connect()->table('branding_assets')->insert([
-            'asset_type' => $type, 'version' => 1, 'stored_file_id' => $fid, 'position_preset' => $type === 'logo' ? 'top_left' : 'bottom_right',
-            'display_width_mm' => 40, 'enabled_doc_types' => json_encode(['tax_invoice']), 'is_active' => 1, 'created_by' => $ownerId,
-        ]);
-
-        return $fid;
-    }
-
     private function deleteFile(int $fileId): void
     {
         unlink(service('files')->path(service('files')->find($fileId)));
@@ -46,8 +35,8 @@ final class MissingUploadsTest extends DgrTestCase
         $this->setupCompany('08');
         $owner = $this->makeUser('super_admin', 'Upload Owner');
         $this->loginAs($owner);
-        $logo = $this->brand('logo', (int) $owner->id);
-        $sig  = $this->brand('signature', (int) $owner->id);
+        $logo = $this->brandAsset('logo', (int) $owner->id);
+        $sig  = $this->brandAsset('signature', (int) $owner->id);
         db_connect()->table('signature_policies')->insert(['doc_type' => 'tax_invoice', 'user_id' => $owner->id, 'allowed' => 1, 'approved_by' => $owner->id]);
         $contact = $this->makeContact();
 
