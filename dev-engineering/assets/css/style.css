@@ -149,7 +149,7 @@ img { max-width: 100%; height: auto; }
 /* Technical index number --------------------------------------------- */
 .de-index {
   font-family: var(--de-font-display); font-size: .95rem; font-weight: 600;
-  letter-spacing: .2em; color: var(--de-line-strong);
+  letter-spacing: .2em; color: var(--de-muted);
 }
 
 /* ==========================================================================
@@ -436,7 +436,15 @@ img { max-width: 100%; height: auto; }
   color: var(--de-blue-600); margin-bottom: 1.05rem; border-radius: var(--de-radius);
 }
 .de-icon svg { width: 22px; height: 22px; }
+/* inside a media card the icon sits tighter to the heading */
+.de-card__body .de-icon { margin-bottom: .8rem; }
 .de-section--dark .de-icon { background: rgba(255, 255, 255, .07); border-color: rgba(255, 255, 255, .16); color: var(--de-yellow); }
+/* ...but a card that keeps a white surface inside a dark section keeps the light treatment */
+.de-section--dark .de-capability-card .de-icon,
+.de-section--dark .de-card__body .de-icon,
+.de-section--dark .de-contact-card .de-icon {
+  background: var(--de-grey-100); border-color: var(--de-line); color: var(--de-blue-600);
+}
 
 /* Feature row (why us) ------------------------------------------------ */
 .de-feature { display: flex; gap: 1.1rem; padding: 1.35rem 0; border-top: 1px solid var(--de-line); }
@@ -463,8 +471,15 @@ img { max-width: 100%; height: auto; }
 .de-spec { background: #fff; padding: 1.25rem 1.3rem; }
 /* the cards stay white inside a dark section, so the heading must stay dark too */
 .de-spec h3, .de-section--dark .de-spec h3 { font-size: 1.05rem; margin-bottom: .3rem; color: var(--de-ink); }
+
+/* Same rule for every other white-surface card that can sit in a dark section.
+   Without this, `.de-section--dark h3` wins and the heading disappears. */
+.de-section--dark .de-capability-card h3,
+.de-section--dark .de-card__body h3,
+.de-section--dark .de-industry h3,
+.de-section--dark .de-contact-card h3 { color: var(--de-ink); }
 .de-spec p { font-size: .88rem; color: var(--de-muted); margin-bottom: 0; }
-.de-spec__no { font-size: .72rem; letter-spacing: .16em; color: var(--de-line-strong); font-weight: 700; display: block; margin-bottom: .5rem; }
+.de-spec__no { font-size: .72rem; letter-spacing: .16em; color: var(--de-muted); font-weight: 700; display: block; margin-bottom: .5rem; }
 
 /* Checklist ----------------------------------------------------------- */
 .de-check { list-style: none; padding: 0; margin: 0; }
@@ -626,6 +641,9 @@ img { max-width: 100%; height: auto; }
 .de-footer p { color: #91adc6; }
 .de-footer a { color: #c2d6e8; }
 .de-footer a:hover { color: var(--de-yellow); }
+/* buttons keep their own colours inside the footer */
+.de-footer a.de-btn--primary { color: var(--de-blue-900); }
+.de-footer a.de-btn--primary:hover { color: var(--de-blue-900); }
 .de-footer-list { list-style: none; padding: 0; margin: 0; }
 .de-footer-list li { margin-bottom: .55rem; }
 .de-footer-contact li { display: flex; gap: .65rem; margin-bottom: .85rem; align-items: flex-start; }
@@ -673,4 +691,5 @@ img { max-width: 100%; height: auto; }
   border-left: 3px solid var(--de-yellow); background: var(--de-grey-50);
   padding: 1rem 1.2rem; font-size: .93rem; color: var(--de-body);
 }
+.de-muted { color: var(--de-muted); font-size: .88em; }
 .de-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }

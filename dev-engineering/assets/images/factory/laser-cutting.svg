@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600" role="img" aria-label="Laser cutting">
+  <defs>
+    <pattern id="g" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M40 0H0v40" fill="none" stroke="#ffffff" stroke-opacity=".055" stroke-width="1"/>
+    </pattern>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0E3057"/><stop offset="1" stop-color="#0A2540"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="600" fill="url(#bg)"/>
+  <rect width="800" height="600" fill="url(#g)"/>
+  <g fill="none" stroke="#F2B705" stroke-width="2" stroke-opacity=".85">
+    <path d="M28 52V28h24"/><path d="M772 548v24h-24"/>
+  </g>
+  <g fill="none" stroke="#8FB4D9" stroke-width="1" stroke-opacity=".35">
+    <path d="M748 28h24v24"/><path d="M52 572H28v-24"/>
+  </g>
+  <g stroke-linecap="round" stroke-linejoin="round">
+    <path d="M70 430h660v46H70z" fill="none" stroke="#EAF2FA" stroke-width="3"/>
+    <path d="M70 430h660" fill="none" stroke="#F2B705" stroke-width="3"/>
+    <path d="M70 200h660" fill="none" stroke="#8FB4D9" stroke-width="2.2"/>
+    <path d="M70 168h660v32H70z" fill="none" stroke="#EAF2FA" stroke-width="2.2"/>
+    <path d="M110 168V120h580v48" fill="none" stroke="#EAF2FA" stroke-width="2"/>
+    <path d="M360 200v62h80v-62z" fill="none" stroke="#EAF2FA" stroke-width="2.8"/>
+    <path d="M385 262h30v40h-30z" fill="none" stroke="#EAF2FA" stroke-width="2.6"/>
+    <path d="M400 302v128" fill="none" stroke="#F2B705" stroke-width="3.6"/>
+    <path d="M384 418h32l-16 14z" fill="none" stroke="#F2B705" stroke-width="2.6"/>
+    <path d="M140 430h520" fill="none" stroke="#8FB4D9" stroke-width="1.8"/>
+    <path d="M140 430v-54h520v54" fill="none" stroke="#EAF2FA" stroke-width="2.2"/>
+    <path d="M180 420v-34h60v34" fill="none" stroke="#EAF2FA" stroke-width="2.2"/>
+    <circle cx="300" cy="403" r="20" fill="none" stroke="#EAF2FA" stroke-width="2.2"/>
+    <circle cx="300" cy="403" r="8" fill="none" stroke="#8FB4D9" stroke-width="2"/>
+    <path d="M480 420v-34h50l10 17-10 17z" fill="none" stroke="#EAF2FA" stroke-width="2.2"/>
+    <path d="M580 420v-34h60v34" fill="none" stroke="#EAF2FA" stroke-width="2.2"/>
+    <path d="M140 386h520" fill="none" stroke="#8FB4D9" stroke-width="1.4" stroke-opacity=".55" stroke-dasharray="7 6"/>
+    <path d="M140 460H660" fill="none" stroke="#8FB4D9" stroke-width="1.2" stroke-opacity=".5"/>
+    <path d="M140 454v12M660 454v12" fill="none" stroke="#8FB4D9" stroke-width="1.2" stroke-opacity=".5"/>
+    <text x="400" y="450" text-anchor="middle" font-family="'Barlow Condensed',Arial,sans-serif" font-size="15" letter-spacing="1.5" fill="#8FB4D9" fill-opacity=".55">SHEET</text>
+  </g>
+  <text x="28" y="584" font-family="'Barlow Condensed',Arial,sans-serif" font-size="17" letter-spacing="3"
+        fill="#8FB4D9" fill-opacity=".8">LASER CUTTING</text>
+</svg>

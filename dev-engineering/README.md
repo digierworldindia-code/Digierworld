@@ -1,8 +1,15 @@
 # Dev Engineering — Website
 
-Static website for **Dev Engineering Works** — industrial trolleys, MS pallets and bins,
-storage rack systems, office storage, UPS battery racks, MS fabrication and toolroom work.
-Units in Gurgaon, Haryana (since 2012) and Ahmedabad, Gujarat (since 2019).
+Static website for **Dev Engineering** — metal fabrication, industrial trolleys, pallets,
+MS bins, storage rack systems, office storage, UPS battery storage systems, die fixtures
+and special purpose machines.
+
+- **Head office and works:** IMT Manesar, Gurgaon, Haryana — established 2012
+- **Second manufacturing unit:** Ahmedabad, Gujarat — operational since 2019
+
+In-house capabilities: CNC and VMC machining, laser cutting, bending, welding and
+fabrication to customer drawing, milling, drilling and tapping, plus slot cutting,
+profile cutting, reaming, burnishing and boring.
 
 ## Stack
 
@@ -17,17 +24,17 @@ That is the whole process.
 
 | File | Purpose |
 |---|---|
-| `index.html` | Home — hero, company intro, product categories, toolroom, why us, customers |
+| `index.html` | Home — hero, company intro, product categories, in-house capabilities, six reasons, customers, factory imagery |
 | `about-us.html` | Company background, 2012/2019 timeline, how an enquiry runs |
 | `products.html` | All five categories with every product |
-| `manufacturing-capabilities.html` | Fabrication, toolroom operations, locations |
+| `manufacturing-capabilities.html` | In-house capability groups, toolroom operations, die fixtures and SPM, locations |
 | `industries.html` | Industries served + customer list |
 | `contact-us.html` | Enquiry form + contact details |
 | `products/industrial-trolleys.html` | Material movement trolleys |
 | `products/pallets-bins.html` | Pallets, MS bins, foldable pallets |
 | `products/storage-racks.html` | Metal storage rack systems |
 | `products/office-storage.html` | Office storage systems |
-| `products/battery-racks.html` | UPS battery and battery cabinet systems |
+| `products/battery-racks.html` | UPS battery storage systems |
 
 ## ⚠ Before going live — required replacements
 
@@ -45,6 +52,10 @@ across all files.
 **Customer names** in `industries.html` and `index.html` are taken from the list supplied
 with the brief. Check each spelling against the company profile before publishing — in
 particular confirm whether the customer is *Toyota Gosei* or *Toyoda Gosei*.
+
+**Street addresses.** Only the city-level locations are shown, because no full address was
+supplied: "IMT Manesar, Gurgaon, Haryana" and "Ahmedabad, Gujarat". Add the plot/street
+detail for each unit in `contact-us.html` and in the `PostalAddress` JSON-LD on every page.
 
 ## ⚠ Images are placeholders
 
