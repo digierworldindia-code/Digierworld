@@ -13,6 +13,12 @@ use Throwable;
  */
 class Diagnostics
 {
+    /** PHP extensions the application or its locked dependencies (composer.lock) need. */
+    public const REQUIRED_EXTENSIONS = ['intl', 'mbstring', 'json', 'mysqli', 'curl', 'openssl', 'gd', 'zip', 'xml', 'dom', 'xmlwriter', 'fileinfo', 'iconv', 'ctype'];
+
+    /** Folders under writable/ the web server must be able to write. */
+    public const WRITABLE_DIRS = ['cache', 'logs', 'session', 'uploads', 'exports', 'backups', 'credentials', 'tmp'];
+
     public function __construct(private readonly BaseConnection $db)
     {
     }
@@ -27,8 +33,7 @@ class Diagnostics
 
         // PHP
         $add('PHP', 'PHP version', version_compare(PHP_VERSION, '8.2.0', '>=') ? 'ok' : 'fail', PHP_VERSION . ' (8.2 or newer required)');
-        // required by the application or its locked dependencies (composer.lock)
-        foreach (['intl', 'mbstring', 'json', 'mysqli', 'curl', 'openssl', 'gd', 'zip', 'xml', 'dom', 'xmlwriter', 'fileinfo', 'iconv', 'ctype'] as $ext) {
+        foreach (self::REQUIRED_EXTENSIONS as $ext) {
             $add('PHP', "ext-{$ext}", extension_loaded($ext) ? 'ok' : 'fail', extension_loaded($ext) ? 'loaded' : 'missing — enable it in the hosting panel (PHP extensions)');
         }
         // sodium is only suggested by CodeIgniter and firebase/php-jwt; encryption here uses the OpenSSL driver
@@ -95,7 +100,7 @@ class Diagnostics
         }
 
         // Filesystem
-        foreach (['cache', 'logs', 'session', 'uploads', 'exports', 'backups', 'credentials', 'tmp'] as $dir) {
+        foreach (self::WRITABLE_DIRS as $dir) {
             $path = WRITEPATH . $dir;
             $ok   = is_dir($path) && is_writable($path);
             $add('Filesystem', "writable/{$dir}", $ok ? 'ok' : 'fail', $ok ? 'writable' : 'not writable — chmod/chown for the web server user');

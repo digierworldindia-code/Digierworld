@@ -16,7 +16,7 @@ $addressMiss = base_url_mismatch();
 </head>
 <body>
 <main class="auth-wrap">
-    <div class="auth-card">
+    <div class="auth-card<?= $this->renderSection('card_class') ?>">
         <div class="text-center">
             <?php if ($hasLogo): ?>
                 <img src="<?= site_url('brand/logo') ?>" alt="Company logo" class="auth-logo">

@@ -1,11 +1,45 @@
 # DGR Office — changes
 
-Releases 1.0.0 to 1.2.0 did not change the database schema. **1.3.0 adds
-three additive migrations** (one nullable column, four indexes, two
+Releases 1.0.0 to 1.2.0, 1.3.1 and 1.4.0 do not change the database
+schema. **1.3.0 adds three additive migrations** (one nullable column, four indexes, two
 settings rows; no existing data is changed or removed). `php spark dgr:install` applies only new migrations
 and, on an existing installation, first writes a backup to
 `writable/backups` and reads it back to verify it; if that fails, nothing
 is changed.
+
+## 1.4.0 — administrator installation in the browser (no database changes)
+
+Installing on shared hosting no longer needs SSH or cron-job workarounds.
+Step-by-step guide: [docs/11-ADMIN-INSTALLATION.md](docs/11-ADMIN-INSTALLATION.md).
+Upgrading from 1.3.x only replaces files.
+
+- **Administrator setup page (`/setup`).** While no active Owner / Super
+  Admin exists, it checks the server (PHP version and extensions, writable
+  folders, `.env`, site address, encryption key, database connection and
+  tables), adds a random encryption key to `.env` if none is set, creates
+  the tables and base data (after a verified backup if the database already
+  holds data — the same code as `dgr:install`), and creates the first
+  administrator with the usual password rules.
+- **Protected by a one-time code on the server.** The page asks for the
+  code written to `writable/SETUP-CODE.txt` (readable only through the
+  hosting File Manager, never shown on the page, valid two hours, deleted
+  after use). Its form posts are CSRF-checked and limited to 10 a minute,
+  wrong codes are logged, and creating the administrator is audited.
+- **Gone for good afterwards.** Once an administrator exists the page and
+  its actions answer 404, and `writable/installed.lock` keeps them closed
+  even if the database is briefly unreachable.
+- **A new installation leads to the setup page.** With an empty database
+  the site address now opens the setup page instead of an error page;
+  after importing the clean SQL file the sign-in page links to it.
+- **Pages no longer fail when the database cannot be read for the
+  security headers.** Every page asked Shield whether someone was signed
+  in, which reads settings from the database; with no tables yet (or the
+  database down) that made every page — including the error and setup
+  pages — fail. Such pages are now simply marked private (not cached).
+- `dgr:install` and the setup page share one install routine
+  (`App\Services\Admin\InstallService`); `dgr:install` output is unchanged
+  except that it no longer lists each seeder and now mentions the browser
+  setup page when no owner exists.
 
 ## 1.3.1 — fixes from a full check of 1.3.0 (no database changes)
 

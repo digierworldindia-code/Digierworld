@@ -140,3 +140,5 @@ _modules/*
 
 # scheduler lock (created at runtime)
 /writable/cron.lock
+/writable/SETUP-CODE.txt
+/writable/installed.lock

@@ -24,6 +24,7 @@ PhpSpreadsheet · Dompdf · google/apiclient (Sheets only) · smalot/pdfparser
 | [docs/07-TEST-REPORT.md](docs/07-TEST-REPORT.md) | Automated and manual test results, evidence files, known limitations |
 | [docs/08-SECURITY-CHECKLIST.md](docs/08-SECURITY-CHECKLIST.md) | Security review checklist with how each item is enforced |
 | [docs/09-UI-THEME.md](docs/09-UI-THEME.md) | Light / Dark / System theme (black · white · gold), component reference, self-hosted asset policy, CSP, library upgrades |
+| [docs/11-ADMIN-INSTALLATION.md](docs/11-ADMIN-INSTALLATION.md) | **Administrator installation guide**: install on Hostinger without SSH (browser setup page), first administrator, cron, SSL, first settings, troubleshooting |
 | [docs/10-RELEASE-1.3.0.md](docs/10-RELEASE-1.3.0.md) | 1.3.0 release report: root causes, database changes, modified files, test results, upgrade steps |
 | [docs/samples/](docs/samples/) | Sample import files (clients/vendors, CRM leads, bank statement) |
 | [docs/evidence/](docs/evidence/) | PDFs/XLSX and the exact AI request produced by the acceptance tests |
@@ -43,10 +44,13 @@ PhpSpreadsheet · Dompdf · google/apiclient (Sheets only) · smalot/pdfparser
    `app.baseURL = 'https://your-domain.com/dgr/'` (exact address, trailing
    slash) and the `database.default.*` values (hostname `localhost`, the
    full `u123…_` names).
-4. Over SSH, in that folder: `php spark key:generate` (**once**; never again
-   on a working install), `php spark dgr:install`,
-   `php spark dgr:create-owner --email you@your-domain.com --name "Your Name"`,
-   `php spark dgr:diagnostics`.
+4. **No SSH needed:** open `https://your-domain.com/dgr/setup`, enter the
+   code from `writable/SETUP-CODE.txt` (File Manager), then *Generate the
+   key*, *Create the database tables* and *Create the administrator*.
+   Step-by-step: [docs/11-ADMIN-INSTALLATION.md](docs/11-ADMIN-INSTALLATION.md).
+   (With SSH instead: `php spark key:generate` — **once**, never again on a
+   working install — `php spark dgr:install`,
+   `php spark dgr:create-owner --email you@your-domain.com --name "Your Name"`.)
 5. Add the cron job `php …/dgr/spark dgr:cron` (every minute) and a daily
    `… spark dgr:backup --files --keep 14`.
 6. After SSL: `https://` in `app.baseURL`, `app.forceGlobalSecureRequests = true`,
@@ -159,8 +163,8 @@ database) before entering real data.
 
 ### Release files
 
-`dist/dgr-office-1.3.1.zip` (application + production `vendor/`),
-`dist/dgr-office-1.3.1-clean.sql` (empty database with base data for a
+`dist/dgr-office-1.4.0.zip` (application + production `vendor/`),
+`dist/dgr-office-1.4.0-clean.sql` (empty database with base data for a
 new installation, [§12](docs/04-DEPLOYMENT.md)) and
 `dist/dgr-office-1.0.0-demo.sql` / `.sql.gz` (evaluation-only demo
 database, [§11](docs/04-DEPLOYMENT.md); `dgr:install` brings it up to

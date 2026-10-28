@@ -18,6 +18,9 @@
         <?php endif ?>
     </div>
 <?php endif ?>
+<?php if (service('setup')->needsOwner()) : ?>
+    <div class="alert alert-info py-2 small" role="alert"><strong>First-time installation:</strong> no administrator account exists yet. <a href="<?= site_url('setup') ?>">Set up the administrator account</a></div>
+<?php endif ?>
 <?php if (session('error') !== null) : ?>
     <div class="alert alert-danger py-2 small" role="alert"><?= esc(session('error')) ?></div>
 <?php elseif (session('errors') !== null) : ?>

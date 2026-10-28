@@ -220,9 +220,12 @@ payslip PDFs with and without branding, and that `.env`, `app/`,
    php spark dgr:diagnostics
    ```
 
-   Instead of `dgr:install` you can import `dgr-office-1.3.1-clean.sql` in
-   phpMyAdmin (§12). Without SSH, run each command once as a temporary cron
-   job (§5 step 5).
+   Instead of `dgr:install` you can import `dgr-office-1.4.0-clean.sql` in
+   phpMyAdmin (§12). **Without SSH** use the browser setup page instead of
+   all four commands: open `https://your-domain.com/dgr/setup`, enter the
+   code from `writable/SETUP-CODE.txt`, then generate the key, create the
+   tables and create the administrator. Step by step:
+   [11-ADMIN-INSTALLATION.md](11-ADMIN-INSTALLATION.md).
 6. **Permissions:** PHP runs as your hosting user, so the default `755`
    folders and `644` files are right and `writable/` is already writable.
    Never use `777`.
@@ -356,7 +359,7 @@ first writes `writable/backups/dgr-<date>-<time>.sql.gz` and reads it
 back to verify it (every table, every row count). If the backup cannot
 be made or verified it stops **before** changing anything. Download that
 file before continuing. (`--no-backup` skips it — only if you have just
-made and checked one yourself.) Upgrading 1.3.0 → 1.3.1 applies no
+made and checked one yourself.) Upgrading 1.3.x → 1.4.0 applies no
 migrations (files only). Upgrading 1.2.0 → 1.3.x applies three
 additive migrations (`AddRoleLandingUrl`, `AddPerformanceIndexes`,
 `MarkAuditCanonicalHashing`); they add one nullable column, four indexes
@@ -401,7 +404,7 @@ because the sign-in page's logo needed a session. Fixed in 1.1.1.)
 
 ```bash
 cd erp
-scripts/build-release.sh 1.3.1        # → dist/dgr-office-1.3.1.zip + .sha256
+scripts/build-release.sh 1.4.0        # → dist/dgr-office-1.4.0.zip + .sha256
 ```
 
 The script exports the committed tree (`git archive`), runs
@@ -458,14 +461,16 @@ Import) than to run migrations:
    drops and recreates the DGR Office tables it contains.
 2. Point `.env` at the database and run `php spark key:generate`,
    `php spark dgr:install` (reports nothing pending — it is safe to run)
-   and `php spark dgr:create-owner --email … --name "…"`.
+   and `php spark dgr:create-owner --email … --name "…"` — or, without SSH,
+   open `…/setup` in the browser (the sign-in page links to it while no
+   administrator exists).
 
 Use it **only for a new installation**. An existing installation is
 upgraded with `php spark dgr:install` (§10); importing this file would
 replace its tables.
 
-Verified for 1.3.1 (and before for 1.3.0; the two files differ only in
-their creation timestamps): imports into an empty MySQL 8.0 and MariaDB 11.8
+Verified for 1.4.0 (and before for 1.3.0 and 1.3.1; the files differ
+only in their creation timestamps): imports into an empty MySQL 8.0 and MariaDB 11.8
 database (122 tables, starter roles with their landing pages); then
 `dgr:install` reports nothing pending, `dgr:create-owner` works and
 `dgr:diagnostics` shows no failed checks (only the expected warnings of a

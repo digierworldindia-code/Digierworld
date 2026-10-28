@@ -54,8 +54,8 @@ class Filters extends BaseFilters
         ],
     ];
 
-    /** Routes reachable without an interactive session (brand/logo: the official logo shown on the sign-in page). */
-    private const PUBLIC = ['login', 'login/*', 'logout', 'auth/a/*', 'api/ai/*', 'health', 'share/*', 'brand/logo'];
+    /** Routes reachable without an interactive session (brand/logo: the official logo shown on the sign-in page; setup: first administrator, see SetupController). */
+    private const PUBLIC = ['login', 'login/*', 'logout', 'auth/a/*', 'api/ai/*', 'health', 'share/*', 'brand/logo', 'setup', 'setup/*'];
 
     public array $globals = [
         'before' => [
@@ -74,7 +74,7 @@ class Filters extends BaseFilters
     public array $methods = [];
 
     public array $filters = [
-        'auth-rates' => ['before' => ['login', 'login/*', 'auth/a/*']],
+        'auth-rates' => ['before' => ['login', 'login/*', 'auth/a/*', 'setup/*']],
         // read-only downloads: PDFs, exports, stored files, backups, payroll register, payslip preview
         'unlock' => ['before' => ['*/pdf', '*/export', '*/*/export', 'files/*', 'admin/backups/*', 'hr/payroll/*/register', 'hr/payroll/items/*/preview', 'me/payslips/*']],
     ];

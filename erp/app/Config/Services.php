@@ -3,6 +3,7 @@
 namespace Config;
 
 use App\Services\Access\BillingAccess;
+use App\Services\Admin\SetupService;
 use App\Services\Ai\AiConfig;
 use App\Services\Access\CandidateAccess;
 use App\Services\Access\LeadAccess;
@@ -108,6 +109,16 @@ class Services extends BaseService
         }
 
         return new UserService(db_connect());
+    }
+
+    /** First-time administrator setup in the browser (/setup). */
+    public static function setup(bool $getShared = true): SetupService
+    {
+        if ($getShared) {
+            return static::getSharedInstance('setup');
+        }
+
+        return new SetupService();
     }
 
     public static function fy(bool $getShared = true): FinancialYearService

@@ -13,6 +13,7 @@ verified manually · ⚠ deployment responsibility / recommendation.
 | 1.4 | Secrets only in `.env` | DB, SMTP, encryption key, AI key, Google credentials path; nothing secret in git, the database UI or `.env.example`; Integrations page shows status only (`RecurringIntegrationsTest::testIntegrationsShowStatusWithoutSecretsAndNeedPermission`) | ✔ |
 | 1.5 | Encryption key backed up separately | Needed to read encrypted bank numbers/CIF | ⚠ |
 | 1.6 | Diagnostics warn about insecure settings | Admin → Diagnostics / `dgr:diagnostics` (HTTP, dev mode, missing key, cron, backups) | ◐ |
+| 1.6a | First-administrator setup page cannot be abused | `/setup` exists only while no active Owner/Super Admin exists (404 afterwards, also while the database is unreachable, via `writable/installed.lock`); every step needs the one-time code written to `writable/SETUP-CODE.txt` (never shown on the page, expires after 2 h, deleted after use); POSTs are CSRF-checked and limited to 10 a minute per IP; wrong codes are logged; the encryption key is only ever added, never replaced; password rules apply; creation is audited (`AdminSetupTest`) | ✔ |
 | 1.7 | Dependencies pinned | `composer.lock`; release archive built from it, dev packages excluded | ✔ |
 
 ## 2. Authentication and sessions
@@ -30,7 +31,7 @@ verified manually · ⚠ deployment responsibility / recommendation.
 | 2.9 | Secrets are not kept in the session after a failed form | `forget_secret_input()` drops passwords, bank account numbers, CIF and keys from the input kept to refill forms (`BankSetupTest`) | ✔ |
 | 2.10 | Landing page after sign-in respects permissions | `App\Libraries\Landing`: a role's landing page is used only if the user may open it; the role editor offers only real pages (`LoginLandingTest`) | ✔ |
 | 2.8 | CSRF protection on every form | Global `csrf` filter (except the token-authenticated AI API) | ✔ |
-| 2.9 | Signed-out requests | Every route needs a session except sign-in/out, the AI token API, `health`, `share/*` and `brand/logo` (the official logo shown on the sign-in page). `SignedOutRequestFilter` answers signed-out images and script calls with 401 so only real page visits become the post-sign-in destination (`SignInFlowTest`) | ✔ |
+| 2.9 | Signed-out requests | Every route needs a session except sign-in/out, the AI token API, `health`, `share/*`, `brand/logo` (the official logo shown on the sign-in page) and `setup` (first administrator only, see 1.6a). `SignedOutRequestFilter` answers signed-out images and script calls with 401 so only real page visits become the post-sign-in destination (`SignInFlowTest`) | ✔ |
 
 ## 3. Authorization (deny by default)
 

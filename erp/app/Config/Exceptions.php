@@ -106,6 +106,11 @@ class Exceptions extends BaseConfig
             return new \App\Libraries\BusinessRuleExceptionHandler();
         }
 
+        // a brand-new installation without tables: pages lead to the setup page instead of an error
+        if (\App\Libraries\SetupRedirectHandler::applies($exception)) {
+            return new \App\Libraries\SetupRedirectHandler();
+        }
+
         return new ExceptionHandler($this);
     }
 }

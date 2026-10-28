@@ -16,6 +16,13 @@ service('auth')->routes($routes, ['except' => ['register']]);
 
 $routes->get('health', 'HealthController::index');
 
+// ---- First-time administrator setup (only while no Owner/Super Admin exists; needs the code in writable/SETUP-CODE.txt) ----
+$routes->get('setup', 'SetupController::index');
+$routes->post('setup/unlock', 'SetupController::unlock');
+$routes->post('setup/key', 'SetupController::key');
+$routes->post('setup/database', 'SetupController::database');
+$routes->post('setup/owner', 'SetupController::owner');
+
 // ---- Overview / self-service ----
 $routes->get('/', 'DashboardController::index'); // signed-in users only (global session filter); without dashboard.view it opens the user's first module
 $routes->get('dashboard/data', 'DashboardController::data', ['filter' => 'perm:dashboard.view']);

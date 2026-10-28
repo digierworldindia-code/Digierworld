@@ -461,6 +461,7 @@ hr { border-color: var(--dgr-border); opacity: 1; }
 /* ===== 9. Sign-in and error pages ===== */
 .auth-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: var(--dgr-bg); padding: 1rem; }
 .auth-card { width: 100%; max-width: 420px; background: var(--dgr-card); border: 1px solid var(--dgr-border); border-top: 2px solid var(--dgr-gold); border-radius: 14px; padding: 2rem; }
+.auth-card.auth-card-wide { max-width: 760px; }
 .auth-card .auth-logo { max-height: 48px; max-width: 240px; margin-bottom: 1rem; }
 .auth-card h1 { font-size: 1.25rem; font-weight: 700; }
 .auth-brand { letter-spacing: .12em; font-weight: 700; }

@@ -34,11 +34,25 @@ class SecurityHeadersFilter implements FilterInterface
         if ($request instanceof \CodeIgniter\HTTP\IncomingRequest && $request->isSecure()) {
             $response->setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
         }
-        if (function_exists('auth') && auth('session')->loggedIn()) {
+        if ($this->privatePage()) {
             $response->setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
             $response->setHeader('Pragma', 'no-cache');
         }
 
         return null;
+    }
+
+    /**
+     * Signed-in pages are never cached. Shield reads its settings from the
+     * database, so when that cannot be read (not installed yet, or the
+     * database is down) the page is treated as private too instead of failing.
+     */
+    private function privatePage(): bool
+    {
+        try {
+            return function_exists('auth') && auth('session')->loggedIn();
+        } catch (\Throwable) {
+            return true;
+        }
     }
 }
