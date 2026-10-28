@@ -29,16 +29,11 @@ $badge = static fn (string $s): string => match ($s) {
     <div class="alert alert-success py-2 small" role="alert"><?= esc(session('message')) ?></div>
 <?php endif ?>
 
-<div class="table-responsive mb-3">
-    <table class="table table-sm small mb-0 align-middle">
-        <thead><tr><th>Check</th><th>Status</th><th>Details</th></tr></thead>
-        <tbody>
-        <?php foreach ($checks as [$label, $status, $detail]) : ?>
-            <tr><td class="text-nowrap"><?= esc($label) ?></td><td><?= $badge($status) ?></td><td><?= esc($detail) ?></td></tr>
-        <?php endforeach ?>
-        </tbody>
-    </table>
-</div>
+<ul class="list-unstyled small mb-3">
+    <?php foreach ($checks as [$label, $status, $detail]) : ?>
+        <li class="d-flex gap-2 py-2 border-bottom"><span class="flex-shrink-0"><?= $badge($status) ?></span><div><strong><?= esc($label) ?></strong><div class="text-muted text-break"><?= esc($detail) ?></div></div></li>
+    <?php endforeach ?>
+</ul>
 <p class="small text-muted">Fix anything marked <span class="badge badge-danger">Fix</span> in the hosting panel or in <span class="mono">.env</span>, then reload this page.</p>
 
 <h2 class="h6 mt-4">1. Encryption key</h2>
