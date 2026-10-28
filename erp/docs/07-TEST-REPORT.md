@@ -1,21 +1,19 @@
 # DGR Office — Test report
 
-**Release 1.3.1** (2026-10-23, branch `ccr-5922b9e2-4of5k8`), `vendor/bin/phpunit`, PHPUnit 10.5.66:
+**Release 1.4.0** (2026-10-28, branch `ccr-5922b9e2-4of5k8`), `vendor/bin/phpunit`, PHPUnit 10.5.66:
 
 | Platform | Result |
 | --- | --- |
-| PHP 8.3.6 + MySQL 8.0.46 | **137 tests, 1,775 assertions — all passed** (0 failures, 0 errors, 0 skipped) |
-| PHP 8.3.6 + MariaDB 11.8.9 | **137 tests, 1,775 assertions — all passed** |
-| PHP 8.2.10 + MySQL 8.0.46 | **137 tests, 1,739 assertions — all passed** |
+| PHP 8.3.6 + MySQL 8.0.46 | **142 tests, 1,832 assertions — all passed** (0 failures, 0 errors, 0 skipped) |
+| PHP 8.3.6 + MariaDB 11.8.9 | **142 tests, 1,832 assertions — all passed** |
+| PHP 8.2.10 + MySQL 8.0.46 | **142 tests, 1,796 assertions — all passed** |
 
 (The PHP 8.2 container has no `pdfinfo`/`pdfimages`, so the PDF tests skip
 their page-size and embedded-image checks there; everything else is
-identical.) Release 1.2.0 had 107 tests; 1.3.0 added 29 and 1.3.1 adds one
-(`RbacAdminTest::testWeakPasswordIsRefusedWithAReadableReason`) plus a new
-check in `ThemeComplianceTest` (gold accent never used as a text colour).
-Which server each run used was confirmed from the database side (the
-MariaDB server's insert counter and test tables changed during its run; the
-PHP 8.2 run wrote to its own test database).
+identical.) 1.2.0 had 107 tests; 1.3.0 added 29, 1.3.1 one and 1.4.0 five
+(`AdminSetupTest`). Which server each run used was confirmed from the
+database side (the MariaDB server's insert counter went from 0 to 27,437
+during its run; the PHP 8.2 run wrote to its own test database).
 
 Tests run against a real MySQL or MariaDB test database (`database.tests.*`), go
 through the real routes, filters, controllers, services and views (CI4
@@ -24,6 +22,39 @@ XLSX files. External services are replaced by fakes only at the network
 edge: `FakeSheetsClient` (Google Sheets) and `FakeAiProvider` (Anthropic).
 
 ---
+
+## 0b. Release 1.4.0 — administrator setup in the browser
+
+Automated: `AdminSetupTest` (all three platforms) — the page is 404 once an
+administrator exists and writes the installed marker; the code is needed
+before anything works, a wrong code is refused, the code works without
+dashes and in lower case; password rules and confirmation apply and the
+password is not kept for the form; the administrator is created with every
+permission, can sign in, the creation is audited, the code file is deleted
+and the page is 404 afterwards; the 11th code attempt within a minute gets
+429; an expired code stops working and a new one is written; the encryption
+key is added to `.env` (empty line filled in, or appended) but never
+replaces a value or a key in use; `InstallService` changes nothing and
+makes no backup when nothing is pending.
+
+Executed end to end from `dgr-office-1.4.0.zip`, production mode, in a
+sub-folder of the Apache "Hostinger" simulation (Apache 2.4 + PHP 8.3,
+MariaDB 11.8), with **no command line**, following
+[11-ADMIN-INSTALLATION.md](11-ADMIN-INSTALLATION.md):
+
+| Path | Result |
+| --- | --- |
+| Empty database, `.env` from `.env.example` (no key) | site address → `/setup`; wrong code refused; checks all OK except key (Fix) and tables (Check); *Generate the key* wrote one `encryption.key = hex2bin:<64 hex>` line; *Create the database tables* → 122 tables; weak and mismatched passwords refused; administrator created → sign-in page with message → dashboard; `/setup` 404 afterwards; crawler 340 pages, all OK, Apache error log and application log empty |
+| Clean SQL imported first | site address → sign-in page with "Set up the administrator account" link → setup with the tables step already OK → administrator created → signed in |
+| Database with data and pending changes, no active administrator | setup shows "3 database change(s) to apply — a verified backup is made first"; the button wrote and read back `writable/backups/dgr-…sql.gz` (122 tables, 1,598 rows) before the 3 migrations; afterwards only `migrations` (+3), `app_settings` (+2) and the new administrator's rows changed |
+| `writable/SETUP-CODE.txt`, `writable/installed.lock`, `.env` over HTTP | 403 / 403 / 404 |
+| `dgr:install` (refactored onto the same code) on a copy of a 1.0.0-schema database | backup written and verified first, 3 migrations, same output as before; a second run finds nothing pending |
+| Wrong database password in `.env` ¹ | site address shows the error page; `/setup` explains "cannot connect: … Access denied for user '****'…" with what to check |
+| Database unreachable after installation ¹ | `/setup` stays 404 (installed marker) |
+| Phone width (390 px), dark theme ¹ | no sideways scrolling, 0 JavaScript errors |
+
+¹ Run on a copy of the same code served by PHP's built-in web server with
+MySQL 8.0 instead of Apache/MariaDB.
 
 ## 0a. Release 1.3.1 — full check of the running application
 
