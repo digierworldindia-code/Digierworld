@@ -3,6 +3,7 @@
 namespace App\Filters;
 
 use CodeIgniter\Filters\FilterInterface;
+use CodeIgniter\HTTP\IncomingRequest;
 use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
 
@@ -31,10 +32,10 @@ class SecurityHeadersFilter implements FilterInterface
             "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; "
             . "font-src 'self'; connect-src 'self'; frame-ancestors 'none'; form-action 'self'; base-uri 'self'; object-src 'none'"
         );
-        if ($request instanceof \CodeIgniter\HTTP\IncomingRequest && $request->isSecure()) {
+        if ($request instanceof IncomingRequest && $request->isSecure()) {
             $response->setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
         }
-        if ($this->privatePage()) {
+        if ($this->privatePage($request)) {
             $response->setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
             $response->setHeader('Pragma', 'no-cache');
         }
@@ -43,12 +44,17 @@ class SecurityHeadersFilter implements FilterInterface
     }
 
     /**
-     * Signed-in pages are never cached. Shield reads its settings from the
-     * database, so when that cannot be read (not installed yet, or the
-     * database is down) the page is treated as private too instead of failing.
+     * Signed-in pages and the setup page are never cached. Shield reads its
+     * settings from the database, so when that cannot be read (not installed
+     * yet, or the database is down) the page is treated as private too
+     * instead of failing.
      */
-    private function privatePage(): bool
+    private function privatePage(RequestInterface $request): bool
     {
+        $path = $request instanceof IncomingRequest ? trim($request->getPath(), '/') : '';
+        if ($path === 'setup' || str_starts_with($path, 'setup/')) {
+            return true; // first-time setup: private, and its tables may not exist yet
+        }
         try {
             return function_exists('auth') && auth('session')->loggedIn();
         } catch (\Throwable) {

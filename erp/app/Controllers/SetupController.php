@@ -26,16 +26,18 @@ class SetupController extends Controller
     public function index(): string
     {
         $this->open();
+        $noLogo = $this->setup->tablesMissing();
         try {
             $this->setup->ensureCode();
         } catch (BusinessRuleException $e) {
-            return view('setup/code', ['problem' => $e->getMessage()]);
+            return view('setup/code', ['problem' => $e->getMessage(), 'noLogo' => $noLogo]);
         }
         if (! $this->unlocked()) {
-            return view('setup/code', ['problem' => null]);
+            return view('setup/code', ['problem' => null, 'noLogo' => $noLogo]);
         }
 
         return view('setup/index', [
+            'noLogo'    => $noLogo,
             'checks'    => $this->setup->checks(),
             'hasKey'    => $this->setup->hasKey(),
             'canDb'     => $this->setup->canConnect(),

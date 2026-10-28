@@ -1,5 +1,5 @@
 <?php
-$hasLogo     = brand_logo_state() === 'ok';
+$hasLogo     = empty($noLogo) && brand_logo_state() === 'ok'; // the setup page passes noLogo while the tables do not exist yet
 $addressMiss = base_url_mismatch();
 ?>
 <!doctype html>
