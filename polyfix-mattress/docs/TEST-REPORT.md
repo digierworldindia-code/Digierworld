@@ -13,10 +13,11 @@ an earlier one.
 
 | File | Size | MD5 |
 |---|---|---|
-| `POLYFIZZ-CI4-UPDATED-COMPLETE.zip` | 12 MB, 2,395 files | `af170d567f7f3ec5d2118987ca7674e1` |
+| `POLYFIZZ-CI4-UPDATED-COMPLETE.zip` | 12 MB, 2,396 files | — (this report ships inside it) |
 | `POLYFIZZ-FRESH-DATABASE.sql` | 120 KB | `0fda5ab2c07f18a7814ebb7dc5acd3c6` |
 | `POLYFIZZ-EXISTING-DATABASE-UPGRADE.sql` | 124 KB | `2b66aa3b7d0b1b6c60428f3c092febed` |
 | `POLYFIZZ-HOSTINGER-INSTALLATION.md` | 22 KB | — |
+| `POLYFIZZ-TEST-REPORT.md` | this file | — |
 
 The archive was checked for `.env`, a `.git` directory, a private key, a real
 value against any secret setting, a password hash in either `.sql` file, an
