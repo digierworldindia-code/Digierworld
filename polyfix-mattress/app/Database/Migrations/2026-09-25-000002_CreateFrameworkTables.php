@@ -2,7 +2,7 @@
 
 namespace App\Database\Migrations;
 
-use CodeIgniter\Database\Migration;
+use App\Database\SchemaMigration;
 
 /**
  * Tables the CodeIgniter application needs that the previous platform did not.
@@ -16,7 +16,7 @@ use CodeIgniter\Database\Migration;
  *                       row serialises audit appends, which replaces the
  *                       PostgreSQL advisory lock the old trigger used.
  */
-class CreateFrameworkTables extends Migration
+class CreateFrameworkTables extends SchemaMigration
 {
     public function up(): void
     {

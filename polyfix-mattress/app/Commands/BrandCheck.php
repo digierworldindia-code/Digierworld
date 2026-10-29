@@ -42,6 +42,12 @@ class BrandCheck extends BaseCommand
         'POLY FIZZ', 'Poly Fizz',
         'POLYFIZZZ', 'Polyfizzz',
         'POLYFIZZ MATTRESS', 'Polyfizz Mattress',
+        // The old domain. Lower-case 'polyfix' on its own is a legitimate
+        // identifier here (the database, its accounts, the settings prefix,
+        // the command group), so it cannot simply be banned — but glued to
+        // 'mattress' it is only ever the old web address, which survived the
+        // rename in .env.example, composer.json and the deployment notes.
+        'polyfixmattress', 'POLYFIXMATTRESS',
     ];
 
     /**
@@ -54,7 +60,10 @@ class BrandCheck extends BaseCommand
     private const ALLOWED_FRAGMENTS = [
         'polyfix_mattress', 'polyfix_app', 'polyfix_owner', 'polyfix_backup', 'polyfix_test',
         'polyfix_preview', 'polyfix_zipcheck', 'polyfix_final', 'polyfix_uf', 'polyfix_no2fa',
-        'Config\\Polyfix', 'Config/Polyfix', "config('Polyfix')", 'Polyfix::class',
+        'Config\\Polyfix', 'Config/Polyfix', "config('Polyfix')",
+        // Any reference to the config class: Polyfix::class, its constants
+        // (Polyfix::MINIMUM_PHP) and its methods (Polyfix::installProblems()).
+        'Polyfix::',
         'PolyfixRules', 'PolyfixTestCase', 'polyfix.', 'polyfix:', 'Polyfix $config',
         'class Polyfix', 'polyfix-mattress', 'Polyfix extends', 'use Config\\Polyfix',
         // A migration name recorded in the database when the previous rename
@@ -127,7 +136,17 @@ class BrandCheck extends BaseCommand
                     }
                 }
 
-                return $file->isDir() || preg_match('/\.(php|md|css|js|json|sql|sh|xml|html)$/', $file->getFilename()) === 1;
+                // Text we deliver, whatever it is called. The earlier list of
+                // code extensions quietly skipped .env.example, .htaccess,
+                // INSTALL.txt and the placeholder .svg images, and the old
+                // name sat in all four of them through a rename. Anything
+                // binary is excluded by extension rather than by sniffing.
+                if ($file->isDir()) {
+                    return true;
+                }
+                $name = $file->getFilename();
+
+                return preg_match('/\.(png|jpe?g|gif|webp|ico|pdf|zip|gz|woff2?|ttf|eot|mp4|lock)$/i', $name) !== 1;
             },
         ));
 

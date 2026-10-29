@@ -3,6 +3,7 @@
 namespace App\Libraries;
 
 use CodeIgniter\Database\BaseConnection;
+use CodeIgniter\Database\Exceptions\DatabaseException;
 use Throwable;
 
 /**
@@ -22,6 +23,18 @@ use Throwable;
  * nobody catches it on the way. A caller that catches a failed inner step and
  * carries on would commit its half-finished work. A savepoint makes the inner
  * unit honest on its own terms, whatever the caller then does.
+ *
+ * One case is out of reach, and is handled rather than papered over. The
+ * connection is configured to raise on a failed query inside a transaction
+ * (see App\Database\MySQLi\Connection — without that the framework reports
+ * the write as successful), and on its way out the framework rolls the whole
+ * transaction back before it throws, which discards every savepoint with it.
+ * So a failing *query* inside a nested unit undoes the outer work too; there
+ * is no honest way to keep half of it, because the database no longer holds
+ * the mark. The savepoint still does its job when the inner unit fails for a
+ * reason of the application's own — a rule, a conflict, a not-found — which
+ * is the common case. Either way nothing half-finished is ever committed, and
+ * nothing fails quietly.
  */
 final class Tx
 {
@@ -45,13 +58,21 @@ final class Tx
         try {
             $result = $work($db);
             $db->transCommit();
-
-            return $result;
         } catch (Throwable $e) {
             $db->transRollback();
 
             throw $e;
         }
+
+        // transCommit() rolls back instead of committing when any query in
+        // the transaction failed, and says so only through transStatus().
+        // Returning the result after that would be the same lie this class
+        // exists to prevent.
+        if ($db->transStatus() === false) {
+            throw new DatabaseException('The transaction was rolled back because a write in it failed.');
+        }
+
+        return $result;
     }
 
     /**
@@ -74,7 +95,13 @@ final class Tx
 
             return $result;
         } catch (Throwable $e) {
-            $db->query("ROLLBACK TO SAVEPOINT {$name}");
+            // A failed query has already had the framework roll the whole
+            // transaction back, taking this savepoint with it; rolling back to
+            // a mark that no longer exists would replace the real error with a
+            // confusing one. Nothing is left to undo in that case.
+            if ($db->transDepth > 0) {
+                $db->query("ROLLBACK TO SAVEPOINT {$name}");
+            }
 
             throw $e;
         }

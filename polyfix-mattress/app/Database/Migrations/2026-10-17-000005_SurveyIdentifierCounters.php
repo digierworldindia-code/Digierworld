@@ -2,7 +2,7 @@
 
 namespace App\Database\Migrations;
 
-use CodeIgniter\Database\Migration;
+use App\Database\SchemaMigration;
 
 /**
  * Counters for the two references the survey programme issues.
@@ -18,7 +18,7 @@ use CodeIgniter\Database\Migration;
  * INSERT IGNORE, so a re-run never resets a counter that has already issued
  * references.
  */
-class SurveyIdentifierCounters extends Migration
+class SurveyIdentifierCounters extends SchemaMigration
 {
     public function up(): void
     {

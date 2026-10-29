@@ -12,12 +12,14 @@ use RuntimeException;
 use Throwable;
 
 /**
- * One-way copy of the existing POLYFIX PostgreSQL database into MySQL.
+ * One-way copy of the previous platform's PostgreSQL database into MySQL.
  *
  *   php spark polyfix:import-postgres \
  *       --pg-dsn "pgsql:host=127.0.0.1;port=5432;dbname=colifees" --pg-user colifees_backup
  *
- * Passwords: POLYFIX_PG_PASSWORD and POLYFIX_OWNER_PASSWORD, or hidden prompts.
+ * Passwords: POLYFIZZ_PG_PASSWORD and POLYFIZZ_OWNER_PASSWORD, or hidden prompts.
+ * The POLYFIX_* names from before the rename are still read, so a script
+ * written against them keeps working.
  * Add --dry-run to do everything, verify everything, and write nothing.
  *
  * Guarantees, in order of importance:
@@ -89,8 +91,13 @@ class ImportPostgres extends BaseCommand
             return EXIT_ERROR;
         }
 
-        $pgPass = getenv('POLYFIX_PG_PASSWORD') ?: $this->promptHidden("PostgreSQL password for {$pgUser}: ");
-        $myPass = getenv('POLYFIX_OWNER_PASSWORD') ?: $this->promptHidden("MySQL password for {$owner}: ");
+        // POLYFIZZ_OWNER_PASSWORD is the name polyfix:migrate reads, and the
+        // one the packaging scripts document; the POLYFIX_* spellings predate
+        // the rename and are still honoured.
+        $pgPass = getenv('POLYFIZZ_PG_PASSWORD') ?: getenv('POLYFIX_PG_PASSWORD')
+            ?: $this->promptHidden("PostgreSQL password for {$pgUser}: ");
+        $myPass = getenv('POLYFIZZ_OWNER_PASSWORD') ?: getenv('POLYFIX_OWNER_PASSWORD')
+            ?: $this->promptHidden("MySQL password for {$owner}: ");
 
         try {
             $this->connectSource($dsn, $pgUser, $pgPass);

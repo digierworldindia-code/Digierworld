@@ -2,7 +2,7 @@
 
 namespace App\Database\Migrations;
 
-use CodeIgniter\Database\Migration;
+use App\Database\SchemaMigration;
 
 /**
  * Corrects the company name in stored content, and widens the serial format.
@@ -25,7 +25,7 @@ use CodeIgniter\Database\Migration;
  * narrowing it under rows that violate it would fail anyway and leaving the
  * data unmatched to the schema is worse than refusing.
  */
-class RebrandToPolyfizz extends Migration
+class RebrandToPolyfizz extends SchemaMigration
 {
     /** Content tables and their text columns. Deliberately no history tables. */
     private const CONTENT = [

@@ -50,8 +50,10 @@ abstract class PolyfixTestCase extends CIUnitTestCase
 
     /**
      * Inserts a fixture row and fails the test loudly if the database refused
-     * it. Inside a transaction a rejected INSERT is otherwise silent, and a
-     * missing fixture row shows up later as a puzzling assertion failure.
+     * it. The connection raises on a refused write now (see
+     * App\Database\MySQLi\Connection), so this mostly guards the paths that
+     * report through error() instead — and it keeps a missing fixture row from
+     * showing up later as a puzzling assertion failure.
      */
     protected function insert(string $table, array $row): void
     {
@@ -60,6 +62,34 @@ abstract class PolyfixTestCase extends CIUnitTestCase
         if (($error['code'] ?? 0) !== 0) {
             $this->fail("fixture insert into {$table} was refused: " . $error['message']);
         }
+    }
+
+    /**
+     * A published CMS page, whatever was there before.
+     *
+     * The slug is unique, and a database built from POLYFIZZ-FRESH-DATABASE.sql
+     * already carries the six pages the public site needs — so a test that
+     * simply inserted its own would collide there while passing against a
+     * database built from the migrations alone. Each test runs in a
+     * transaction that is rolled back, so the replacement is undone with
+     * everything else it did.
+     *
+     * @param list<array<string,mixed>> $sections
+     */
+    protected function makePage(string $slug, string $heading, array $sections = [], array $hero = []): void
+    {
+        $this->db->table('website_pages')->where('slug', $slug)->delete();
+        $this->insert('website_pages', [
+            'id'     => uuid4(),
+            'slug'   => $slug,
+            'title'  => $heading,
+            'status' => 'PUBLISHED',
+            'hero'   => json_encode($hero !== [] ? $hero : [
+                'eyebrow' => brand('shortName'), 'heading' => $heading, 'body' => 'A line of copy.',
+            ]),
+            'sections'     => json_encode($sections),
+            'published_at' => utc_now(),
+        ]);
     }
 
     // =====================================================================

@@ -16,9 +16,10 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 ROOT=$(pwd)
 OUT=${1:-"$ROOT/delivery"}
-NAME=POLYFIZZ-MATTRESS
-ZIP="$OUT/${ZIP_NAME:-POLYFIZZ-CI4-COMPLETE-FINAL}.zip"
-SQL_SRC="$OUT/POLYFIZZ-MATTRESS-DATABASE.sql"
+NAME=POLYFIZZ
+ZIP="$OUT/${ZIP_NAME:-POLYFIZZ-CI4-UPDATED-COMPLETE}.zip"
+FRESH_SQL="$OUT/POLYFIZZ-FRESH-DATABASE.sql"
+UPGRADE_SQL="$OUT/POLYFIZZ-EXISTING-DATABASE-UPGRADE.sql"
 
 command -v zip >/dev/null || { echo "zip is not installed"; exit 1; }
 
@@ -46,18 +47,25 @@ composer install \
 [ -f "$STAGE/$NAME/vendor/autoload.php" ] || { echo "composer install produced no autoloader"; exit 1; }
 find "$STAGE/$NAME/vendor" -name '.git' -prune -exec rm -rf {} + 2>/dev/null || true
 
-# A data dump is included only when one has been generated beside this
-# script. For an upgrade of a running installation there should not be one:
-# the client already has their data, and the migrations bring the schema
-# forward without touching it. Shipping a dump alongside an upgrade invites
-# somebody to restore it over live records.
+# The two SQL files are carried inside the archive as well as beside it, so
+# whoever unpacks it on the server has everything in one place. Neither holds
+# an account or a password: the fresh file installs no users at all, and the
+# upgrade file only adds to a database that already exists.
+echo "==> adding the database files"
+for pair in "$FRESH_SQL:POLYFIZZ-FRESH-DATABASE.sql" "$UPGRADE_SQL:POLYFIZZ-EXISTING-DATABASE-UPGRADE.sql"; do
+    src=${pair%%:*}
+    dest=${pair#*:}
+    if [ -f "$src" ]; then
+        echo "  including $dest"
+        cp "$src" "$STAGE/$NAME/$dest"
+    else
+        echo "  MISSING: $src — build it first (scripts/build-fresh-sql.sh, php spark polyfix:build-upgrade-sql)"
+        fail_sql=1
+    fi
+done
+[ "${fail_sql:-0}" -eq 0 ] || { echo "packaging aborted: a database file is missing"; exit 1; }
+
 echo "==> adding the empty writable tree"
-if [ -f "$SQL_SRC" ]; then
-    echo "  including $SQL_SRC"
-    cp "$SQL_SRC" "$STAGE/$NAME/POLYFIZZ-MATTRESS-DATABASE.sql"
-else
-    echo "  no data dump present — this is an upgrade package, which is correct"
-fi
 for d in cache logs session uploads debugbar; do
     mkdir -p "$STAGE/$NAME/writable/$d"
     [ -f "$STAGE/$NAME/writable/$d/index.html" ] || \
@@ -89,6 +97,23 @@ done < <(find "$STAGE/$NAME" -maxdepth 2 -name '.env*' -type f -print0)
 if grep -rlIE 'BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY' "$STAGE/$NAME" 2>/dev/null | head -1 | grep -q .; then
     echo "  REFUSING: a private key is in the package"; fail=1
 fi
+
+# The database files ship with the package, so they are checked too: a fresh
+# install creates its first administrator with polyfix:create-user, and a
+# password hash in the SQL would mean an account somebody else's copy of the
+# file also knows the password to.
+for sql in "$STAGE/$NAME"/*.sql; do
+    [ -f "$sql" ] || continue
+    if grep -qE '\$2[aby]\$[0-9]{2}\$' "$sql"; then
+        echo "  REFUSING: $(basename "$sql") contains a password hash"; fail=1
+    fi
+    if grep -qiE 'INSERT INTO .?users.?' "$sql"; then
+        echo "  REFUSING: $(basename "$sql") creates a user account"; fail=1
+    fi
+    if grep -qiE '^\s*(DROP TABLE|DROP DATABASE|TRUNCATE)' "$sql"; then
+        echo "  REFUSING: $(basename "$sql") contains a destructive statement"; fail=1
+    fi
+done
 
 [ "$fail" -eq 0 ] || { echo "packaging aborted"; exit 1; }
 echo "  clean: only .env.example, with placeholders"

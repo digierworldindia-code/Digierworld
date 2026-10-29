@@ -8,7 +8,7 @@ who receive stock and sell it. No technical knowledge assumed. Where something
 needs a server command it says so plainly, and those are the only parts meant
 for whoever looks after the hosting.
 
-For installing it, see `INSTALL.txt` and `docs/HOSTINGER-DEPLOYMENT.md`.
+For installing it, see `INSTALL.txt` and `POLYFIZZ-HOSTINGER-INSTALLATION.md`.
 
 ---
 
@@ -886,7 +886,7 @@ off a whiteboard as the date and the run.
 | *Claims can be raised from N days after the sale* | `warranty.claim_window_days` in Settings → Warranty is set above 0. |
 | A scanned QR code shows nothing | The unit was serialised but never sold, so there is no warranty yet. |
 | A QR code goes to the wrong site | `app.baseURL` was changed after labels were printed. See section 12. |
-| Pages load with no styling | Server configuration, not your doing — see `docs/HOSTINGER-DEPLOYMENT.md`. |
+| Pages load with no styling | Server configuration, not your doing — see `POLYFIZZ-HOSTINGER-INSTALLATION.md`. |
 | *Setup is not finished yet* | The installation is incomplete. The page lists exactly what is missing. |
 
 ---
@@ -918,7 +918,7 @@ has ever restored is a hope, not a backup. `docs/backup.md` and
 
 Other documentation: `docs/USE-CASES.md` (the formal specification: actors,
 flows, business rules, state models and a permission matrix),
-`docs/HOSTINGER-DEPLOYMENT.md` (deployment),
+`POLYFIZZ-HOSTINGER-INSTALLATION.md` (deployment),
 `docs/database.md` (schema and accounts), `docs/security.md` (what is protected
 and the trade-offs made), `docs/migration.md` (bringing data from the previous
 platform).

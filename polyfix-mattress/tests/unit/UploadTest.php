@@ -67,6 +67,78 @@ final class UploadTest extends PolyfixTestCase
         $this->assertSame(hash_file('sha256', $this->png()), $inspection['sha256']);
     }
 
+    /** A short MP4: a box length, then 'ftyp', then a brand that is not QuickTime. */
+    private function mp4(): string
+    {
+        $path = $this->scratch . '/damage.mp4';
+        file_put_contents($path, "\x00\x00\x00\x18ftypisom" . str_repeat("\x00", 2048));
+
+        return $path;
+    }
+
+    private function pdf(): string
+    {
+        $path = $this->scratch . '/invoice.pdf';
+        file_put_contents($path, "%PDF-1.4\n1 0 obj<</Type/Catalog>>endobj\ntrailer<</Root 1 0 R>>\n%%EOF\n");
+
+        return $path;
+    }
+
+    /**
+     * A dealer photographs a sagging mattress with their phone, which records
+     * video. The claim forms accept MP4 and MOV, videos have their own size
+     * limit, and the mime CHECK on the table allows both — so this has to work.
+     */
+    public function testAVideoOfTheProblemIsAccepted(): void
+    {
+        $inspection = $this->media->inspect($this->file($this->mp4(), 'damage.mp4', 'video/mp4'));
+
+        $this->assertSame('video/mp4', $inspection['mime']);
+        $this->assertSame('mp4', $inspection['extension']);
+        $this->assertSame('CLAIM_VIDEO', $inspection['kind']);
+    }
+
+    /**
+     * And the column has to accept the value the service produces for it.
+     * These drifted apart once: a migration rewrote claim_media.kind to add
+     * REVIEW_INVOICE and dropped CLAIM_VIDEO out of the list while the service
+     * went on writing it, so every video upload failed at the database with
+     * the file already on disk. Nothing caught it, because no test had ever
+     * uploaded a video.
+     */
+    public function testEveryKindTheServiceProducesIsAValueTheColumnAccepts(): void
+    {
+        $allowed = $this->db->query(
+            "SELECT COLUMN_TYPE AS t FROM information_schema.COLUMNS
+             WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'claim_media' AND COLUMN_NAME = 'kind'",
+        )->getRow()->t;
+
+        foreach ([
+            [$this->png(), 'damage.png', 'image/png'],
+            [$this->mp4(), 'damage.mp4', 'video/mp4'],
+            [$this->pdf(), 'invoice.pdf', 'application/pdf'],
+        ] as [$path, $name, $type]) {
+            $kind = $this->media->inspect($this->file($path, $name, $type))['kind'];
+            $this->assertStringContainsString(
+                "'{$kind}'",
+                $allowed,
+                "the service files a {$type} as {$kind}, which claim_media.kind does not allow: {$allowed}",
+            );
+        }
+    }
+
+    /** Both video formats the forms offer are recognised. */
+    public function testAQuickTimeVideoIsRecognisedAsOne(): void
+    {
+        $path = $this->scratch . '/damage.mov';
+        file_put_contents($path, "\x00\x00\x00\x14ftypqt  " . str_repeat("\x00", 2048));
+
+        $inspection = $this->media->inspect($this->file($path, 'damage.mov', 'video/quicktime'));
+
+        $this->assertSame('video/quicktime', $inspection['mime']);
+        $this->assertSame('CLAIM_VIDEO', $inspection['kind']);
+    }
+
     public function testAScriptRenamedAsAPhotographIsRefused(): void
     {
         $path = $this->scratch . '/evil.png';

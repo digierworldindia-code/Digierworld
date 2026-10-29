@@ -2,7 +2,7 @@
 
 namespace App\Database\Migrations;
 
-use CodeIgniter\Database\Migration;
+use App\Database\SchemaMigration;
 
 /**
  * Frees accounts held by the old lock, and registers the two-factor switch.
@@ -24,7 +24,7 @@ use CodeIgniter\Database\Migration;
  * down() puts the setting row back the way it found it and leaves the lock
  * columns alone: re-locking accounts on a rollback would be its own outage.
  */
-class ReleaseAccountLocksAndAddSecuritySettings extends Migration
+class ReleaseAccountLocksAndAddSecuritySettings extends SchemaMigration
 {
     private const KEY = 'security.two_factor_enabled';
 

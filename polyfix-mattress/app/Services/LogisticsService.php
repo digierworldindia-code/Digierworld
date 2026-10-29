@@ -109,7 +109,13 @@ final class LogisticsService
             }
 
             $serials        = (new Identifiers($db))->serials($total);
-            $manufacturedAt = $batch['manufactured_on'] . ' 00:00:00.000000';
+            // The batch's date is the day the plant worked, in India time; a
+            // unit's manufactured_at is a UTC instant. Those are not the same
+            // thing, and treating them as the same put the timestamp 5h30m
+            // ahead — so a batch opened after midnight local time was stamped
+            // with tomorrow's date and the timeline CHECK would not let it be
+            // dispatched.
+            $manufacturedAt = local_day_start_utc($batch['manufactured_on']);
             $actor          = $this->context->userId();
             $cursor         = 0;
             $rows           = [];

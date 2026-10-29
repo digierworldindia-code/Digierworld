@@ -2,7 +2,7 @@
 
 namespace App\Database\Migrations;
 
-use CodeIgniter\Database\Migration;
+use App\Database\SchemaMigration;
 
 /**
  * Makes room for the FIELD_AGENT role.
@@ -18,7 +18,7 @@ use CodeIgniter\Database\Migration;
  * grants change as the panels are built, and the seeder is the one place that
  * applies them.
  */
-class AddFieldAgentRole extends Migration
+class AddFieldAgentRole extends SchemaMigration
 {
     private const ROLES = ['SUPER_ADMIN', 'ADMIN', 'WAREHOUSE', 'WARRANTY_MANAGER', 'SALES_MANAGER', 'FIELD_AGENT', 'DEALER', 'REPORTING'];
 

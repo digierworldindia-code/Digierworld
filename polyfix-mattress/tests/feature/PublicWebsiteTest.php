@@ -108,7 +108,10 @@ final class PublicWebsiteTest extends PolyfixTestCase
         $this->assertStringContainsString('<loc>', $body);
         $this->assertStringNotContainsString('/warranty<', $body, 'a page marked noindex is left out');
         $this->assertStringNotContainsString('/admin', $body, 'nothing private is ever listed');
-        $this->assertStringNotContainsString('/dealer', $body);
+        // The dealer *portal*, with the slash. `/dealers` without one is the
+        // public page that helps a customer find a shop, and belongs here —
+        // banning the bare prefix banned that too.
+        $this->assertStringNotContainsString('/dealer/', $body, 'the dealer portal is never listed');
     }
 
     public function testRobotsKeepsCrawlersOutOfThePrivateAreas(): void
@@ -138,13 +141,8 @@ final class PublicWebsiteTest extends PolyfixTestCase
     /** A published page with the sections the site expects. */
     private function page(string $slug, string $heading): void
     {
-        $this->insert('website_pages', [
-            'id' => uuid4(), 'slug' => $slug, 'title' => $heading, 'status' => 'PUBLISHED',
-            'hero' => json_encode(['eyebrow' => 'POLYFIX', 'heading' => $heading, 'body' => 'A line of copy.']),
-            'sections' => json_encode($slug === 'home'
-                ? [['type' => 'featured-products', 'heading' => 'The range']]
-                : [['type' => 'verify-form', 'heading' => 'Check a serial number']]),
-            'published_at' => utc_now(),
-        ]);
+        $this->makePage($slug, $heading, $slug === 'home'
+            ? [['type' => 'featured-products', 'heading' => 'The range']]
+            : [['type' => 'verify-form', 'heading' => 'Check a serial number']]);
     }
 }

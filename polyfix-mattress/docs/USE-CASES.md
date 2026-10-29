@@ -1266,7 +1266,7 @@ from the audit trail.
 **Postconditions** — Access is restored. No password was changed, created or
 displayed, so this is not a route to impersonating a colleague.
 
-**Business rules** — BR-10. See also `docs/HOSTINGER-DEPLOYMENT.md`.
+**Business rules** — BR-10. See also `POLYFIZZ-HOSTINGER-INSTALLATION.md`.
 
 ---
 

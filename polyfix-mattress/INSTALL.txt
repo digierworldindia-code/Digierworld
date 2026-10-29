@@ -1,40 +1,48 @@
-POLYFIX MATTRESS — what is in this package and how to install it
-================================================================
+POLYFIZZ — what is in this package and how to install it
+========================================================
 
 Contents
 --------
-  POLYFIX-MATTRESS/                 the application, dependencies already installed
-  POLYFIX-MATTRESS-DATABASE.sql     schema, roles, permissions, settings, website
-                                    content and one plant. No accounts, no customer
-                                    data, no audit trail — those belong to a running
-                                    system and to its backups.
-  README.md                         start here
-  docs/USER-GUIDE.md                the manual: how to use every screen. Give this
-                                    to staff and dealers.
-  docs/USE-CASES.md                 the specification: actors, flows, business rules,
-                                    state models and a permission traceability matrix.
-  docs/                             database, migration, backup, restore, deployment,
-                                    security, and HOSTINGER-DEPLOYMENT.md for shared
-                                    hosting (Hostinger, cPanel, Plesk)
-  .env.example                      every setting, with notes. Copy it to .env and edit.
+  POLYFIZZ/                                  the application, dependencies already installed
+  POLYFIZZ-FRESH-DATABASE.sql                for a NEW installation: schema, roles, permissions,
+                                             settings, the identifier counters, one plant and the
+                                             website's starting pages. No accounts, no customer
+                                             data, no audit trail — those belong to a running
+                                             system and to its backups.
+  POLYFIZZ-EXISTING-DATABASE-UPGRADE.sql     for a database you ALREADY run: adds what is new and
+                                             leaves every record alone. Safe to run twice.
+  POLYFIZZ-HOSTINGER-INSTALLATION.md         step-by-step installation, start here
+  README.md                                  what the software is and how it is put together
+  docs/USER-GUIDE.md                         the manual: how to use every screen. Give this to
+                                             staff and dealers.
+  docs/USER-USE-CASES.md                     the same ground module by module, written for the
+                                             people who will use it rather than for developers
+  docs/USE-CASES.md                          the specification: actors, flows, business rules,
+                                             state models and a permission traceability matrix
+  docs/                                      database, migration, backup, restore, deployment
+                                             and security notes
+  .env.example                               every setting, with notes. Copy it to .env and edit.
 
 There is no .env in this package, and no password, key or token of any kind.
 
+Use ONE of the two .sql files, never both. The fresh one refuses a database that
+already holds these tables; the upgrade one adds to a database that does.
+
 Install
 -------
-On Hostinger or any shared host where the document root is fixed at
-public_html, follow docs/HOSTINGER-DEPLOYMENT.md instead of this list — the
-layout and permissions differ. Otherwise:
+On Hostinger, or any shared host where the document root is fixed at
+public_html, follow POLYFIZZ-HOSTINGER-INSTALLATION.md instead of this list —
+the layout and the permissions differ. Otherwise:
 
-  1.  Unpack outside the web root, e.g. /srv/polyfix.
-  2.  Point the web server's document root at POLYFIX-MATTRESS/public.
+  1.  Unpack outside the web root, e.g. /srv/polyfizz.
+  2.  Point the web server's document root at POLYFIZZ/public.
   3.  cp .env.example .env  and fill in app.baseURL and the database, then
       generate the three secrets:
         php spark polyfix:keys --write
       It fills in what is missing and never overwrites a secret already set.
       Back up polyfix.encryptionKey: it decrypts customer contact details.
   4.  mysql -u root -p -e "CREATE DATABASE polyfix_mattress CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;"
-      mysql -u root -p polyfix_mattress < POLYFIX-MATTRESS-DATABASE.sql
+      mysql -u root -p polyfix_mattress < POLYFIZZ-FRESH-DATABASE.sql
   5.  chmod -R 770 writable
   6.  Create the database accounts and restrict the application's one:
         mysql -u root -p polyfix_mattress < database/sql/generate-privileges.sql | mysql -u root -p polyfix_mattress
@@ -48,14 +56,27 @@ layout and permissions differ. Otherwise:
         php spark polyfix:doctor
       It tests the PHP build, the writable folders, the secrets, the database
       and the migrations, and names whatever fails.
-  9.  Sign in at /admin/login, then open Console → System and read the checks.
+  9.  Sign in at /admin/login, then open Console -> System and read the checks.
+
+The website pages the fresh database installs are a starting point, not finished
+copy. Edit them under Console -> Content, and add your product range under
+Console -> Products.
 
 Upgrading an existing installation instead
 ------------------------------------------
-Do not load the .sql file over live data. Take a backup, then:
+Do not load POLYFIZZ-FRESH-DATABASE.sql over live data; it is for an empty
+database. Take a backup, then either:
 
     php spark polyfix:migrate --owner-user polyfix_owner
     php spark polyfix:seed ReferenceData
+    php spark polyfix:seed WebsiteContent
+
+or, where only phpMyAdmin is available, import
+
+    POLYFIZZ-EXISTING-DATABASE-UPGRADE.sql
+
+Both routes produce the same schema. Neither drops a table, resets a counter or
+deletes a record, and both are safe to run twice.
 
 Bringing data over from the previous platform
 ---------------------------------------------

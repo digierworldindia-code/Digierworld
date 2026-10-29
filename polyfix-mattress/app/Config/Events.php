@@ -35,7 +35,7 @@ use CodeIgniter\HotReloader\HotReloader;
  *
  * So: name the problems on a plain, self-contained page and answer 503, which
  * is what "configured but not ready" actually means. Only install-integrity
- * problems qualify — see POLYFIZZ::installProblems(). They cannot be true of an
+ * problems qualify — see Polyfix::installProblems(). They cannot be true of an
  * installation that has ever served a request, so there is no live site whose
  * details this could leak, and it prints names, never values.
  */

@@ -2,7 +2,7 @@
 
 namespace App\Database\Migrations;
 
-use CodeIgniter\Database\Migration;
+use App\Database\SchemaMigration;
 use RuntimeException;
 
 /**
@@ -21,7 +21,7 @@ use RuntimeException;
  *
  * Reversible. down() refuses if reversing would lose data.
  */
-class AddDispatchInvoiceAndClaimVideo extends Migration
+class AddDispatchInvoiceAndClaimVideo extends SchemaMigration
 {
     private const KINDS_BEFORE = "'CLAIM_PHOTO','CLAIM_INVOICE','PRODUCT_IMAGE','OG_IMAGE'";
     private const KINDS_AFTER  = "'CLAIM_PHOTO','CLAIM_INVOICE','PRODUCT_IMAGE','OG_IMAGE','CLAIM_VIDEO'";

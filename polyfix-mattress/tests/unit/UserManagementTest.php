@@ -27,11 +27,11 @@ final class UserManagementTest extends PolyfixTestCase
         $this->actingAs($this->makeUser(['SUPER_ADMIN']));
 
         $created = $this->users->create([
-            'email' => 'new.person@polyfixmattress.test', 'full_name' => 'New Person', 'roles' => ['WAREHOUSE'],
+            'email' => 'new.person@polyfizz.test', 'full_name' => 'New Person', 'roles' => ['WAREHOUSE'],
         ], ['SUPER_ADMIN']);
 
         $row = $this->db->table('users')->where('id', $created['id'])->get()->getRowArray();
-        $this->assertSame('new.person@polyfixmattress.test', $row['email']);
+        $this->assertSame('new.person@polyfizz.test', $row['email']);
         $this->assertSame(1, (int) $row['must_change_password']);
         $this->assertStringStartsWith('$argon2id$', $row['password_hash']);
         $this->assertGreaterThanOrEqual(12, strlen($created['temporary_password']));
@@ -42,8 +42,8 @@ final class UserManagementTest extends PolyfixTestCase
     {
         $this->actingAs($this->makeUser(['SUPER_ADMIN']));
 
-        $first  = $this->users->create(['email' => 'one@polyfixmattress.test', 'full_name' => 'One', 'roles' => ['REPORTING']], ['SUPER_ADMIN']);
-        $second = $this->users->create(['email' => 'two@polyfixmattress.test', 'full_name' => 'Two', 'roles' => ['REPORTING']], ['SUPER_ADMIN']);
+        $first  = $this->users->create(['email' => 'one@polyfizz.test', 'full_name' => 'One', 'roles' => ['REPORTING']], ['SUPER_ADMIN']);
+        $second = $this->users->create(['email' => 'two@polyfizz.test', 'full_name' => 'Two', 'roles' => ['REPORTING']], ['SUPER_ADMIN']);
 
         $this->assertNotSame($first['temporary_password'], $second['temporary_password'], 'there is no universal password');
     }
@@ -53,7 +53,7 @@ final class UserManagementTest extends PolyfixTestCase
         $this->actingAs($this->makeUser(['WAREHOUSE']));
 
         $this->expectExceptionMessage('senior to your own');
-        $this->users->create(['email' => 'escalate@polyfixmattress.test', 'full_name' => 'Escalation', 'roles' => ['SUPER_ADMIN']], ['WAREHOUSE']);
+        $this->users->create(['email' => 'escalate@polyfizz.test', 'full_name' => 'Escalation', 'roles' => ['SUPER_ADMIN']], ['WAREHOUSE']);
     }
 
     public function testADealerLoginMustBelongToADealershipAndHoldNoStaffRole(): void
@@ -62,7 +62,7 @@ final class UserManagementTest extends PolyfixTestCase
         $dealerId = $this->makeDealer();
 
         try {
-            $this->users->create(['email' => 'lonely@polyfixmattress.test', 'full_name' => 'No Dealership', 'roles' => ['DEALER']], ['ADMIN']);
+            $this->users->create(['email' => 'lonely@polyfizz.test', 'full_name' => 'No Dealership', 'roles' => ['DEALER']], ['ADMIN']);
             $this->fail('a dealer login with no dealership should be refused');
         } catch (AppException $e) {
             $this->assertStringContainsString('linked to a dealer', $e->getMessage());
@@ -70,7 +70,7 @@ final class UserManagementTest extends PolyfixTestCase
 
         try {
             $this->users->create([
-                'email' => 'both@polyfixmattress.test', 'full_name' => 'Both Hats', 'roles' => ['DEALER', 'ADMIN'], 'dealer_id' => $dealerId,
+                'email' => 'both@polyfizz.test', 'full_name' => 'Both Hats', 'roles' => ['DEALER', 'ADMIN'], 'dealer_id' => $dealerId,
             ], ['ADMIN']);
             $this->fail('a dealer login must not also hold a staff role');
         } catch (AppException $e) {
@@ -78,7 +78,7 @@ final class UserManagementTest extends PolyfixTestCase
         }
 
         $created = $this->users->create([
-            'email' => 'dealer.login@polyfixmattress.test', 'full_name' => 'Dealer Login', 'roles' => ['DEALER'], 'dealer_id' => $dealerId,
+            'email' => 'dealer.login@polyfizz.test', 'full_name' => 'Dealer Login', 'roles' => ['DEALER'], 'dealer_id' => $dealerId,
         ], ['ADMIN']);
         $this->assertSame(1, $this->db->table('dealer_users')->where(['user_id' => $created['id'], 'dealer_id' => $dealerId])->countAllResults());
     }
@@ -86,10 +86,10 @@ final class UserManagementTest extends PolyfixTestCase
     public function testAnEmailAddressIsUsedOnce(): void
     {
         $this->actingAs($this->makeUser(['ADMIN']));
-        $this->users->create(['email' => 'taken@polyfixmattress.test', 'full_name' => 'First', 'roles' => ['REPORTING']], ['ADMIN']);
+        $this->users->create(['email' => 'taken@polyfizz.test', 'full_name' => 'First', 'roles' => ['REPORTING']], ['ADMIN']);
 
         $this->expectExceptionMessage('already exists');
-        $this->users->create(['email' => 'TAKEN@polyfixmattress.test', 'full_name' => 'Second', 'roles' => ['REPORTING']], ['ADMIN']);
+        $this->users->create(['email' => 'TAKEN@polyfizz.test', 'full_name' => 'Second', 'roles' => ['REPORTING']], ['ADMIN']);
     }
 
     public function testNobodyCanChangeTheirOwnRoles(): void
@@ -160,7 +160,7 @@ final class UserManagementTest extends PolyfixTestCase
     public function testEveryAccountChangeIsRecorded(): void
     {
         $this->actingAs($this->makeUser(['SUPER_ADMIN']));
-        $created = $this->users->create(['email' => 'audited@polyfixmattress.test', 'full_name' => 'Audited', 'roles' => ['REPORTING']], ['SUPER_ADMIN']);
+        $created = $this->users->create(['email' => 'audited@polyfizz.test', 'full_name' => 'Audited', 'roles' => ['REPORTING']], ['SUPER_ADMIN']);
         $this->users->assignRoles($created['id'], ['WAREHOUSE'], 'Team change', ['SUPER_ADMIN']);
         $this->users->forcePasswordReset($created['id'], 'Forgotten password', ['SUPER_ADMIN']);
 

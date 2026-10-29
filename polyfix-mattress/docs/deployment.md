@@ -36,7 +36,7 @@ sudo chmod +x /srv/polyfix/scripts/*.sh /srv/polyfix/spark
 ```nginx
 server {
     listen 443 ssl http2;
-    server_name polyfixmattress.com;
+    server_name www.polyfizz.in;
 
     root /srv/polyfix/public;
     index index.php;
@@ -62,7 +62,7 @@ server {
 
 server {
     listen 80;
-    server_name polyfixmattress.com;
+    server_name www.polyfizz.in;
     return 301 https://$host$request_uri;
 }
 ```
@@ -87,7 +87,7 @@ and `AllowOverride None` — or no `<Directory>` block at all — for
 
 ```
 CI_ENVIRONMENT = production
-app.baseURL = 'https://polyfixmattress.com/'
+app.baseURL = 'https://www.polyfizz.in/'
 app.forceGlobalSecureRequests = true
 cookie.secure = true
 ```

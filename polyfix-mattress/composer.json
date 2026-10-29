@@ -3,7 +3,7 @@
     "description": "POLYFIX MATTRESS — website, staff console and dealer portal on CodeIgniter 4",
     "license": "proprietary",
     "type": "project",
-    "homepage": "https://polyfixmattress.com",
+    "homepage": "https://www.polyfizz.in",
     "require": {
         "php": "^8.2",
         "chillerlan/php-qrcode": "^5.0",

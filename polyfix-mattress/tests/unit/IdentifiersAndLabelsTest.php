@@ -4,6 +4,7 @@ namespace Tests\Unit;
 
 use App\Libraries\Identifiers;
 use App\Libraries\Labels;
+use App\Libraries\ScanCode;
 use Tests\Support\PolyfixTestCase;
 
 /**
@@ -92,5 +93,57 @@ final class IdentifiersAndLabelsTest extends PolyfixTestCase
 
         $this->assertStringContainsString('<svg', $svg);
         $this->assertStringContainsString('<rect', $svg);
+    }
+
+    /**
+     * Every form that takes a typed serial number has to accept the serials
+     * this release issues.
+     *
+     * The validation rule kept its own pattern, and the pattern was the one
+     * from before the numbering changed: `PFZ-2026-000001` failed it. The
+     * forms for recording a sale and for raising a warranty claim both use
+     * that rule, so a dealer could not sell or claim on any mattress the
+     * plant had made since the rename — while the scanner, which asks
+     * ScanCode, accepted the same serial perfectly well.
+     */
+    public function testTheFormRuleAcceptsASerialThisReleaseIssues(): void
+    {
+        $rules = new \App\Validation\PolyfixRules();
+        $error = null;
+
+        $issued = (new Identifiers($this->db))->serial();
+
+        $this->assertTrue(
+            $rules->serial_number($issued, $error),
+            "the serial just issued ({$issued}) is refused by the form rule: {$error}",
+        );
+    }
+
+    /** And the serials already printed on labels in the field. */
+    public function testTheFormRuleStillAcceptsALegacySerial(): void
+    {
+        $rules = new \App\Validation\PolyfixRules();
+
+        foreach (['CLF26000001', 'clf26000001', ' CLF26000001 '] as $legacy) {
+            $this->assertTrue($rules->serial_number($legacy), "{$legacy} must still be accepted");
+        }
+    }
+
+    /** It is the same judgement the scanner makes, not a second opinion. */
+    public function testTheFormRuleAndTheScannerAgreeOnWhatASerialIs(): void
+    {
+        $rules = new \App\Validation\PolyfixRules();
+
+        foreach ([
+            'PFZ-2026-000001', 'PFZ-2026-123456', 'CLF26000001', 'CLF000000012345',
+            '', '   ', 'PFZ-2026', 'PFZ-26-1', 'not-a-serial', 'PFZ2026000001X',
+            '<script>alert(1)</script>',
+        ] as $candidate) {
+            $this->assertSame(
+                ScanCode::isSerial($candidate),
+                $rules->serial_number($candidate),
+                "the form rule and the scanner disagree about \"{$candidate}\"",
+            );
+        }
     }
 }

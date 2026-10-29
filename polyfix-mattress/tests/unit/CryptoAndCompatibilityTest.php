@@ -47,7 +47,7 @@ final class CryptoAndCompatibilityTest extends PolyfixTestCase
 
     public function testAPasswordCannotContainTheAccountItProtects(): void
     {
-        $context = PasswordPolicy::contextFor('ritu@polyfixmattress.com', 'Ritu Sharma');
+        $context = PasswordPolicy::contextFor('ritu@polyfizz.in', 'Ritu Sharma');
 
         $this->assertNotSame([], PasswordPolicy::problems('Ritu-Sharma-2026!', $context));
         $this->assertNotSame([], PasswordPolicy::problems('ritu-is-here-12!A', $context));

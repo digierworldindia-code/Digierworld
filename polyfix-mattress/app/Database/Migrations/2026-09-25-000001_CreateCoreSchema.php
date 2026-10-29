@@ -2,7 +2,7 @@
 
 namespace App\Database\Migrations;
 
-use CodeIgniter\Database\Migration;
+use App\Database\SchemaMigration;
 use RuntimeException;
 
 /**
@@ -18,7 +18,7 @@ use RuntimeException;
  * database/sql/privileges.sql and, for hosts that allow it, the optional
  * database/sql/audit-triggers.sql.
  */
-class CreateCoreSchema extends Migration
+class CreateCoreSchema extends SchemaMigration
 {
     public function up(): void
     {

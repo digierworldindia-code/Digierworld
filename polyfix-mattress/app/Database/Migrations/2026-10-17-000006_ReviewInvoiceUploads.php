@@ -2,7 +2,7 @@
 
 namespace App\Database\Migrations;
 
-use CodeIgniter\Database\Migration;
+use App\Database\SchemaMigration;
 
 /**
  * Lets a dealer upload the invoice a warranty review asked for.
@@ -21,12 +21,17 @@ use CodeIgniter\Database\Migration;
  * So the owner becomes "a claim or a review, exactly one of the two",
  * enforced by a CHECK rather than by whoever writes the next insert.
  */
-class ReviewInvoiceUploads extends Migration
+class ReviewInvoiceUploads extends SchemaMigration
 {
     public function up(): void
     {
-        if (! $this->db->tableExists('claim_media')) {
-            return;
+        // As with the scan constraint: `claim_media` is part of the core
+        // schema, so its absence is a broken run, not a variation to absorb.
+        if (! $this->db->tableExists('claim_media', false)) {
+            throw new \RuntimeException(
+                'claim_media does not exist, so invoice uploads cannot be attached to a review case. '
+                . 'Run the migrations in order, from an empty database or from the previous release.',
+            );
         }
 
         if (! $this->db->fieldExists('review_case_id', 'claim_media')) {
@@ -39,9 +44,17 @@ class ReviewInvoiceUploads extends Migration
         }
 
         // Widen the kind so a review invoice is not filed as a claim invoice.
+        //
+        // CLAIM_VIDEO stays in the list. Rewriting an ENUM replaces it rather
+        // than adding to it, and the first version of this line left
+        // CLAIM_VIDEO out: MediaService files any video as CLAIM_VIDEO, the
+        // claim forms accept MP4 and MOV and the mime CHECK on this table
+        // allows both, so every video a dealer attached to a claim failed at
+        // the database with the file already written to disk. An ENUM is only
+        // ever widened here.
         $this->db->query(
             "ALTER TABLE `claim_media` MODIFY COLUMN `kind`
-             ENUM('CLAIM_PHOTO', 'CLAIM_INVOICE', 'REVIEW_INVOICE', 'PRODUCT_IMAGE', 'OG_IMAGE')
+             ENUM('CLAIM_PHOTO', 'CLAIM_INVOICE', 'REVIEW_INVOICE', 'CLAIM_VIDEO', 'PRODUCT_IMAGE', 'OG_IMAGE')
              NOT NULL DEFAULT 'CLAIM_PHOTO'",
         );
 

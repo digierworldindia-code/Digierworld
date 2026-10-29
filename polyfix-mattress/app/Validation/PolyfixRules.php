@@ -2,6 +2,8 @@
 
 namespace App\Validation;
 
+use App\Libraries\ScanCode;
+
 /**
  * Field formats shared by every form, with the same patterns the previous
  * platform enforced, so a record valid there is valid here.
@@ -37,10 +39,19 @@ class PolyfixRules
         return $value === null || preg_match('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/', $value) !== 1;
     }
 
+    /**
+     * Both numbering schemes, because both are in the field: PFZ-2026-000001
+     * on everything made since the rename, and CLF00000001 on mattresses in
+     * customers' homes. The pattern lives in ScanCode, which is what the
+     * camera and the typed-serial box already use; keeping a second copy here
+     * is how this rule came to reject every serial the plant now issues.
+     */
     public function serial_number(?string $value, ?string &$error = null): bool
     {
-        $error = 'Serial numbers are three letters followed by digits, for example ' . brand('serialPrefix') . '26000001.';
+        $error = 'That is not a serial number. They look like '
+            . brand('serialPrefix') . '-' . date('Y') . '-000123, and older labels like '
+            . 'CLF26000123.';
 
-        return $value !== null && preg_match('/^[A-Z]{3}[0-9]{8,12}$/', strtoupper(trim($value))) === 1;
+        return $value !== null && ScanCode::isSerial($value);
     }
 }

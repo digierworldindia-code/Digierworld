@@ -2,7 +2,7 @@
 
 namespace App\Database\Migrations;
 
-use CodeIgniter\Database\Migration;
+use App\Database\SchemaMigration;
 
 /**
  * Tables for the field-agent survey programme and the warehouse panel.
@@ -45,7 +45,7 @@ use CodeIgniter\Database\Migration;
  *                            second scan of the same label counting twice —
  *                            and leaves a record of what was scanned when.
  */
-class AgentSurveyAndWarehouse extends Migration
+class AgentSurveyAndWarehouse extends SchemaMigration
 {
     public function up(): void
     {

@@ -57,6 +57,28 @@ if (! function_exists('local_time')) {
     }
 }
 
+if (! function_exists('local_day_start_utc')) {
+    /**
+     * The UTC instant at which a given India-time calendar day began.
+     *
+     * The inverse of local_time(), and the piece that was missing. A batch
+     * records the day it was made as a local date, because that is the day the
+     * plant worked; a mattress records when it was made as a UTC timestamp.
+     * Gluing ' 00:00:00' onto the local date and storing that as UTC moves the
+     * timestamp 5h30m into the future, and after 18:30 UTC — that is, after
+     * midnight in India — the local date is already tomorrow, so the unit
+     * carried a manufacture time that had not happened yet. The timeline CHECK
+     * then refused to let it be dispatched: a night-shift batch could be made
+     * and not sent out.
+     */
+    function local_day_start_utc(string $localDate): string
+    {
+        $midnight = new DateTimeImmutable($localDate . ' 00:00:00', new DateTimeZone('Asia/Kolkata'));
+
+        return $midnight->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d H:i:s.u');
+    }
+}
+
 if (! function_exists('local_date')) {
     function local_date(?string $value): string
     {

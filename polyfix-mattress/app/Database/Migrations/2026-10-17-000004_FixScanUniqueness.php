@@ -2,7 +2,7 @@
 
 namespace App\Database\Migrations;
 
-use CodeIgniter\Database\Migration;
+use App\Database\SchemaMigration;
 
 /**
  * Makes the scan uniqueness constraint actually unique.
@@ -24,12 +24,20 @@ use CodeIgniter\Database\Migration;
  * Nothing is lost: the table holds only scans, and the tightened rules are
  * satisfied by every row the application has ever written.
  */
-class FixScanUniqueness extends Migration
+class FixScanUniqueness extends SchemaMigration
 {
     public function up(): void
     {
-        if (! $this->db->tableExists('warehouse_scans')) {
-            return;
+        // Not a condition to tiptoe around: `warehouse_scans` is created by
+        // the migration before this one, so if it is absent something is
+        // wrong with the run and saying so beats reporting success. This
+        // returned quietly once, and a fresh install went live with no
+        // unique key and no sign that anything had been skipped.
+        if (! $this->db->tableExists('warehouse_scans', false)) {
+            throw new \RuntimeException(
+                'warehouse_scans does not exist, so the duplicate-scan constraint cannot be added. '
+                . 'Run the migrations in order, from an empty database or from the previous release.',
+            );
         }
 
         // Any row that the tightened CHECK would reject has to go first, and

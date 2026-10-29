@@ -40,6 +40,22 @@ final class ScanCode
     private const TOKEN = '/^[A-Za-z0-9_-]{22,64}$/';
 
     /**
+     * Is this a serial number, in either numbering scheme?
+     *
+     * The form validation rule asks here rather than keeping a pattern of its
+     * own. It used to keep one, it was the pre-2026 pattern, and so the forms
+     * for recording a sale and raising a claim refused every serial this
+     * release issues — a dealer could not sell a mattress the plant had made.
+     * One pattern, one place.
+     */
+    public static function isSerial(string $raw): bool
+    {
+        $upper = strtoupper(preg_replace('/\s+/', '', trim($raw)) ?? '');
+
+        return preg_match(self::SERIAL, $upper) === 1;
+    }
+
+    /**
      * Reduces whatever was scanned to a kind and a value.
      *
      * @return array{kind:'token'|'serial', value:string}|null null when the

@@ -64,6 +64,9 @@ final class ContentAndBrandTest extends PolyfixTestCase
     public function testAPageIsOnlyServedWhenPublished(): void
     {
         $catalogue = new Catalogue($this->db);
+        // Replaces whatever is there: a database built from the delivered SQL
+        // file already has an "about" page, and this test is about the status.
+        $this->db->table('website_pages')->where('slug', 'about')->delete();
         $this->insert('website_pages', [
             'id' => uuid4(), 'slug' => 'about', 'title' => 'About', 'status' => 'DRAFT',
             'hero' => '{}', 'sections' => '[]',

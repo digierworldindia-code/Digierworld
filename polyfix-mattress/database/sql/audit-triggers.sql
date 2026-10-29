@@ -16,7 +16,7 @@
 -- Safe to re-run. Remove with the DROP TRIGGER lines at the bottom.
 -- Note: anyone able to DROP TRIGGER can also remove this protection. It raises
 -- the bar and makes tampering deliberate; the audit hash chain is what makes
--- tampering detectable (php spark polyfix:verify-audit).
+-- tampering detectable: Console -> Audit trail -> Verify chain (/admin/audit/verify).
 -- =============================================================================
 
 DELIMITER $$

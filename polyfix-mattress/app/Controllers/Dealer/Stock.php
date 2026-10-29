@@ -3,6 +3,7 @@
 namespace App\Controllers\Dealer;
 
 use App\Exceptions\AppException;
+use App\Libraries\ScanCode;
 use App\Services\LogisticsService;
 use CodeIgniter\HTTP\RedirectResponse;
 
@@ -22,8 +23,12 @@ class Stock extends DealerController
         $error  = null;
 
         if ($serial !== '') {
-            if (preg_match('/^[A-Z]{3}[0-9]{8,12}$/', $serial) !== 1) {
-                $error = 'That does not look like a serial number. They are three letters followed by digits, for example ' . brand('serialPrefix') . '26000001.';
+            // Both schemes, via the one place that knows them. A copy of the
+            // old pattern lived here and refused every serial issued since
+            // the numbering changed.
+            if (! ScanCode::isSerial($serial)) {
+                $error = 'That is not a serial number. They look like '
+                    . brand('serialPrefix') . '-' . date('Y') . '-000123, and older labels like CLF26000123.';
             } else {
                 $unit = $this->lookup($serial);
                 if ($unit === null) {

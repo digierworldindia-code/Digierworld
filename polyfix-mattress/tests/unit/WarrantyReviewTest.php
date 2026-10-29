@@ -227,6 +227,58 @@ final class WarrantyReviewTest extends PolyfixTestCase
         $this->assertSame('ACTIVE', $this->warrantyStatus($sale['warranty_id']), 'still nothing decided');
     }
 
+    /**
+     * And it tells the dealer so.
+     *
+     * The first run of the whole workflow on a clean install caught this: the
+     * office asked for an invoice, the case sat in INFORMATION_REQUESTED, and
+     * the dealer's portal raised no notice at all. They could find the case if
+     * they went looking for it, which is not the same as being asked.
+     */
+    public function testAskingTheDealerForTheInvoiceTellsThem(): void
+    {
+        $sale = $this->soldUnit();
+        $case = $this->review->recommend($sale['mattress_id'], 'INVOICE_NOT_UPLOADED');
+
+        $this->actingAs($this->managerId);
+        $this->review->requestInformation($case['id'], 'Please upload the customer invoice for this serial.');
+
+        $notice = $this->db->table('notifications')
+            ->where(['dealer_id' => $this->dealerId, 'entity' => 'warranty_review_case', 'entity_id' => $case['id']])
+            ->get()->getRowArray();
+
+        $this->assertNotNull($notice, 'the dealer was never told they had been asked for anything');
+        $this->assertSame('WARRANTY_REVIEW_INFORMATION_REQUESTED', $notice['type']);
+        $this->assertStringContainsString($case['reference'], $notice['title']);
+        $this->assertStringContainsString('upload the customer invoice', $notice['body']);
+        $this->assertNull($notice['read_at'], 'it starts unread, so the dashboard counts it');
+    }
+
+    /** A decision is news the dealer needs, whichever way it goes. */
+    public function testTheDealerIsToldWhenTheCaseIsDecided(): void
+    {
+        foreach (['uphold' => 'Invoice never produced.', 'dismiss' => 'Paperwork is in order.'] as $decision => $reason) {
+            $sale = $this->soldUnit();
+            $case = $this->review->recommend($sale['mattress_id'], 'INVOICE_NOT_UPLOADED');
+
+            $this->actingAs($this->managerId);
+            $this->review->{$decision}($case['id'], $reason);
+
+            $notice = $this->db->table('notifications')
+                ->where(['dealer_id' => $this->dealerId, 'entity_id' => $case['id']])
+                ->get()->getRowArray();
+
+            $this->assertNotNull($notice, "the dealer was not told the case was {$decision}ed");
+            $this->assertSame('WARRANTY_REVIEW_DECIDED', $notice['type']);
+            $this->assertStringContainsString($reason, $notice['body']);
+
+            // The next turn of the loop raises its own case; acting as the
+            // agent again is what lets it.
+            $this->actingAs($this->agentId);
+            $this->review = new WarrantyReviewService($this->db, service('requestContext'));
+        }
+    }
+
     public function testADecidedCaseCannotBeDecidedAgain(): void
     {
         $sale = $this->soldUnit();

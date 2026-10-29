@@ -215,6 +215,13 @@ final class WarrantyReviewService
             ]);
 
             $this->event($db, $caseId, 'INFORMATION_REQUESTED', $case['status'], 'INFORMATION_REQUESTED', trim($message), true);
+            $this->notifyDealer(
+                $db,
+                $case,
+                'WARRANTY_REVIEW_INFORMATION_REQUESTED',
+                "{$case['reference']}: we need something from you",
+                trim($message),
+            );
 
             Audit::instance($db)->record('WARRANTY_REVIEW_INFO_REQUESTED', 'warranty_review_case', $caseId, null, [
                 'reference' => $case['reference'],
@@ -282,6 +289,13 @@ final class WarrantyReviewService
             }
 
             $this->event($db, $caseId, 'UPHELD', $case['status'], 'UPHELD', trim($reason), true);
+            $this->notifyDealer(
+                $db,
+                $case,
+                'WARRANTY_REVIEW_DECIDED',
+                "{$case['reference']}: the warranty has been withdrawn",
+                trim($reason),
+            );
 
             Audit::instance($db)->record('WARRANTY_REVIEW_UPHELD', 'warranty_review_case', $caseId,
                 ['status' => $case['status']],
@@ -313,6 +327,13 @@ final class WarrantyReviewService
             ]);
 
             $this->event($db, $caseId, 'DISMISSED', $case['status'], 'DISMISSED', trim($reason), true);
+            $this->notifyDealer(
+                $db,
+                $case,
+                'WARRANTY_REVIEW_DECIDED',
+                "{$case['reference']}: no further action",
+                trim($reason),
+            );
 
             Audit::instance($db)->record('WARRANTY_REVIEW_DISMISSED', 'warranty_review_case', $caseId,
                 ['status' => $case['status']], ['status' => 'DISMISSED'], trim($reason));
@@ -521,6 +542,45 @@ final class WarrantyReviewService
     // =========================================================================
 
     /** Appends to the history. Never updated, never deleted. */
+    /**
+     * Tells the dealer, in their own portal, that something on this case
+     * needs them or has been decided.
+     *
+     * A case the dealer is never told about is a case they do not answer. The
+     * portal lists reviews and the dashboard counts unread notices, so
+     * without this the office would ask for an invoice and then wait on a
+     * dealer who had no way of knowing they had been asked — which is exactly
+     * what happened on the first run through the whole workflow. The claims
+     * side has always notified; the review side was added later and did not.
+     *
+     * @param array<string,mixed> $case
+     */
+    private function notifyDealer(
+        BaseConnection $db,
+        array $case,
+        string $type,
+        string $title,
+        string $body,
+    ): void {
+        // A case raised against stock still at the plant has no dealer to
+        // tell. There is nothing to do, and nothing wrong with that.
+        if (($case['dealer_id'] ?? null) === null) {
+            return;
+        }
+
+        $db->table('notifications')->insert([
+            'id'         => uuid4(),
+            'dealer_id'  => $case['dealer_id'],
+            'channel'    => 'IN_APP',
+            'type'       => $type,
+            'title'      => mb_substr($title, 0, 200),
+            'body'       => mb_substr($body, 0, 1000),
+            'entity'     => 'warranty_review_case',
+            'entity_id'  => $case['id'],
+            'created_at' => utc_now(),
+        ]);
+    }
+
     private function event(
         BaseConnection $db,
         string $caseId,
