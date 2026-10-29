@@ -51,7 +51,7 @@ class Doctor extends BaseCommand
             // this machine serves perfectly well, it just serves the wrong URLs
             // to everyone else. Claiming otherwise would be its own small lie.
             CLI::write(sprintf('%d check(s) failed. Put them right before this goes live.', $this->failed), 'red');
-            CLI::write('docs/HOSTINGER-DEPLOYMENT.md explains each one.');
+            CLI::write('POLYFIZZ-HOSTINGER-INSTALLATION.md explains each one.');
 
             return EXIT_ERROR;
         }

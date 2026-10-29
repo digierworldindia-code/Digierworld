@@ -72,7 +72,7 @@ $problems = $problems ?? [];
     <pre>php spark polyfix:doctor</pre>
     <p class="note">It tests the PHP build, the writable folders, the secrets,
        the database connection and the migrations, and says which of them fail.
-       <code>docs/HOSTINGER-DEPLOYMENT.md</code> walks through each step.</p>
+       <code>POLYFIZZ-HOSTINGER-INSTALLATION.md</code> walks through each step.</p>
 
     <p class="note">This page appears only while the installation is unfinished.
        It is never shown once the application can serve a request, and it never
